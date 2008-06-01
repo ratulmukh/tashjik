@@ -49,30 +49,10 @@
 
 using System;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord
 {
-	internal class CTashjik : ITashjik
+	public abstract class AbstractNode
 	{
-		public IController getController(String strOverlay)
-		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
 
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
-		}
 	}
 }

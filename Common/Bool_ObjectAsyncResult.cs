@@ -48,31 +48,88 @@
 
 
 using System;
+using System.Threading;
 
-namespace Tashjik
+namespace Tashjik.Common
 {
-	internal class CTashjik : ITashjik
+	public class Bool_ObjectAsyncResult : IAsyncResult
 	{
-		public IController getController(String strOverlay)
+		public Bool_ObjectAsyncResult(Bool_Object b, bool compSync, bool isComp)
 		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
+			AsyncState = (Object)b;
+			AsyncWaitHandle = null;
+			CompletedSynchronously = compSync;
+			IsCompleted = isComp;
 		}
 
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
+		/* public AsynResultGetTashjik.Common.Data()
 		{
-			if(chordController != null)
-				return chordController;
-			else
+			AsyncState = null;
+			AsyncWaitHandle = null;
+			CompletedSynchronously = false;
+			IsCompleted = false;
+		}
+		*/
+		
+		private Bool_Object res;
+		public Object AsyncState
+		{
+			get
 			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
+				//copy stuff from AsyncState to state
+				//if casting dosen't work, then separate
+				//private variable maintaining Tashjik.Common.Data may be
+				//required
+				return res;
+			}
+			set
+			{
+				//copy stuff from value to AsyncState
+				//AyncState = (Common.Tashjik.Common.Data)value;
+				res = (Bool_Object)value;
+
+			}	
+		}
+
+		public WaitHandle AsyncWaitHandle
+		{
+
+			get
+			{
+				WaitHandle handle = new ManualResetEvent(false);
+				//copy stuff from AsyncWaitHandle to handle
+				return handle;
+			}
+			set
+			{
+				//copy stuff from value to AsyncState
+				//AyncWaitHandle = value;
 			}
 		}
+		
+		public bool CompletedSynchronously
+		{
+			get
+			{
+				return CompletedSynchronously;
+			}
+			set
+			{
+				CompletedSynchronously = value;
+			}
+		}
+		
+		public bool IsCompleted
+		{
+			get
+			{
+				return IsCompleted;
+			}
+			set	
+			{
+				IsCompleted = value;
+			}
+		}
+
 	}
 }

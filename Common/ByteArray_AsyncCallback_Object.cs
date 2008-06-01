@@ -49,30 +49,12 @@
 
 using System;
 
-namespace Tashjik
+namespace Tashjik.Common
 {
-	internal class CTashjik : ITashjik
+	public class ByteArray_AsyncCallback_Object
 	{
-		public IController getController(String strOverlay)
-		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
-
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
-		}
+		public byte[] byteArray;
+		public AsyncCallback callBack;
+		public Object obj;
 	}
 }

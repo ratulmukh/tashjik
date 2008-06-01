@@ -48,31 +48,42 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord
 {
-	internal class CTashjik : ITashjik
+	class DataStore
 	{
-		public IController getController(String strOverlay)
+		//IOldController controller;
+	
+		//public DataStore(IOldController con)
+		//{
+		// controller = con;
+		//}
+
+		public DataStore()
 		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
+
+		}	
+
+		private Dictionary<byte[], Tashjik.Common.Data> dataHolder =
+			new Dictionary<byte[], Tashjik.Common.Data>();
+
+		public void putData(byte[] hashedKey, Tashjik.Common.Data data)
+		{
+			dataHolder.Add(hashedKey, data);
 		}
 
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
+		public Tashjik.Common.Data getData(byte[] hashedKey)
 		{
-			if(chordController != null)
-				return chordController;
+			Tashjik.Common.Data data = new Tashjik.Common.Data();
+			if(dataHolder.TryGetValue(hashedKey, out data))
+				return data;
 			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
+				throw new Exception.DataNotFoundInStoreException();
+	
+
 		}
 	}
 }

@@ -51,28 +51,18 @@ using System;
 
 namespace Tashjik
 {
-	internal class CTashjik : ITashjik
+	/// <summary>
+	/// Description of Program.
+	/// </summary>
+	public class Program
 	{
-		public IController getController(String strOverlay)
+		public Program()
 		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
 		}
-
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
+		
+		public static void Main()
 		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
+			
 		}
 	}
 }

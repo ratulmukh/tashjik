@@ -48,31 +48,22 @@
 
 
 using System;
-
-namespace Tashjik
+using System.Threading;
+using System.Net;
+using System.Net.Sockets;
+	
+namespace Tashjik.Tier2.Chord.Exception
 {
-	internal class CTashjik : ITashjik
-	{
-		public IController getController(String strOverlay)
-		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
 
+public class NotificationArrivedInterruptedException : ThreadInterruptedException
+{
+public IPAddress IP;
+public Socket sock;
+public NotificationArrivedInterruptedException(IPAddress ipp, Socket s) : base("Notification has arrived from the desired node")
+{
+IP = ipp;
+sock = s;
+}
 
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
-		}
-	}
+}
 }

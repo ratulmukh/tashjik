@@ -49,30 +49,12 @@
 
 using System;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord.Exception
 {
-	internal class CTashjik : ITashjik
-	{
-		public IController getController(String strOverlay)
-		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
 
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
-		}
-	}
+public class SearchPendingLookUpRequestListFailedException : Exception
+{
+public SearchPendingLookUpRequestListFailedException() : base("Searching in the controller.getPendingLookUpRequestList() did not yield anything")
+{}
+}
 }

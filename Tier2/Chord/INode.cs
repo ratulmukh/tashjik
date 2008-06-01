@@ -48,31 +48,29 @@
 
 
 using System;
+using System.Net;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord
 {
-	internal class CTashjik : ITashjik
+	public interface INode
 	{
-		public IController getController(String strOverlay)
-		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
+		//INode findSuccessor(INode queryNode, INode queryingNode);
+		//INode findSuccessor(byte[] queryHashedKey, INode queryingNode);
+		void beginFindSuccessor(INode queryNode, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
+		void beginFindSuccessor(byte[] queryHashedKey, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
+		//INode getPredecessor();
+		void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState);
+		//void notify(INode possiblePred);
+		void beginNotify(INode possiblePred, AsyncCallback notifyCallBack, Object appState);
+		//bool ping();
+		void beginPing(AsyncCallback pingCallBack, Object appState);
+		byte[] getHashedIP();
+		IPAddress getIP();
+		void setIP(IPAddress ip);
+		//Tashjik.Common.Data getData(byte[] byteKey);
+		void beginGetData(byte[] byteKey, AsyncCallback getDataCallBack, Object appState);
+		void beginPutData(byte[] byteKey, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState);
+		//void putData(byte[] byteKey, Tashjik.Common.Data data);
 
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
-		}
 	}
 }

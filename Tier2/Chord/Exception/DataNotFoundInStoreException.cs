@@ -49,30 +49,12 @@
 
 using System;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord.Exception
 {
-	internal class CTashjik : ITashjik
-	{
-		public IController getController(String strOverlay)
-		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
+public class DataNotFoundInStoreException : ApplicationException
+{
+public DataNotFoundInStoreException() : base ("Tashjik.Common.Data not found in the Tashjik.Common.Data Store")
+{}
 
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
-		}
-	}
+}
 }

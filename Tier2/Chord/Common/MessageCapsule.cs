@@ -48,31 +48,79 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord.Common
 {
-	internal class CTashjik : ITashjik
+	public class MessageCapsule
 	{
-		public IController getController(String strOverlay)
+		private readonly String type;
+		private readonly byte[] hashedKey;
+		private readonly IPAddress IP;
+		private readonly Tashjik.Common.Data data;
+
+		public bool matchedType(String t)
 		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
+			if(type.Equals(t))
+				return true;
 			else
-				throw new Exception();
+				return false;
+		}
+
+		public byte[] getHashedKey()
+		{
+			byte[] copiedHashedKey = new byte[hashedKey.Length];
+			Array.Copy(hashedKey, copiedHashedKey, hashedKey.Length);
+			return copiedHashedKey;
+	
+		}
+
+		public IPAddress getIP()
+		{
+			byte[] bytePossiblePredIP = System.Text.Encoding.ASCII.GetBytes(IP.ToString());
+			IPAddress clonedIP = new IPAddress(bytePossiblePredIP);
+			return clonedIP;
+
+		}
+
+		public Tashjik.Common.Data getData()
+		{
+			return data.getClone();
+		}
+
+		public MessageCapsule(String str, byte[] hK, IPAddress IPP)
+		{
+			type = str;
+			hashedKey = hK;
+			IP = IPP;
+			data = null;
+		}
+	
+		public MessageCapsule(String str, byte[] hK)
+		{
+			type = str;
+			hashedKey = hK;
+			IP = null;
+			data = null;
+		}
+
+		public MessageCapsule(String str)
+		{
+			//hashedKey not assigned :O :O
+			type = str;
+			IP = null;
+			data = null;
 		}
 
 
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
+		public MessageCapsule(String str, byte[] hK, Tashjik.Common.Data d)
 		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
+			type = str;
+			hashedKey = hK;
+			IP = null;
+			data = new Tashjik.Common.Data(d);
 		}
 	}
 }
+

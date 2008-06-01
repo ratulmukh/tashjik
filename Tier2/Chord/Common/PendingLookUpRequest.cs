@@ -48,31 +48,71 @@
 
 
 using System;
+using System.Threading;
+using System.Net.Sockets;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Chord.Common
 {
-	internal class CTashjik : ITashjik
+	/*****************************************
+	* THREADSAFE
+	* state safety ensured with private lock
+	*****************************************/
+	public class PendingLookUpRequest
 	{
-		public IController getController(String strOverlay)
+		private Object pendingLookUpRequestLock = new Object();
+		private readonly Thread thread;
+		//int threadHashCode;
+		private readonly byte[] hashedKey;
+		private Socket socket;
+
+		public void setSocket(Socket s)
 		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
-
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
+			lock(pendingLookUpRequestLock)
 			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
+				socket = s;
 			}
 		}
+		
+		public Thread getThread()
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				return thread;
+			}
+		}
+
+		public Socket getSocket()
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				return socket;
+			}
+		}
+
+		public byte[] getHashedKey()
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				return hashedKey;
+			}
+	
+		}
+
+		public PendingLookUpRequest(/*int hC*/Thread th, byte[] hK)
+		{	
+			thread = th;
+			//threadHashCode = hC;
+			hashedKey = hK;
+			socket = null;
+		}
+
+		public PendingLookUpRequest(/*int hC*/Thread th, byte[] hK, Socket sock)
+		{
+			thread = th;
+			//threadHashCode = hC;
+			hashedKey = hK;
+			socket = sock;
+		}
+
 	}
 }

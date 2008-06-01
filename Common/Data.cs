@@ -49,30 +49,21 @@
 
 using System;
 
-namespace Tashjik
+namespace Tashjik.Common
 {
-	internal class CTashjik : ITashjik
+	[Serializable]
+	public class Data
 	{
-		public IController getController(String strOverlay)
+		public Data()
+		{}
+		//need to decide: shallow or deep copy
+		public Data(Data d)
+		{}
+
+		public Data getClone()
 		{
-			if(strOverlay=="Chord")
-				return getRefChordController();
-			else
-				throw new Exception();
-		}
-
-
-		private static IController chordController = null;
-
-		private static IController getRefChordController()
-		{
-			if(chordController != null)
-				return chordController;
-			else
-			{
-				chordController = new Tier2.Chord.Controller();
-				return chordController;
-			}
+			Data clonedData = new Data();
+			return clonedData;
 		}
 	}
 }
