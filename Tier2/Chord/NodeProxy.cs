@@ -62,7 +62,7 @@ namespace Tashjik.Tier2.Chord
 	{
 		internal static Node thisNode;
 	
-		private Common.NodeBasic selfNodeBasic;
+		private Tashjik.Common.NodeBasic selfNodeBasic;
 		private Base.LowLevelComm lowLevelComm;
 
 		private readonly int iPortNo = System.Convert.ToInt16 ("2334");
@@ -488,7 +488,7 @@ namespace Tashjik.Tier2.Chord
 		public NodeProxy(IPAddress ip)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
-			selfNodeBasic = new Common.NodeBasic(ip);
+			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
 		}
 
 		public void beginPing(AsyncCallback pingCallBack, Object appState)
@@ -498,7 +498,7 @@ namespace Tashjik.Tier2.Chord
 			IAsyncResult res;
 			try
 			{
-				Socket sock = Common.UtilityMethod.CreateSocketConnection(selfNodeBasic.getIP());
+				Socket sock = Tashjik.Common.UtilityMethod.CreateSocketConnection(selfNodeBasic.getIP());
 				sock.Close();
 				bool_object.b = true;
 				bool_object.obj = appState;

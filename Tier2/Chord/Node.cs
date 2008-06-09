@@ -203,7 +203,7 @@ namespace Tashjik.Tier2.Chord
 			class Engine
 			{
 	
-				private readonly Common.NodeBasic selfNodeBasic;
+				private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 		
 				//private readonly static Engine singleton = null;
 				private readonly Node self;
@@ -305,7 +305,7 @@ namespace Tashjik.Tier2.Chord
 					fixFingersAppState.finger = finger;
 	
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForFixFingers);
-					beginFindSuccessor(Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, fixFingersAppState);
+					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, fixFingersAppState);
 				}
 
 
@@ -525,9 +525,9 @@ namespace Tashjik.Tier2.Chord
 			{
 				try
 				{
-					selfNodeBasic = new Common.NodeBasic(Common.UtilityMethod.GetLocalHostIP());
+					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
 				}
-				catch (Exception.LocalHostIPNotFoundException e)
+				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
 				{
 					//local ip could not be found :O :O
 					//crash the system

@@ -115,7 +115,7 @@ foreach(NodeProxyData nodeProxyData in proxyDataList)
 if(nodeProxyData.nodeProxy.getIP()==ip)
 return nodeProxyData.nodeProxy;
 //RELAX: yes i know this is wrong; have to change it
-throw new Exception.LocalHostIPNotFoundException();
+throw new Tashjik.Common.Exception.LocalHostIPNotFoundException();
 
 }
 }
@@ -134,7 +134,7 @@ NodeProxy proxyFound = nodeProxyRegistry.getNodeProxy(fromIP);
 proxyFound.beginNotifyMsgRec(fromIP, data, null, null);
 }
 //RELAX: yes i know this is wrong; have to change it
-catch (Exception.LocalHostIPNotFoundException e)
+catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
 {
 NodeProxy n = new NodeProxy(fromIP);
 nodeProxyRegistry.AddNewEntry(n);

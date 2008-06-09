@@ -103,7 +103,7 @@ namespace Tashjik.Tier2.Chord.Common
 				{
 					//IP and hashedIP are invariants
 					byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(IP.ToString());
-					hashedIP = Common.UtilityMethod.sha.ComputeHash(byteIP);
+					hashedIP = Tashjik.Common.UtilityMethod.sha.ComputeHash(byteIP);
 				}
 			}
 	
