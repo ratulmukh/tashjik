@@ -57,7 +57,7 @@ namespace Tashjik.Tier2.BATON
 		{
 		}
 		
-		public void join()
+		public void join(INode newNode)
 		{
 			
 		}

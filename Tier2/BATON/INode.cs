@@ -51,9 +51,9 @@ using System;
 
 namespace Tashjik.Tier2.BATON
 {
-	interface INode
+	public interface INode
 	{
-		void join();
+		void join(INode newNode);
 		void findReplacement();
 		//Data searchExact(...)
 		

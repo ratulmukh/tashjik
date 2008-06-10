@@ -48,51 +48,133 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Tashjik.Tier2.BATON
 {
 	class Node : INode
 	{
+		Engine engine;
+		
 		class Engine
 		{
 	
-			struct RoutingTableRow
+			struct RoutingTableEntry
 			{
-				INode node;
-				INode leftChild;
-				INode rightChild;
-				int lowerBound;
-				int upperBound;
+				public INode node;
+				public INode leftChild;
+				public INode rightChild;
+				public int lowerBound;
+				public int upperBound;
 			}
 		
 			private readonly Common.NodeBasic selfNodeBasic;
 			
-			private readonly int level;
-			private readonly int number;
-			private readonly INode parent;
-			private readonly INode leftChild;
-			private readonly INode rightChild;
-			private readonly INode leftAdjacent;
-			private readonly INode rightAdjacent;
+			private int level;
+			private int number;
+			private INode parent = null;
+			private INode leftChild = null;
+			private INode rightChild = null;
+			private INode leftAdjacent = null;
+			private INode rightAdjacent = null;
 				
 			private readonly Node self;
-			private RoutingTableRow[] LeftRoutingTable;
-			private RoutingTableRow[] RightRoutingTable;
 			
-	
+			private List<RoutingTableEntry> leftRoutingTable = new List<RoutingTableEntry>();
+			private List<RoutingTableEntry> rightRoutingTable = new List<RoutingTableEntry>();
+			private volatile bool fullLeftRoutingTable = false;
+			private volatile bool fullRightRoutingTable = false;
+			
+			public void join(INode newNode)
+			{
+				if(fullLeftRoutingTable && fullRightRoutingTable && (leftChild==null || rightChild==null))
+				{
+					if(leftChild==null)
+						leftChild = newNode;
+					else if(rightChild==null)
+						rightChild = newNode;
+				}
+				else
+				{
+					if((!fullLeftRoutingTable) ||(!fullRightRoutingTable))
+						parent.join(newNode);
+					else
+					{
+						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+						{
+							if(routingTableEntry.leftChild==null)
+							{
+								routingTableEntry.leftChild.join(newNode);
+								return;
+							}
+							else if(routingTableEntry.rightChild==null)
+							{
+								routingTableEntry.rightChild.join(newNode);
+								return;
+							}
+						}
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+						{
+							if(routingTableEntry.leftChild==null)
+							{
+								routingTableEntry.leftChild.join(newNode);
+								return;
+							}
+							else if(routingTableEntry.rightChild==null)
+							{
+								routingTableEntry.rightChild.join(newNode);
+								return;
+							}
+						}
+						rightAdjacent.join(newNode);
+					}
+				}
+			}
+		
+			public void findReplacement()
+			{
+			
+			}
 				
+			public Engine(Node n)
+			{
+				self = n;
+				level = 0;
+				number = 0;
+				parent = null;
+				leftChild = null;
+				rightChild = null;
+				leftAdjacent = null;
+				rightAdjacent = null;
+				
+				try
+				{
+					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+				}
+				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+				{
+					//local ip could not be found :O :O
+					//crash the system
+					//dunno how to do it though :(
+				}
+			}
 		}
 		
-		public void join()
+		public Node()
 		{
-			
+			engine = new Engine(this);
+		}
+		
+		public void join(INode newNode)
+		{
+			engine.join(newNode);
 		}
 		
 		public void findReplacement()
 		{
 			
 		}
-		
 		
 		//Data searchExact(...)
 			
