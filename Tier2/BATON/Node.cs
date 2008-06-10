@@ -132,9 +132,43 @@ namespace Tashjik.Tier2.BATON
 				}
 			}
 		
-			public void findReplacement()
+			public void findReplacement(INode repNode)
 			{
-			
+				if(leftChild!=null)
+					leftChild.findReplacement(repNode);
+				else if(rightChild!=null)
+					rightChild.findReplacement(repNode);
+				else
+				{
+					foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+						{
+							if(routingTableEntry.leftChild!=null)
+							{
+								routingTableEntry.leftChild.findReplacement(repNode);
+								return;
+							}
+							else if(routingTableEntry.rightChild!=null)
+							{
+								routingTableEntry.rightChild.findReplacement(repNode);
+								return;
+							}
+						}
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+						{
+							if(routingTableEntry.leftChild!=null)
+							{
+								routingTableEntry.leftChild.findReplacement(repNode);
+								return;
+							}
+							else if(routingTableEntry.rightChild!=null)
+							{
+								routingTableEntry.rightChild.findReplacement(repNode);
+								return;
+							}
+						}
+						//REPLACE REPNODE WITH THIS NODE
+						//this has to be thought through
+				}
 			}
 				
 			public Engine(Node n)
@@ -171,7 +205,11 @@ namespace Tashjik.Tier2.BATON
 			engine.join(newNode);
 		}
 		
-		public void findReplacement()
+		public void leave(INode leavingNode)
+		{
+			
+		}
+		public void findReplacement(INode repNode)
 		{
 			
 		}

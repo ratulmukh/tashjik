@@ -60,5 +60,7 @@ namespace Tashjik
 
 		void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
 		void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState);
+		
+		void shutdown();
 	}
 }

@@ -54,7 +54,7 @@ namespace Tashjik.Tier2.BATON
 	/// <summary>
 	/// Description of Controller.
 	/// </summary>
-	public class Controller
+	public class Controller : IController
 	{
 		public Controller()
 		{

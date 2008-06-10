@@ -54,7 +54,8 @@ namespace Tashjik.Tier2.BATON
 	public interface INode
 	{
 		void join(INode newNode);
-		void findReplacement();
+		void leave(INode leavingNode);
+		void findReplacement(INode repNode);
 		//Data searchExact(...)
 		
 	}

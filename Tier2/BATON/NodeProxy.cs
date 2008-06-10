@@ -61,11 +61,15 @@ namespace Tashjik.Tier2.BATON
 		{
 			
 		}
-		public void findReplacement()
+		public void findReplacement(INode repNode)
 		{
 			
 		}
 		
+		public void leave(INode leavingNode)
+		{
+			
+		}
 		//Data searchExact(...)
 		
 	}

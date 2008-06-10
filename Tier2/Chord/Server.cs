@@ -61,7 +61,10 @@ namespace Tashjik.Tier2.Chord
 			return guid;
 		}
 
-
+		public void shutdown()
+		{
+			
+		}
 		public Server()
 		{
 			guid = System.Guid.NewGuid();

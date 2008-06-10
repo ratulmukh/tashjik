@@ -57,13 +57,16 @@ namespace Tashjik
 		{
 			if(strOverlay=="Chord")
 				return getRefChordController();
+			else if(strOverlay=="BATON")
+				return getRefBATONController();
 			else
 				throw new Exception();
 		}
 
 
 		private static IController chordController = null;
-
+		private static IController BATONController = null;
+		
 		private static IController getRefChordController()
 		{
 			if(chordController != null)
@@ -72,6 +75,17 @@ namespace Tashjik
 			{
 				chordController = new Tier2.Chord.Controller();
 				return chordController;
+			}
+		}
+		
+		private static IController getRefBATONController()
+		{
+			if(BATONController != null)
+				return BATONController;
+			else
+			{
+				BATONController = new Tier2.BATON.Controller();
+				return BATONController;
 			}
 		}
 	}

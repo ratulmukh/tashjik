@@ -52,10 +52,33 @@ using System;
 namespace Tashjik.Tier2.BATON
 {
 
-	public class Server
+	internal class Server : IOverlay
 	{
 		public Server()
 		{
+			
+		}
+		
+		public Guid getGuid()
+		{
+			return new Guid();
+		}
+
+		//Common.Data getData(String key);
+		//void putData(String key, Common.Data data);
+
+		public void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
+		{
+			
+		}
+		public void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		{
+			
+		}
+		
+		public void shutdown()
+		{
+			
 		}
 	}
 }
