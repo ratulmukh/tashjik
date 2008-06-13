@@ -71,7 +71,7 @@ namespace Tashjik.Tier2.BATON
 		{
 			
 		}
-		public void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
 		{
 			
 		}

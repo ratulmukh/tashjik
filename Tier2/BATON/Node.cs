@@ -69,7 +69,7 @@ namespace Tashjik.Tier2.BATON
 				public int upperBound;
 			}
 		
-			private readonly Common.NodeBasic selfNodeBasic;
+			private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 			
 			private int level;
 			private int number;
@@ -211,7 +211,7 @@ namespace Tashjik.Tier2.BATON
 		}
 		public void findReplacement(INode repNode)
 		{
-			
+			engine.findReplacement(repNode);
 		}
 		
 		//Data searchExact(...)

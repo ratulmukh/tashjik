@@ -48,14 +48,21 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik.Tier2.BATON
 {
 
-	public class ProxyController
+	public class ProxyController : Tier2.Common.Controller.ISink
 	{
 		public ProxyController()
 		{
+		}
+		
+		public void notifyMsgRec(IPAddress fromIP, Object data)
+		{
+		
 		}
 	}
 }

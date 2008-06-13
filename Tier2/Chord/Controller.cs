@@ -55,91 +55,19 @@ using System.Net.Sockets;
 
 namespace Tashjik.Tier2.Chord
 {
-	public class Controller : IController, Base.LowLevelComm.ISink
+	public class Controller : Tier2.Common.Controller
 	{
-		public interface ISink
+
+		public Controller(Guid g): base(g)
 		{
-			void notifyMsgRec(IPAddress fromIP, Object data);
-		}
-
-
-
-		public class ChordInstanceMsg
-		{
-			public Guid chordInstanceGuid;
-			public Object data;
-			public ChordInstanceMsg(Guid g, Object o)
-			{
-				chordInstanceGuid = g;
-				data = o;
-			}
-		}
-
-		public void notifyMsg(IPAddress fromIP, Object LowLevelData)
-		{
-			List<ChordInstanceMsg> chordInstanceMsgList = (List<ChordInstanceMsg>)LowLevelData;
-			foreach(ChordInstanceMsg chordInstanceMsg in chordInstanceMsgList)
-			{
-				ChordInstanceInfo chordInstanceInfo;
-				if(chordInstanceRegistry.TryGetValue(chordInstanceMsg.chordInstanceGuid, out chordInstanceInfo))
-					chordInstanceInfo.sink.notifyMsgRec(fromIP, chordInstanceMsg.data);
-				else
-					throw new System.Exception();
-			}
-		}
-
-		private class ChordInstanceInfo
-		{
-			public IOverlay chord;
-			public ISink sink;
-			public ChordInstanceInfo(IOverlay ch, ISink si)
-			{
-				chord = ch;
-				sink = si;
-			}
-		}
-
-		//universal Chord GUID..to be used by all instances of Chord
-		private readonly Guid guid = new Guid("0c400880-0722-420e-a792-0a764d6539ee");
-
-		private Dictionary<Guid, ChordInstanceInfo> chordInstanceRegistry =
-			new Dictionary<Guid, ChordInstanceInfo>();
-
-
-
-		public Controller()
-		{
-
-			Base.LowLevelComm.getRefLowLevelComm().register(guid, this);
-
-		}
-
-		public ArrayList getList()
-		{
-			ArrayList guids = ArrayList.Synchronized(new ArrayList());
-
-			foreach (KeyValuePair<Guid, ChordInstanceInfo> kvp in chordInstanceRegistry)
-			guids.Add(kvp.Key);
 			
-			return guids;
 		}
-
-		public IOverlay retrieve(Guid guid)
-		{
-			ChordInstanceInfo chordInstanceInfo;
-			if(chordInstanceRegistry.TryGetValue(guid, out chordInstanceInfo))
-				return chordInstanceInfo.chord;
-			else
-				//need to change this exception
-				throw new Exception.DataNotFoundInStoreException();
-		}		
-
-		public IOverlay create()
+		public override IOverlay create()
 		{
 			IOverlay chord = new Server();
 			ISink sink = new ProxyController();
-			ChordInstanceInfo chordInstanceInfo = new ChordInstanceInfo(chord, sink);
-			chordInstanceRegistry.Add(chord.getGuid(), chordInstanceInfo);
+			OverlayInstanceInfo chordInstanceInfo = new OverlayInstanceInfo(chord, sink);
+			overlayInstanceRegistry.Add(chord.getGuid(), chordInstanceInfo);
 			return chord;
 		}
 

@@ -62,7 +62,8 @@ namespace Tashjik
 		
 		public static void Main()
 		{
-			
+			Guid g = Guid.NewGuid();
+			Console.Write(g.ToString());
 		}
 	}
 }

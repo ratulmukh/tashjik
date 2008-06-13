@@ -51,13 +51,23 @@ using System;
 
 namespace Tashjik.Tier2.BATON
 {
-	/// <summary>
-	/// Description of Controller.
-	/// </summary>
-	public class Controller : IController
+	public class Controller : Tier2.Common.Controller
 	{
-		public Controller()
+
+		public Controller(Guid g): base(g)
 		{
+			
 		}
+		public override IOverlay create()
+		{
+			IOverlay baton = new Server();
+			ISink sink = new ProxyController();
+			OverlayInstanceInfo batonInstanceInfo = new OverlayInstanceInfo(baton, sink);
+			overlayInstanceRegistry.Add(baton.getGuid(), batonInstanceInfo);
+			return baton;
+		}
+
+
+	
 	}
 }
