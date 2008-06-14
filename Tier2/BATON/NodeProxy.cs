@@ -65,6 +65,12 @@ namespace Tashjik.Tier2.BATON
 		{
 			
 		}
+		
+		public void join(INode newNode, Guid overlayInstanceGuid)
+		{
+			
+		}
+		
 		public void findReplacement(INode repNode)
 		{
 			

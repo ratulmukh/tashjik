@@ -64,6 +64,6 @@ namespace Tashjik
 		void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState);
 		
 		void shutdown();
-		void initiateJoin(IPAddress IP, Guid giud);
+		
 	}
 }

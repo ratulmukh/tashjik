@@ -176,14 +176,22 @@ namespace Tashjik.Tier2.BATON
 			public Engine(Node n)
 			{
 				self = n;
-				level = 0;
-				number = 0;
-				parent = null;
-				leftChild = null;
-				rightChild = null;
-				leftAdjacent = null;
-				rightAdjacent = null;
-				
+				try
+				{
+					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+				}
+				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+				{
+					//local ip could not be found :O :O
+					//crash the system
+					//dunno how to do it though :(
+				}
+				initialize();
+			}
+			
+			public Engine(Node n, INode joinOtherNode)
+			{
+				self = n;
 				try
 				{
 					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
@@ -195,11 +203,26 @@ namespace Tashjik.Tier2.BATON
 					//dunno how to do it though :(
 				}
 				
+				initialize();
+				joinOther(joinOtherNode);
 			}
 			
-			public void initiateJoin(INode n, Guid guid)
+			private void initialize()
 			{
+				level = 0;
+				number = 0;
+				parent = null;
+				leftChild = null;
+				rightChild = null;
+				leftAdjacent = null;
+				rightAdjacent = null;
 				
+				
+			}
+			
+			private void joinOther(INode n)
+			{
+				n.join(self);
 			}
 		}
 		
@@ -208,20 +231,21 @@ namespace Tashjik.Tier2.BATON
 			engine = new Engine(this);
 		}
 		
+		public Node(INode joinOtherNode)
+		{
+			engine = new Engine(this, joinOtherNode);
+		}
+		
 		public void join(INode newNode)
 		{
 			engine.join(newNode);
-		}
-		
-		public void initiateJoin(INode n, Guid guid)
-		{
-			engine.initiateJoin(n, guid);
 		}
 		
 		public void leave(INode leavingNode)
 		{
 			
 		}
+		
 		public void findReplacement(INode repNode)
 		{
 			engine.findReplacement(repNode);

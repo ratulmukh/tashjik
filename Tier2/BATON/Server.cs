@@ -66,6 +66,13 @@ namespace Tashjik.Tier2.BATON
 			//NodeProxy.thisNode = thisNode;
 		}
 		
+		public Server(IPAddress joinOtherIP, Guid joinOtherGuid)
+		{
+			guid = joinOtherGuid;
+			INode joinOtherINode = new NodeProxy(joinOtherIP);
+			thisNode = new Node(joinOtherINode);
+		}
+			
 		public Guid getGuid()
 		{
 			return new Guid();
@@ -88,10 +95,6 @@ namespace Tashjik.Tier2.BATON
 			
 		}
 		
-		public void initiateJoin(IPAddress IP, Guid giud)
-		{
-			INode n = new NodeProxy(IP);
-			thisNode.initiateJoin(n, giud);
-		}
+		
 	}
 }
