@@ -49,13 +49,22 @@
 
 using System;
 using System.Collections;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik
 {
 	public interface IController
 	{
 		ArrayList getList();
+		
+		//get access to an overlay to which this node is already part of 
 		IOverlay retrieve(Guid guid);
-		IOverlay create();
+		
+		//create a completely new overlay
+		IOverlay createNew();
+		
+		//join an existing overlay to which this node is not yet a part of 
+		IOverlay joinExisting(IPAddress IP, Guid guid);
 	}
 }

@@ -48,6 +48,8 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -192,6 +194,12 @@ namespace Tashjik.Tier2.BATON
 					//crash the system
 					//dunno how to do it though :(
 				}
+				
+			}
+			
+			public void initiateJoin(INode n, Guid guid)
+			{
+				
 			}
 		}
 		
@@ -203,6 +211,11 @@ namespace Tashjik.Tier2.BATON
 		public void join(INode newNode)
 		{
 			engine.join(newNode);
+		}
+		
+		public void initiateJoin(INode n, Guid guid)
+		{
+			engine.initiateJoin(n, guid);
 		}
 		
 		public void leave(INode leavingNode)

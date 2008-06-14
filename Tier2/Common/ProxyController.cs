@@ -52,8 +52,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Tashjik.Tier2.Chord
+namespace Tashjik.Tier2.Common
 {
+	/*
 	class ProxyController : IProxyController, Controller.ISink
 	{
 	
@@ -163,5 +164,5 @@ namespace Tashjik.Tier2.Chord
 		}
 
 	}
-
+	*/
 }

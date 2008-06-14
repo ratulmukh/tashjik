@@ -48,6 +48,8 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik.Tier2.BATON
 {
@@ -58,7 +60,7 @@ namespace Tashjik.Tier2.BATON
 		{
 			
 		}
-		public override IOverlay create()
+		public override IOverlay createNew()
 		{
 			IOverlay baton = new Server();
 			ISink sink = new ProxyController();
@@ -67,7 +69,19 @@ namespace Tashjik.Tier2.BATON
 			return baton;
 		}
 
-
+		public override IOverlay joinExisting(IPAddress IP, Guid guid)
+		{
+			//need to implement this
+			//return new Server();
+			IOverlay baton = new Server();
+			ISink sink = new ProxyController();
+			OverlayInstanceInfo batonInstanceInfo = new OverlayInstanceInfo(baton, sink);
+			overlayInstanceRegistry.Add(baton.getGuid(), batonInstanceInfo);
+			
+			baton.initiateJoin(IP, guid);
+			
+			return baton;
+		}
 	
 	}
 }

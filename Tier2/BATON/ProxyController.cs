@@ -56,6 +56,7 @@ namespace Tashjik.Tier2.BATON
 
 	public class ProxyController : Tier2.Common.Controller.ISink
 	{
+		
 		public ProxyController()
 		{
 		}

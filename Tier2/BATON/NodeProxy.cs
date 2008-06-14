@@ -48,13 +48,17 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik.Tier2.BATON
 {
-	public class NodeProxy
+	public class NodeProxy :INode
 	{
-		public NodeProxy()
+		public NodeProxy(IPAddress IP)
 		{
+			//initialize new NodeProxy
+			//add itself to ProxyController registry
 		}
 		
 		public void join(INode newNode)

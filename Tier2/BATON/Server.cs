@@ -48,15 +48,22 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik.Tier2.BATON
 {
 
 	internal class Server : IOverlay
 	{
+		private readonly Guid guid;
+		internal readonly Node thisNode;
+		
 		public Server()
 		{
-			
+			guid = System.Guid.NewGuid();
+			thisNode = new Node();
+			//NodeProxy.thisNode = thisNode;
 		}
 		
 		public Guid getGuid()
@@ -79,6 +86,12 @@ namespace Tashjik.Tier2.BATON
 		public void shutdown()
 		{
 			
+		}
+		
+		public void initiateJoin(IPAddress IP, Guid giud)
+		{
+			INode n = new NodeProxy(IP);
+			thisNode.initiateJoin(n, giud);
 		}
 	}
 }

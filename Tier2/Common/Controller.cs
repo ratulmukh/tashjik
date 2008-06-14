@@ -135,17 +135,8 @@ namespace Tashjik.Tier2.Common
 				throw new Tashjik.Common.Exception.LocalHostIPNotFoundException();
 		}		
 
-		/*
-		public IOverlay create()
-		{
-			IOverlay chord = new Server();
-			ISink sink = new ProxyController();
-			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(chord, sink);
-			overlayInstanceRegistry.Add(chord.getGuid(), overlayInstanceInfo);
-			return chord;
-		}
-		*/
+		public abstract IOverlay createNew();	
 		
-		public abstract IOverlay create();		
+		public abstract IOverlay joinExisting(IPAddress IP, Guid guid);
 	}
 }

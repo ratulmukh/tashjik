@@ -62,7 +62,7 @@ namespace Tashjik.Tier2.Chord
 		{
 			
 		}
-		public override IOverlay create()
+		public override IOverlay createNew()
 		{
 			IOverlay chord = new Server();
 			ISink sink = new ProxyController();
@@ -71,7 +71,11 @@ namespace Tashjik.Tier2.Chord
 			return chord;
 		}
 
-
+		public override IOverlay joinExisting(IPAddress IP, Guid guid)
+		{
+			//need to implement this
+			return new Server();
+		}
 	
 	}
 }

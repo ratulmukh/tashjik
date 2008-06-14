@@ -48,22 +48,16 @@
 
 
 using System;
-using System.Net;
-using System.Net.Sockets;
 
-namespace Tashjik
+namespace Tashjik.Tier2.Common
 {
-	public interface IOverlay
+	/// <summary>
+	/// Description of NodeProxy.
+	/// </summary>
+	public class NodeProxy
 	{
-		Guid getGuid();
-
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
-		void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState);
-		
-		void shutdown();
-		void initiateJoin(IPAddress IP, Guid giud);
+		public NodeProxy()
+		{
+		}
 	}
 }

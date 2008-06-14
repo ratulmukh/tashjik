@@ -48,6 +48,8 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik.Tier2.Chord
 {
@@ -151,6 +153,10 @@ namespace Tashjik.Tier2.Chord
 
 		}
 
+		public void initiateJoin(IPAddress IP, Guid giud)
+		{
+			//thisNode.initiateJoin(IP, giud);
+		}
 	}
 
 }
