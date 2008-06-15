@@ -124,7 +124,72 @@ namespace Tashjik.Tier2.BATON
 			public void requestRoutingTableForChild( INode requestingChild, Position pos)
 			{
 				//assimilate rouing table
-				//call setNodeOnlyRoutingTableForChild(...);
+				if(pos==Position.LEFT)
+				{
+					List<RoutingTableEntry> leftRoutingTableOfChild = new List<RoutingTableEntry>();
+					if(requestingChild == rightChild)
+					{
+						RoutingTableEntry firstNodeEntry = new RoutingTableEntry();
+						firstNodeEntry.node = leftChild;
+						leftRoutingTableOfChild.Add(firstNodeEntry);
+						
+						foreach(RoutingTableEntry leftRoutingTableEntry in leftRoutingTable)
+						{
+							RoutingTableEntry entry = new RoutingTableEntry();
+							entry.node = leftRoutingTableEntry.rightChild;
+							leftRoutingTableOfChild.Add(firstNodeEntry);
+						}
+					}
+					else if(requestingChild == leftChild)
+					{
+						RoutingTableEntry firstNodeEntry = new RoutingTableEntry();
+						firstNodeEntry.node = leftRoutingTable[0].rightChild;
+						leftRoutingTableOfChild.Add(firstNodeEntry);
+						
+						for(int i=1;i<leftRoutingTable.Count;i++)
+						{
+							RoutingTableEntry leftRoutingTableEntry = leftRoutingTable[i];
+							RoutingTableEntry entry = new RoutingTableEntry();
+							entry.node = leftRoutingTableEntry.leftChild;
+						    leftRoutingTableOfChild.Add(firstNodeEntry);
+						}
+					}
+					requestingChild.sendNodeOnlyRoutingTableForChild(leftRoutingTableOfChild,Position.LEFT);
+				}
+				else if(pos==Position.RIGHT)
+				{
+					List<RoutingTableEntry> rightRoutingTableOfChild = new List<RoutingTableEntry>();
+					if(requestingChild == leftChild)
+					{
+						RoutingTableEntry firstNodeEntry = new RoutingTableEntry();
+						firstNodeEntry.node = rightChild;
+						rightRoutingTableOfChild.Add(firstNodeEntry);
+						
+						foreach(RoutingTableEntry rightRoutingTableEntry in rightRoutingTable)
+						{
+							RoutingTableEntry entry = new RoutingTableEntry();
+							entry.node = rightRoutingTableEntry.leftChild;
+							rightRoutingTableOfChild.Add(firstNodeEntry);
+						}
+					}
+					else if(requestingChild == leftChild)
+					{
+						RoutingTableEntry firstNodeEntry = new RoutingTableEntry();
+						firstNodeEntry.node = leftRoutingTable[0].leftChild;
+						rightRoutingTableOfChild.Add(firstNodeEntry);
+						
+						for(int i=1;i<rightRoutingTable.Count;i++)
+						{
+							RoutingTableEntry rightRoutingTableEntry = rightRoutingTable[i];
+							RoutingTableEntry entry = new RoutingTableEntry();
+							entry.node = rightRoutingTableEntry.rightChild;
+							rightRoutingTableOfChild.Add(firstNodeEntry);
+						}
+					}
+					requestingChild.sendNodeOnlyRoutingTableForChild(rightRoutingTableOfChild,Position.RIGHT);
+				}
+				
+				
 			}
 			
 			public void sendNodeOnlyRoutingTableForChild(List<RoutingTableEntry> routingTable, Position pos)
