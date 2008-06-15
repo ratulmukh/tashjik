@@ -48,6 +48,8 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Tashjik.Tier2.BATON
 {
@@ -57,6 +59,12 @@ namespace Tashjik.Tier2.BATON
 		void leave(INode leavingNode);
 		void findReplacement(INode repNode);
 		//Data searchExact(...)
-		
+		void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent);
+		void setAdjacent(INode newAdjacent, Node.Position pos, INode prevNode);
+		void notifyNewChild(INode notifyingNode, Node.Position pos, INode newChild);
+		void requestRoutingTableForChild( INode requestingChild, Node.Position pos);
+		void sendNodeOnlyRoutingTableForChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos);
+		void requestChildren(INode requestingNode);
+		void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild);
 	}
 }

@@ -55,21 +55,33 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2.BATON
 {
-	class Node : INode
+	public class Node : INode
 	{
+		//RULES OF THE THUMB
+		//notify calls are made to nodes to notify them of something withot being asked
+		//request calls are made to nodes to request them for info
+		//send calls are made to reply back to requests
+		
 		Engine engine;
 		
+		public enum Position
+		{
+			LEFT,
+			RIGHT,
+		}
+		
+		public struct RoutingTableEntry
+		{
+			public INode node;
+			public INode leftChild;
+			public INode rightChild;
+			public int lowerBound;
+			public int upperBound;
+		}
 		class Engine
 		{
 	
-			struct RoutingTableEntry
-			{
-				public INode node;
-				public INode leftChild;
-				public INode rightChild;
-				public int lowerBound;
-				public int upperBound;
-			}
+			
 		
 			private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 			
@@ -88,14 +100,103 @@ namespace Tashjik.Tier2.BATON
 			private volatile bool fullLeftRoutingTable = false;
 			private volatile bool fullRightRoutingTable = false;
 			
+			public void joinAccepted(INode acceptingNode, Position pos, INode adjacent)
+			{
+				parent = acceptingNode;
+				if(pos==Position.LEFT)
+				{
+					leftAdjacent = adjacent;
+					rightAdjacent = acceptingNode;
+					leftAdjacent.setAdjacent(self, Position.RIGHT, rightAdjacent);
+					
+				}
+				if(pos==Position.RIGHT)
+				{
+					rightAdjacent = adjacent;
+					leftAdjacent = acceptingNode;
+					rightAdjacent.setAdjacent(self, Position.LEFT, leftAdjacent);
+				}
+				//fill up its left and right routing tables by asking parent
+				parent.requestRoutingTableForChild(self, Position.LEFT);
+				parent.requestRoutingTableForChild(self, Position.RIGHT);
+			}
+			
+			public void requestRoutingTableForChild( INode requestingChild, Position pos)
+			{
+				//assimilate rouing table
+				//call setNodeOnlyRoutingTableForChild(...);
+			}
+			
+			public void sendNodeOnlyRoutingTableForChild(List<RoutingTableEntry> routingTable, Position pos)
+			{
+				//for each node in routing table, query tht node for its children
+				//foreach(Node)
+				//   getchildren()
+			}
+			
+			public void requestChildren(INode requestingNode)
+			{
+				
+			}
+			
+			public void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild)
+			{
+				
+			}
+			
+			public void setAdjacent(INode newAdjacent, Position pos, INode prevNode)
+			{
+				if(pos==Position.LEFT)
+				{
+					if(leftAdjacent==prevNode)
+						leftAdjacent = newAdjacent;
+					else
+						throw new BATON.Exception.PrevNodeNotMatching();
+				}
+				else if (pos==Position.RIGHT)
+				{
+					if(rightAdjacent==prevNode)
+						rightAdjacent = newAdjacent;
+					else
+						throw new BATON.Exception.PrevNodeNotMatching();
+				}
+			}
+			
+			public void notifyNewChild(INode notifyingNode, Node.Position pos, INode newChild)
+			{
+				
+			}
 			public void join(INode newNode)
 			{
 				if(fullLeftRoutingTable && fullRightRoutingTable && (leftChild==null || rightChild==null))
 				{
 					if(leftChild==null)
+					{
 						leftChild = newNode;
+						newNode.joinAccepted(self, Position.LEFT, leftAdjacent);
+						//split half of contents
+						leftAdjacent = newNode;
+						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.LEFT, newNode);
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.LEFT, newNode);							
+						
+					}
 					else if(rightChild==null)
+					{
 						rightChild = newNode;
+						newNode.joinAccepted(self, Position.RIGHT, rightAdjacent);
+						//split half of contents
+						rightAdjacent = newNode;
+						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.RIGHT, newNode);
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.RIGHT, newNode);							
+					}
 				}
 				else
 				{
@@ -249,6 +350,36 @@ namespace Tashjik.Tier2.BATON
 		public void findReplacement(INode repNode)
 		{
 			engine.findReplacement(repNode);
+		}
+		
+		public void joinAccepted(INode acceptingNode, Position pos, INode adjacent)
+		{
+			engine.joinAccepted(acceptingNode, pos, adjacent);
+		}
+		public void setAdjacent(INode newAdjacent, Position pos, INode prevNode)
+		{
+			engine.setAdjacent(newAdjacent, pos, prevNode);
+		}
+		public void notifyNewChild(INode notifyingNode, Position pos, INode newChild)
+		{
+			engine.notifyNewChild(notifyingNode, pos, newChild);
+		}
+
+		public void requestRoutingTableForChild( INode requestingChild, Position pos)
+		{
+			engine.requestRoutingTableForChild(requestingChild, pos);
+		}
+		public void sendNodeOnlyRoutingTableForChild(List<RoutingTableEntry> routingTable, Position pos)
+		{
+			engine.sendNodeOnlyRoutingTableForChild(routingTable, pos);
+		}
+		public void requestChildren(INode requestingNode)
+		{
+			engine.requestChildren(requestingNode);
+		}
+		public void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild)
+		{
+			engine.notifyChildren(notifyingNode, leftChild, rightChild);
 		}
 		
 		//Data searchExact(...)

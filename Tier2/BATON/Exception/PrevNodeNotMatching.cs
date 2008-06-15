@@ -48,69 +48,12 @@
 
 
 using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Collections;
-using System.Collections.Generic;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2.BATON.Exception
 {
-	public class NodeProxy :INode
+	public class PrevNodeNotMatching : ApplicationException
 	{
-		public NodeProxy(IPAddress IP)
-		{
-			//initialize new NodeProxy
-			//add itself to ProxyController registry
-		}
-		
-		public void join(INode newNode)
-		{
-			
-		}
-		
-		public void join(INode newNode, Guid overlayInstanceGuid)
-		{
-			
-		}
-		
-		public void findReplacement(INode repNode)
-		{
-			
-		}
-		
-		public void leave(INode leavingNode)
-		{
-			
-		}
-		
-		//Data searchExact(...)
-		
-		public void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent)
-		{
-		
-		}
-		public void setAdjacent(INode newAdjacent, Node.Position pos, INode prevNode)
-		{
-			
-		}
-		public void notifyNewChild(INode notifyingNode, Node.Position pos, INode newChild)
-		{
-			
-		}
-		
-		public void requestRoutingTableForChild( INode requestingChild, Node.Position pos)
-		{
-		
-		}
-		public void sendNodeOnlyRoutingTableForChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos)
-		{
-			
-		}
-		public void requestChildren(INode requestingNode)
-		{
-			
-		}
-		public void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild)
+		public PrevNodeNotMatching() : base("Adjacent node to be changed is not matching with the one currently existitng")
 		{
 			
 		}
