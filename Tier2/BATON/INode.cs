@@ -66,5 +66,6 @@ namespace Tashjik.Tier2.BATON
 		void sendNodeOnlyRoutingTableForChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos);
 		void requestChildren(INode requestingNode);
 		void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild);
+		void setNewPeer(int routingTablepointer, Node.Position pos, INode newChild);		
 	}
 }

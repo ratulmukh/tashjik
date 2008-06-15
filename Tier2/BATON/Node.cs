@@ -195,18 +195,33 @@ namespace Tashjik.Tier2.BATON
 			public void sendNodeOnlyRoutingTableForChild(List<RoutingTableEntry> routingTable, Position pos)
 			{
 				//for each node in routing table, query tht node for its children
-				//foreach(Node)
-				//   getchildren()
+				foreach(RoutingTableEntry routingTableEntry in routingTable)
+					routingTableEntry.node.requestChildren(self);
 			}
 			
 			public void requestChildren(INode requestingNode)
 			{
-				
+				requestingNode.notifyChildren(self, leftChild, rightChild);
 			}
 			
 			public void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild)
 			{
-				
+				for(int i=0;i<leftRoutingTable.Count;i++)
+					if(notifyingNode == leftRoutingTable[i].node)
+					{
+						RoutingTableEntry leftRoutingTableEntry = leftRoutingTable[i];
+						leftRoutingTableEntry.leftChild = leftChild;
+						leftRoutingTableEntry.rightChild = rightChild;
+						return;
+					}
+				for(int i=0;i<rightRoutingTable.Count;i++)
+					if(notifyingNode == rightRoutingTable[i].node)
+					{
+						RoutingTableEntry rightRoutingTableEntry = rightRoutingTable[i];
+						rightRoutingTableEntry.leftChild = leftChild;
+						rightRoutingTableEntry.rightChild = rightChild;
+						return;
+					}
 			}
 			
 			public void setAdjacent(INode newAdjacent, Position pos, INode prevNode)
@@ -229,8 +244,47 @@ namespace Tashjik.Tier2.BATON
 			
 			public void notifyNewChild(INode notifyingNode, Node.Position pos, INode newChild)
 			{
+				for(int i=0; i<leftRoutingTable.Count;i++)
+				{
+					RoutingTableEntry leftRoutingTableEntry = leftRoutingTable[i];
+					if(leftRoutingTableEntry.node == notifyingNode)
+					{
+						if(pos == Position.LEFT)
+							leftRoutingTableEntry.leftChild = newChild;
+						else if(pos == Position.RIGHT)
+							leftRoutingTableEntry.rightChild = newChild;
+						leftChild.setNewPeer(i, Position.LEFT, newChild);
+						rightChild.setNewPeer(i, Position.LEFT, newChild);
+						return;
+					}
+				}
+				for(int i=0; i<rightRoutingTable.Count;i++)
+				{
+					RoutingTableEntry rightRoutingTableEntry = rightRoutingTable[i];
+					if(rightRoutingTableEntry.node == notifyingNode)
+					{
+						if(pos == Position.LEFT)
+							rightRoutingTableEntry.leftChild = newChild;
+						else if(pos == Position.RIGHT)
+							rightRoutingTableEntry.rightChild = newChild;
+						leftChild.setNewPeer(i, Position.RIGHT, newChild);
+						rightChild.setNewPeer(i, Position.RIGHT, newChild);
+						return;
+					}
+				}
 				
 			}
+			
+			public void setNewPeer(int routingTablepointer, Position pos, INode newChild)
+			{
+				//NEED TO IMPLEMENT!!!
+				if(routingTablepointer != 0)
+				{
+					//if(pos == Position.LEFT)
+						//leftRoutingTable[routingTablepointer] = 
+				}
+			}
+			
 			public void join(INode newNode)
 			{
 				if(fullLeftRoutingTable && fullRightRoutingTable && (leftChild==null || rightChild==null))
@@ -445,6 +499,11 @@ namespace Tashjik.Tier2.BATON
 		public void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild)
 		{
 			engine.notifyChildren(notifyingNode, leftChild, rightChild);
+		}
+		
+		public void setNewPeer(int routingTablepointer, Position pos, INode newChild)
+		{
+			engine.setNewPeer(routingTablepointer, pos, newChild);
 		}
 		
 		//Data searchExact(...)

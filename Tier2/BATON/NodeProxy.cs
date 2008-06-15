@@ -114,5 +114,10 @@ namespace Tashjik.Tier2.BATON
 		{
 			
 		}
+		
+		public void setNewPeer(int routingTablepointer, Node.Position pos, INode newChild)
+		{
+			
+		}
 	}
 }
