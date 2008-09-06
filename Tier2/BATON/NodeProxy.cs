@@ -85,7 +85,7 @@ namespace Tashjik.Tier2.BATON
 		
 		//Data searchExact(...)
 		
-		public void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent)
+		public void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent, int newLevel, int newNumber)
 		{
 		
 		}
@@ -102,7 +102,7 @@ namespace Tashjik.Tier2.BATON
 		{
 		
 		}
-		public void sendNodeOnlyRoutingTableForChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos)
+		public void sendNodeOnlyRoutingTableToChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos)
 		{
 			
 		}

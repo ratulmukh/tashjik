@@ -100,9 +100,12 @@ namespace Tashjik.Tier2.BATON
 			private volatile bool fullLeftRoutingTable = false;
 			private volatile bool fullRightRoutingTable = false;
 			
-			public void joinAccepted(INode acceptingNode, Position pos, INode adjacent)
+			public void joinAccepted(INode acceptingNode, Position pos, INode adjacent, int newLevel, int newNumber)
 			{
 				parent = acceptingNode;
+				level = newLevel;
+				number = newNumber;
+				
 				if(pos==Position.LEFT)
 				{
 					leftAdjacent = adjacent;
@@ -154,7 +157,7 @@ namespace Tashjik.Tier2.BATON
 						    leftRoutingTableOfChild.Add(firstNodeEntry);
 						}
 					}
-					requestingChild.sendNodeOnlyRoutingTableForChild(leftRoutingTableOfChild,Position.LEFT);
+					requestingChild.sendNodeOnlyRoutingTableToChild(leftRoutingTableOfChild,Position.LEFT);
 				}
 				else if(pos==Position.RIGHT)
 				{
@@ -186,13 +189,13 @@ namespace Tashjik.Tier2.BATON
 							rightRoutingTableOfChild.Add(firstNodeEntry);
 						}
 					}
-					requestingChild.sendNodeOnlyRoutingTableForChild(rightRoutingTableOfChild,Position.RIGHT);
+					requestingChild.sendNodeOnlyRoutingTableToChild(rightRoutingTableOfChild,Position.RIGHT);
 				}
 				
 				
 			}
 			
-			public void sendNodeOnlyRoutingTableForChild(List<RoutingTableEntry> routingTable, Position pos)
+			public void sendNodeOnlyRoutingTableToChild(List<RoutingTableEntry> routingTable, Position pos)
 			{
 				//for each node in routing table, query tht node for its children
 				foreach(RoutingTableEntry routingTableEntry in routingTable)
@@ -253,8 +256,12 @@ namespace Tashjik.Tier2.BATON
 							leftRoutingTableEntry.leftChild = newChild;
 						else if(pos == Position.RIGHT)
 							leftRoutingTableEntry.rightChild = newChild;
-						leftChild.setNewPeer(i, Position.LEFT, newChild);
-						rightChild.setNewPeer(i, Position.LEFT, newChild);
+						
+						//don't think the below 2 lines r required 
+						//since the newchild would hav got its routing table 
+						//from its parent
+						//leftChild.setNewPeer(i, Position.LEFT, newChild);
+						//rightChild.setNewPeer(i, Position.LEFT, newChild);
 						return;
 					}
 				}
@@ -267,16 +274,23 @@ namespace Tashjik.Tier2.BATON
 							rightRoutingTableEntry.leftChild = newChild;
 						else if(pos == Position.RIGHT)
 							rightRoutingTableEntry.rightChild = newChild;
-						leftChild.setNewPeer(i, Position.RIGHT, newChild);
-						rightChild.setNewPeer(i, Position.RIGHT, newChild);
+						//don't think the below 2 lines r required 
+						//since the newchild would hav got its routing table 
+						//from its parent
+						//leftChild.setNewPeer(i, Position.RIGHT, newChild);
+						//rightChild.setNewPeer(i, Position.RIGHT, newChild);
 						return;
 					}
 				}
 				
 			}
 			
+			
 			public void setNewPeer(int routingTablepointer, Position pos, INode newChild)
 			{
+				//!!THIS FUNCTION MAY NOT BE REQUIRED
+				
+				
 				//NEED TO IMPLEMENT!!!
 				if(routingTablepointer != 0)
 				{
@@ -292,7 +306,7 @@ namespace Tashjik.Tier2.BATON
 					if(leftChild==null)
 					{
 						leftChild = newNode;
-						newNode.joinAccepted(self, Position.LEFT, leftAdjacent);
+						newNode.joinAccepted(self, Position.LEFT, leftAdjacent, level+1, number*2-1);
 						//split half of contents
 						leftAdjacent = newNode;
 						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
@@ -306,7 +320,7 @@ namespace Tashjik.Tier2.BATON
 					else if(rightChild==null)
 					{
 						rightChild = newNode;
-						newNode.joinAccepted(self, Position.RIGHT, rightAdjacent);
+						newNode.joinAccepted(self, Position.RIGHT, rightAdjacent, level+1, number*2);
 						//split half of contents
 						rightAdjacent = newNode;
 						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
@@ -325,31 +339,24 @@ namespace Tashjik.Tier2.BATON
 					{
 						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
 						{
-							if(routingTableEntry.leftChild==null)
+							if(routingTableEntry.leftChild==null ||routingTableEntry.rightChild==null)
 							{
-								routingTableEntry.leftChild.join(newNode);
-								return;
-							}
-							else if(routingTableEntry.rightChild==null)
-							{
-								routingTableEntry.rightChild.join(newNode);
+								routingTableEntry.node.join(newNode);
 								return;
 							}
 						}
 						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
 						{
-							if(routingTableEntry.leftChild==null)
+							if(routingTableEntry.leftChild==null ||routingTableEntry.rightChild==null)
 							{
-								routingTableEntry.leftChild.join(newNode);
-								return;
-							}
-							else if(routingTableEntry.rightChild==null)
-							{
-								routingTableEntry.rightChild.join(newNode);
+								routingTableEntry.node.join(newNode);
 								return;
 							}
 						}
-						rightAdjacent.join(newNode);
+						rightAdjacent.join(newNode); 
+						// or to leftAdjacent node
+						//we shld select this randomly
+						//lets keep this as an enhancement for later
 					}
 				}
 			}
@@ -471,9 +478,9 @@ namespace Tashjik.Tier2.BATON
 			engine.findReplacement(repNode);
 		}
 		
-		public void joinAccepted(INode acceptingNode, Position pos, INode adjacent)
+		public void joinAccepted(INode acceptingNode, Position pos, INode adjacent, int newLevel, int newNumber)
 		{
-			engine.joinAccepted(acceptingNode, pos, adjacent);
+			engine.joinAccepted(acceptingNode, pos, adjacent, newLevel, newNumber);
 		}
 		public void setAdjacent(INode newAdjacent, Position pos, INode prevNode)
 		{
@@ -488,9 +495,9 @@ namespace Tashjik.Tier2.BATON
 		{
 			engine.requestRoutingTableForChild(requestingChild, pos);
 		}
-		public void sendNodeOnlyRoutingTableForChild(List<RoutingTableEntry> routingTable, Position pos)
+		public void sendNodeOnlyRoutingTableToChild(List<RoutingTableEntry> routingTable, Position pos)
 		{
-			engine.sendNodeOnlyRoutingTableForChild(routingTable, pos);
+			engine.sendNodeOnlyRoutingTableToChild(routingTable, pos);
 		}
 		public void requestChildren(INode requestingNode)
 		{

@@ -48,24 +48,16 @@
 
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2.CAN
 {
-	public interface INode
+	/// <summary>
+	/// Description of AbstractNode.
+	/// </summary>
+	public class AbstractNode
 	{
-		void join(INode newNode);
-		void leave(INode leavingNode);
-		void findReplacement(INode repNode);
-		//Data searchExact(...)
-		void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent, int newLevel, int newNumber);
-		void setAdjacent(INode newAdjacent, Node.Position pos, INode prevNode);
-		void notifyNewChild(INode notifyingNode, Node.Position pos, INode newChild);
-		void requestRoutingTableForChild( INode requestingChild, Node.Position pos);
-		void sendNodeOnlyRoutingTableToChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos);
-		void requestChildren(INode requestingNode);
-		void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild);
-		void setNewPeer(int routingTablepointer, Node.Position pos, INode newChild);		
+		public AbstractNode()
+		{
+		}
 	}
 }
