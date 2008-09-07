@@ -469,23 +469,21 @@ namespace Tashjik.Tier2.BATON
 					leave();
 					repNode.requestPersonalData(self);
 					
+								
 					
-					//notify all these nodes abt the replacement
 					
-					//finally respond back saying u can die
-					repNode.replyReplacement(self);
 						
 				}
 			}
 			
 			public void requestPersonalData(INode reqNode)
 			{
-				reqNode.sendPersonalData(level, number, parent, leftChild, rightChild, leftAdjacent, rightAdjacent, leftRoutingTable, rightRoutingTable, fullLeftRoutingTable, fullRightRoutingTable);
+				reqNode.sendPersonalData(self, level, number, parent, leftChild, rightChild, leftAdjacent, rightAdjacent, leftRoutingTable, rightRoutingTable, fullLeftRoutingTable, fullRightRoutingTable);
 			}
 			
-			public void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<RoutingTableEntry> newleftRoutingTable,  List<RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+			public void  sendPersonalData(INode sendingNode, int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<RoutingTableEntry> newleftRoutingTable,  List<RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
 			{
-				//need to send data a nd range too
+				//need to send data and range too
 				level = newLevel;
 				number = newNumber;
 				parent = newParent;
@@ -498,9 +496,37 @@ namespace Tashjik.Tier2.BATON
 				fullLeftRoutingTable = newFullLeftRoutingTable;
 				fullRightRoutingTable = newFullRightRoutingTable;
 				
+				//notify all these nodes abt the replacement
+				parent.notifyParentAboutReplacement(self, sendingNode);
+				
+				//finally respond back saying u can die
+					sendingNode.replyReplacement(self);
+				
 			}
 				
-				
+			public void notifyParentAboutReplacement(INode newChild, INode oldChild)
+			{
+				if(leftChild==oldChild)
+				{
+					leftChild = newChild;
+					foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.LEFT, leftChild);
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.LEFT, leftChild);							
+				}
+				else if(rightChild==oldChild)
+				{
+					rightChild = newChild;
+					foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.RIGHT, rightChild);
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							if(routingTableEntry.node != null)
+								routingTableEntry.node.notifyNewChild(self, Position.RIGHT, rightChild);							
+				}
+			}
 			
 			
 			public void replyReplacement(INode newNode)
@@ -610,6 +636,11 @@ namespace Tashjik.Tier2.BATON
 			engine.notifyLeave();
 		}
 			
+		public void notifyParentAboutReplacement(INode newChild, INode oldChild)
+		{
+			engine.notifyParentAboutReplacement(newChild, oldChild);
+		}
+		
 		public void requestRoutingTableForChild( INode requestingChild, Position pos)
 		{
 			engine.requestRoutingTableForChild(requestingChild, pos);
@@ -624,9 +655,9 @@ namespace Tashjik.Tier2.BATON
 			engine.requestPersonalData(reqNode);
 		}
 			
-		public void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<RoutingTableEntry> newleftRoutingTable,  List<RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+		public void  sendPersonalData(INode sendingNode, int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<RoutingTableEntry> newleftRoutingTable,  List<RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
 		{
-			engine.sendPersonalData(newLevel, newNumber, newParent, newLeftChild, newRightChild, newLeftAdjacent, newRightAdjacent, newleftRoutingTable, newRightRoutingTable, newFullLeftRoutingTable, newFullRightRoutingTable);
+			engine.sendPersonalData(sendingNode, newLevel, newNumber, newParent, newLeftChild, newRightChild, newLeftAdjacent, newRightAdjacent, newleftRoutingTable, newRightRoutingTable, newFullLeftRoutingTable, newFullRightRoutingTable);
 		}
 
 		

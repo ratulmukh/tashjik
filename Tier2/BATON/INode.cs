@@ -63,8 +63,8 @@ namespace Tashjik.Tier2.BATON
 	    void replyReplacement(INode newNode);
 	    
 		void requestPersonalData(INode reqNode);
-		void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable);
-			
+		void  sendPersonalData(INode sendingNode, int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable);
+		void notifyParentAboutReplacement(INode newChild, INode oldChild);					
 		//Data searchExact(...)
 		void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent, int newLevel, int newNumber);
 		void setAdjacent(INode newAdjacent, Node.Position pos, INode prevNode);

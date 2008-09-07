@@ -90,7 +90,7 @@ namespace Tashjik.Tier2.BATON
 			
 		}
 			
-		public void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+		public void  sendPersonalData(INode sendingNode, int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
 		{
 				
 		}
@@ -144,6 +144,11 @@ namespace Tashjik.Tier2.BATON
 		}
 		
 		public void setNewPeer(int routingTablepointer, Node.Position pos, INode newChild)
+		{
+			
+		}
+		
+		public void notifyParentAboutReplacement(INode newChild, INode oldChild)
 		{
 			
 		}
