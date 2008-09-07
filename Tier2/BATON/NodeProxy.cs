@@ -57,6 +57,7 @@ namespace Tashjik.Tier2.BATON
 {
 	public class NodeProxy :INode
 	{
+		
 		public NodeProxy(IPAddress IP)
 		{
 			//initialize new NodeProxy
@@ -73,17 +74,44 @@ namespace Tashjik.Tier2.BATON
 			
 		}
 		
-		public void findReplacement(INode repNode)
+		public void requestReplacement(INode repNode)
 		{
 			
 		}
 		
-		public void leave(INode leavingNode)
+		public void replyReplacement(INode newNode)
 		{
 			
 		}
 		
+			
+		public void requestPersonalData(INode reqNode)
+		{
+			
+		}
+			
+		public void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+		{
+				
+		}
+
+		
+		public void leave()
+		{
+			
+		}
+		
+		public void notifyLeave()
+		{
+			
+		}
+		
+			
 		//Data searchExact(...)
+		
+		
+		
+		
 		
 		public void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent, int newLevel, int newNumber)
 		{

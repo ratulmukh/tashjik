@@ -56,8 +56,15 @@ namespace Tashjik.Tier2.BATON
 	public interface INode
 	{
 		void join(INode newNode);
-		void leave(INode leavingNode);
-		void findReplacement(INode repNode);
+		void leave();
+		
+		void notifyLeave();
+		void requestReplacement(INode repNode);
+	    void replyReplacement(INode newNode);
+	    
+		void requestPersonalData(INode reqNode);
+		void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable);
+			
 		//Data searchExact(...)
 		void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent, int newLevel, int newNumber);
 		void setAdjacent(INode newAdjacent, Node.Position pos, INode prevNode);

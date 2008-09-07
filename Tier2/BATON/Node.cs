@@ -60,7 +60,7 @@ namespace Tashjik.Tier2.BATON
 		//RULES OF THE THUMB
 		//notify calls are made to nodes to notify them of something withot being asked
 		//request calls are made to nodes to request them for info
-		//send calls are made to reply back to requests
+		//send/reply calls are made to reply back to requests
 		
 		Engine engine;
 		
@@ -299,6 +299,76 @@ namespace Tashjik.Tier2.BATON
 				}
 			}
 			
+			public void leave()
+			{
+				bool lastLevelNode = true;
+				if(leftChild==null && rightChild==null) //leaf node
+				{	
+					foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+						if(routingTableEntry.leftChild != null || routingTableEntry.rightChild != null)
+						{
+							lastLevelNode = false;
+							break;
+						}
+					if(lastLevelNode==true)
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							if(routingTableEntry.leftChild != null || routingTableEntry.rightChild != null)
+							{
+								lastLevelNode = false;
+								break;
+							}
+					if(lastLevelNode==true)
+					{
+						//can leave voluntarily! YIPEE!
+						//transfer content to parent
+						//index range to parent and 1 of adjacent nodes
+						//PARENT ON RECEIVING CONTENT HAS TO DO FEW THINGS! DON'T FORGET THT!!
+						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+							routingTableEntry.node.notifyLeave();
+						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							routingTableEntry.node.notifyLeave();
+					}
+					else
+					{
+						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+							if (routingTableEntry.leftChild != null )
+							{
+								routingTableEntry.leftChild.requestReplacement(self);
+								return;
+							}
+							else if ( routingTableEntry.rightChild != null )
+							{
+								routingTableEntry.rightChild.requestReplacement(self);
+								return;
+							}
+							foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+							if (routingTableEntry.leftChild != null )
+							{
+								routingTableEntry.leftChild.requestReplacement(self);
+								return;
+							}
+							else if (routingTableEntry.rightChild != null )
+							{
+								routingTableEntry.rightChild.requestReplacement(self);
+								return;
+							}
+					}
+					
+				}
+				else
+					leftAdjacent.requestReplacement(self);
+					//or rightAdjacent.. need to make this random
+			}
+			
+						
+				
+			
+			
+			public void notifyLeave()
+			{
+				
+			}
+			
 			public void join(INode newNode)
 			{
 				if(fullLeftRoutingTable && fullRightRoutingTable && (leftChild==null || rightChild==null))
@@ -361,45 +431,84 @@ namespace Tashjik.Tier2.BATON
 				}
 			}
 		
-			public void findReplacement(INode repNode)
+			public void requestReplacement(INode repNode)
 			{
 				if(leftChild!=null)
-					leftChild.findReplacement(repNode);
+					leftChild.requestReplacement(repNode);
 				else if(rightChild!=null)
-					rightChild.findReplacement(repNode);
+					rightChild.requestReplacement(repNode);
 				else
 				{
 					foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
+					{
+						if(routingTableEntry.leftChild!=null)
 						{
-							if(routingTableEntry.leftChild!=null)
-							{
-								routingTableEntry.leftChild.findReplacement(repNode);
-								return;
-							}
-							else if(routingTableEntry.rightChild!=null)
-							{
-								routingTableEntry.rightChild.findReplacement(repNode);
-								return;
-							}
+							routingTableEntry.leftChild.requestReplacement(repNode);
+							return;
 						}
-						foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+						else if(routingTableEntry.rightChild!=null)
 						{
-							if(routingTableEntry.leftChild!=null)
-							{
-								routingTableEntry.leftChild.findReplacement(repNode);
-								return;
-							}
-							else if(routingTableEntry.rightChild!=null)
-							{
-								routingTableEntry.rightChild.findReplacement(repNode);
-								return;
-							}
+							routingTableEntry.rightChild.requestReplacement(repNode);
+							return;
 						}
-						//REPLACE REPNODE WITH THIS NODE
-						//this has to be thought through
+					}
+					foreach(RoutingTableEntry routingTableEntry in rightRoutingTable)
+					{
+						if(routingTableEntry.leftChild!=null)
+						{
+							routingTableEntry.leftChild.requestReplacement(repNode);
+							return;
+						}
+						else if(routingTableEntry.rightChild!=null)
+						{
+							routingTableEntry.rightChild.requestReplacement(repNode);
+							return;
+						}
+					}
+					//REPLACE REPNODE WITH THIS NODE
+					leave();
+					repNode.requestPersonalData(self);
+					
+					
+					//notify all these nodes abt the replacement
+					
+					//finally respond back saying u can die
+					repNode.replyReplacement(self);
+						
 				}
 			}
+			
+			public void requestPersonalData(INode reqNode)
+			{
+				reqNode.sendPersonalData(level, number, parent, leftChild, rightChild, leftAdjacent, rightAdjacent, leftRoutingTable, rightRoutingTable, fullLeftRoutingTable, fullRightRoutingTable);
+			}
+			
+			public void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<RoutingTableEntry> newleftRoutingTable,  List<RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+			{
+				//need to send data a nd range too
+				level = newLevel;
+				number = newNumber;
+				parent = newParent;
+				leftChild = newLeftChild;
+				rightChild = newRightChild;
+				leftAdjacent = newLeftAdjacent;
+				rightAdjacent = newRightAdjacent;
+				leftRoutingTable = newleftRoutingTable;
+				rightRoutingTable = newRightRoutingTable;
+				fullLeftRoutingTable = newFullLeftRoutingTable;
+				fullRightRoutingTable = newFullRightRoutingTable;
 				
+			}
+				
+				
+			
+			
+			public void replyReplacement(INode newNode)
+			{
+				//permission to die granted
+			}
+			
+						
 			public Engine(Node n)
 			{
 				self = n;
@@ -468,14 +577,19 @@ namespace Tashjik.Tier2.BATON
 			engine.join(newNode);
 		}
 		
-		public void leave(INode leavingNode)
+		public void leave()
 		{
-			
+			engine.leave();
 		}
 		
-		public void findReplacement(INode repNode)
+		public void requestReplacement(INode repNode)
 		{
-			engine.findReplacement(repNode);
+			engine.requestReplacement(repNode);
+		}
+		
+		public void replyReplacement(INode newNode)
+		{
+			engine.replyReplacement(newNode);
 		}
 		
 		public void joinAccepted(INode acceptingNode, Position pos, INode adjacent, int newLevel, int newNumber)
@@ -491,6 +605,11 @@ namespace Tashjik.Tier2.BATON
 			engine.notifyNewChild(notifyingNode, pos, newChild);
 		}
 
+		public void notifyLeave()
+		{
+			engine.notifyLeave();
+		}
+			
 		public void requestRoutingTableForChild( INode requestingChild, Position pos)
 		{
 			engine.requestRoutingTableForChild(requestingChild, pos);
@@ -499,6 +618,19 @@ namespace Tashjik.Tier2.BATON
 		{
 			engine.sendNodeOnlyRoutingTableToChild(routingTable, pos);
 		}
+		
+		public void requestPersonalData(INode reqNode)
+		{
+			engine.requestPersonalData(reqNode);
+		}
+			
+		public void  sendPersonalData(int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<RoutingTableEntry> newleftRoutingTable,  List<RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+		{
+			engine.sendPersonalData(newLevel, newNumber, newParent, newLeftChild, newRightChild, newLeftAdjacent, newRightAdjacent, newleftRoutingTable, newRightRoutingTable, newFullLeftRoutingTable, newFullRightRoutingTable);
+		}
+
+		
+		
 		public void requestChildren(INode requestingNode)
 		{
 			engine.requestChildren(requestingNode);
@@ -507,6 +639,10 @@ namespace Tashjik.Tier2.BATON
 		{
 			engine.notifyChildren(notifyingNode, leftChild, rightChild);
 		}
+		
+		
+			
+		
 		
 		public void setNewPeer(int routingTablepointer, Position pos, INode newChild)
 		{
