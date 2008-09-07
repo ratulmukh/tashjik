@@ -106,6 +106,15 @@ namespace Tashjik.Tier2.BATON
 			
 		}
 		
+		public void notiifyLeftAdjacentAboutReplacement(INode newNode, INode oldNode)
+		{
+			
+		}
+			
+		public void notiifyRightAdjacentAboutReplacement(INode newNode, INode oldNode)
+		{
+			
+		}
 			
 		//Data searchExact(...)
 		

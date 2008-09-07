@@ -378,7 +378,7 @@ namespace Tashjik.Tier2.BATON
 						leftChild = newNode;
 						newNode.joinAccepted(self, Position.LEFT, leftAdjacent, level+1, number*2-1);
 						//split half of contents
-						leftAdjacent = newNode;
+						// WATS THIS FOR!? ->leftAdjacent = newNode;
 						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
 							if(routingTableEntry.node != null)
 								routingTableEntry.node.notifyNewChild(self, Position.LEFT, newNode);
@@ -392,7 +392,7 @@ namespace Tashjik.Tier2.BATON
 						rightChild = newNode;
 						newNode.joinAccepted(self, Position.RIGHT, rightAdjacent, level+1, number*2);
 						//split half of contents
-						rightAdjacent = newNode;
+						// WATS THIS FOR!? -> rightAdjacent = newNode;
 						foreach(RoutingTableEntry routingTableEntry in leftRoutingTable)
 							if(routingTableEntry.node != null)
 								routingTableEntry.node.notifyNewChild(self, Position.RIGHT, newNode);
@@ -498,12 +498,30 @@ namespace Tashjik.Tier2.BATON
 				
 				//notify all these nodes abt the replacement
 				parent.notifyParentAboutReplacement(self, sendingNode);
+				leftAdjacent.notiifyLeftAdjacentAboutReplacement(self, sendingNode);
+				rightAdjacent.notiifyRightAdjacentAboutReplacement(self, sendingNode);
 				
 				//finally respond back saying u can die
 					sendingNode.replyReplacement(self);
 				
 			}
 				
+			public void notiifyLeftAdjacentAboutReplacement(INode newNode, INode oldNode)
+			{
+				if(rightAdjacent==oldNode)
+					rightAdjacent = newNode;
+				else
+					;//throw exception
+			}
+			
+			public void notiifyRightAdjacentAboutReplacement(INode newNode, INode oldNode)
+			{
+				if(leftAdjacent==oldNode)
+					leftAdjacent = newNode;
+				else
+					;//throw exception
+			}
+			
 			public void notifyParentAboutReplacement(INode newChild, INode oldChild)
 			{
 				if(leftChild==oldChild)
@@ -639,6 +657,16 @@ namespace Tashjik.Tier2.BATON
 		public void notifyParentAboutReplacement(INode newChild, INode oldChild)
 		{
 			engine.notifyParentAboutReplacement(newChild, oldChild);
+		}
+		
+		public void notiifyLeftAdjacentAboutReplacement(INode newNode, INode oldNode)
+		{
+			engine.notiifyLeftAdjacentAboutReplacement(newNode, oldNode);
+		}
+			
+		public void notiifyRightAdjacentAboutReplacement(INode newNode, INode oldNode)
+		{
+			engine.notiifyRightAdjacentAboutReplacement(newNode, oldNode);
 		}
 		
 		public void requestRoutingTableForChild( INode requestingChild, Position pos)
