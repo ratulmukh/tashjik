@@ -51,50 +51,32 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2.Pastry
 {
-
-	internal class Server : IOverlay
+	public class Controller : Tier2.Common.Controller
 	{
-		private  readonly Guid guid;
-		internal readonly Node thisNode;
-		
-		public Server()
+
+		public Controller(Guid g): base(g)
 		{
-			guid = System.Guid.NewGuid();
-			thisNode = new Node();
-			//NodeProxy.thisNode = thisNode;
-		}
-		
-		public Server(IPAddress joinOtherIP, Guid joinOtherGuid)
-		{
-			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP);
-			thisNode = new Node(joinOtherINode);
-		}
 			
-		public Guid getGuid()
+		}
+		public override IOverlay createNew()
 		{
-			return new Guid();
+			IOverlay pastry = new Server();
+			ISink sink = new ProxyController();
+			OverlayInstanceInfo pastryInstanceInfo = new OverlayInstanceInfo(pastry, sink);
+			overlayInstanceRegistry.Add(pastry.getGuid(), pastryInstanceInfo);
+			return pastry;
 		}
 
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		public void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
+		public override IOverlay joinExisting(IPAddress IP, Guid guid)
 		{
-			
+			IOverlay pastry = new Server(IP, guid);
+			ISink sink = new ProxyController();
+			OverlayInstanceInfo pastryInstanceInfo = new OverlayInstanceInfo(pastry, sink);
+			overlayInstanceRegistry.Add(pastry.getGuid(), pastryInstanceInfo);
+			return pastry;
 		}
-		public void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
-		{
-			
-		}
-		
-		public void shutdown()
-		{
-			
-		}
-		
-		
+	
 	}
 }

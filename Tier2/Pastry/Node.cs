@@ -50,51 +50,84 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2.Pastry
 {
-
-	internal class Server : IOverlay
+	public class Node : INode
 	{
-		private  readonly Guid guid;
-		internal readonly Node thisNode;
-		
-		public Server()
+		class Engine
 		{
-			guid = System.Guid.NewGuid();
-			thisNode = new Node();
-			//NodeProxy.thisNode = thisNode;
-		}
-		
-		public Server(IPAddress joinOtherIP, Guid joinOtherGuid)
-		{
-			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP);
-			thisNode = new Node(joinOtherINode);
-		}
+			public Engine(Node n)
+			{
+/*				self = n;
+				try
+				{
+					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+				}
+				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+				{
+					//local ip could not be found :O :O
+					//crash the system
+					//dunno how to do it though :(
+				}
+				initialize();
+*/
+			}
 			
-		public Guid getGuid()
-		{
-			return new Guid();
-		}
-
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		public void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
-		{
-			
-		}
-		public void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
-		{
+			public Engine(Node n, INode joinOtherNode)
+			{
+/*
+				self = n;
+				try
+				{
+					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+				}
+				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+				{
+					//local ip could not be found :O :O
+					//crash the system
+					//dunno how to do it though :(
+				}
+				
+				initialize();
+				joinOther(joinOtherNode);
+*/
+			}
+	
+			public void join(INode newNode)
+			{
+				
+			}
+		
+			public void leave()
+			{
+				
+			}
 			
 		}
 		
-		public void shutdown()
+		Engine engine;
+		
+		public Node()
 		{
-			
+			engine = new Engine(this);
 		}
 		
+		public Node(INode joinOtherNode)
+		{
+			engine = new Engine(this, joinOtherNode);
+		}
 		
+		public void join(INode newNode)
+		{
+			engine.join(newNode);
+		}
+		
+		public void leave()
+		{
+			engine.leave();
+		}
 	}
 }

@@ -51,50 +51,19 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2.Pastry
 {
 
-	internal class Server : IOverlay
+	public class ProxyController : Tier2.Common.Controller.ISink
 	{
-		private  readonly Guid guid;
-		internal readonly Node thisNode;
 		
-		public Server()
+		public ProxyController()
 		{
-			guid = System.Guid.NewGuid();
-			thisNode = new Node();
-			//NodeProxy.thisNode = thisNode;
 		}
 		
-		public Server(IPAddress joinOtherIP, Guid joinOtherGuid)
+		public void notifyMsgRec(IPAddress fromIP, Object data)
 		{
-			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP);
-			thisNode = new Node(joinOtherINode);
-		}
-			
-		public Guid getGuid()
-		{
-			return new Guid();
-		}
-
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		public void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
-		{
-			
-		}
-		public void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
-		{
-			
-		}
 		
-		public void shutdown()
-		{
-			
 		}
-		
-		
 	}
 }

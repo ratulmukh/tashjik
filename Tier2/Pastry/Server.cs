@@ -51,7 +51,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2.Pastry
 {
 
 	internal class Server : IOverlay
