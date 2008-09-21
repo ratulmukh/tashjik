@@ -1,0 +1,145 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{2EDD17CC-33CC-409D-8CEC-84A29B4D1F3F}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Tashjik</RootNamespace>
+    <AssemblyName>Tashjik</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup>
+    <Reference Include="Gallio">
+      <HintPath>D:\Program Files\Gallio\bin\Gallio.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="MbUnit">
+      <HintPath>D:\Program Files\Gallio\bin\MbUnit.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Rhino.Mocks">
+      <HintPath>D:\Program Files\RhinoMocks\Rhino.Mocks.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Base\ILowLevelComm.cs" />
+    <Compile Include="Base\LowLevelComm.cs" />
+    <Compile Include="Common\AsyncCallback_Object.cs" />
+    <Compile Include="Common\Bool_Object.cs" />
+    <Compile Include="Common\Bool_ObjectAsyncResult.cs" />
+    <Compile Include="Common\ByteArray_AsyncCallback_Object.cs" />
+    <Compile Include="Common\ByteArray_Data_AsyncCallback_Object.cs" />
+    <Compile Include="Common\Data.cs" />
+    <Compile Include="Common\DataAsyncResult.cs" />
+    <Compile Include="Common\Data_AsyncCallback_Object.cs" />
+    <Compile Include="Common\Data_Object.cs" />
+    <Compile Include="Common\Data_ObjectAsyncResult.cs" />
+    <Compile Include="Common\Exception\BytesLengthsNotMatchingException.cs" />
+    <Compile Include="Common\Exception\LocalHostIPNotFoundException.cs" />
+    <Compile Include="Common\NodeBasic.cs" />
+    <Compile Include="Common\ObjectAsyncResult.cs" />
+    <Compile Include="Common\UtilityMethod.cs" />
+    <Compile Include="CTashjik.cs" />
+    <Compile Include="IController.cs" />
+    <Compile Include="IOverlay.cs" />
+    <Compile Include="ITashjik.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Tier2\BATON\AbstractNode.cs" />
+    <Compile Include="Tier2\BATON\Controller.cs" />
+    <Compile Include="Tier2\BATON\DataStore.cs" />
+    <Compile Include="Tier2\BATON\Exception\PrevNodeNotMatching.cs" />
+    <Compile Include="Tier2\BATON\INode.cs" />
+    <Compile Include="Tier2\BATON\IProxyController.cs" />
+    <Compile Include="Tier2\BATON\Node.cs" />
+    <Compile Include="Tier2\BATON\NodeProxy.cs" />
+    <Compile Include="Tier2\BATON\ProxyController.cs" />
+    <Compile Include="Tier2\BATON\Server.cs" />
+    <Compile Include="Tier2\CAN\AbstractNode.cs" />
+    <Compile Include="Tier2\CAN\Controller.cs" />
+    <Compile Include="Tier2\CAN\DataStore.cs" />
+    <Compile Include="Tier2\CAN\INode.cs" />
+    <Compile Include="Tier2\CAN\IProxyController.cs" />
+    <Compile Include="Tier2\CAN\Node.cs" />
+    <Compile Include="Tier2\CAN\NodeProxy.cs" />
+    <Compile Include="Tier2\CAN\ProxyController.cs" />
+    <Compile Include="Tier2\CAN\Server.cs" />
+    <Compile Include="Tier2\Chord\AbstractNode.cs" />
+    <Compile Include="Tier2\Chord\Common\ByteKey_Data.cs" />
+    <Compile Include="Tier2\Chord\Common\ByteKey_DataAsyncResult.cs" />
+    <Compile Include="Tier2\Chord\Common\ByteKey_INode.cs" />
+    <Compile Include="Tier2\Chord\Common\ByteKey_INodeAsyncResult.cs" />
+    <Compile Include="Tier2\Chord\Common\INodeAsyncResult.cs" />
+    <Compile Include="Tier2\Chord\Common\INode_Object.cs" />
+    <Compile Include="Tier2\Chord\Common\INode_ObjectAsyncResult.cs" />
+    <Compile Include="Tier2\Chord\Common\MessageCapsule.cs" />
+    <Compile Include="Tier2\Chord\Common\Node.cs" />
+    <Compile Include="Tier2\Chord\Common\PendingLookUpRequest.cs" />
+    <Compile Include="Tier2\Chord\Controller.cs" />
+    <Compile Include="Tier2\Chord\DataStore.cs" />
+    <Compile Include="Tier2\Chord\Exception\DataNotFoundInStoreException.cs" />
+    <Compile Include="Tier2\Chord\Exception\Exception.cs" />
+    <Compile Include="Tier2\Chord\Exception\LookUpDelayedException.cs" />
+    <Compile Include="Tier2\Chord\Exception\NotificationArrivedInterruptedException.cs" />
+    <Compile Include="Tier2\Chord\Exception\SearchPendingLookUpRequestListFailedException.cs" />
+    <Compile Include="Tier2\Chord\Exception\SuccessorNotDeterminedFromRoutingTableException.cs" />
+    <Compile Include="Tier2\Chord\INode.cs" />
+    <Compile Include="Tier2\Chord\IProxyController.cs" />
+    <Compile Include="Tier2\Chord\Node.cs" />
+    <Compile Include="Tier2\Chord\NodeProxy.cs" />
+    <Compile Include="Tier2\Chord\ProxyController.cs" />
+    <Compile Include="Tier2\Chord\Server.cs" />
+    <Compile Include="Tier2\Common\Controller.cs" />
+    <Compile Include="Tier2\Common\IProxyController.cs" />
+    <Compile Include="Tier2\Common\NodeProxy.cs" />
+    <Compile Include="Tier2\Common\ProxyController.cs" />
+    <Compile Include="Tier2\Pastry\AbstractNode.cs" />
+    <Compile Include="Tier2\Pastry\Controller.cs" />
+    <Compile Include="Tier2\Pastry\DataStore.cs" />
+    <Compile Include="Tier2\Pastry\INode.cs" />
+    <Compile Include="Tier2\Pastry\IProxyController.cs" />
+    <Compile Include="Tier2\Pastry\Node.cs" />
+    <Compile Include="Tier2\Pastry\NodeProxy.cs" />
+    <Compile Include="Tier2\Pastry\ProxyController.cs" />
+    <Compile Include="Tier2\Pastry\Server.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Base" />
+    <Folder Include="Common" />
+    <Folder Include="Common\Exception" />
+    <Folder Include="Tier1\STUN" />
+    <Folder Include="Tier2" />
+    <Folder Include="Tier1" />
+    <Folder Include="Tier2\BATON\Exception" />
+    <Folder Include="Tier2\CAN\Common" />
+    <Folder Include="Tier2\CAN\Exception" />
+    <Folder Include="Tier2\Chord" />
+    <Folder Include="Tier2\BATON" />
+    <Folder Include="Tier2\Chord\Common" />
+    <Folder Include="Tier2\Chord\Exception" />
+    <Folder Include="Tier2\Common" />
+    <Folder Include="Tier2\CAN" />
+    <Folder Include="Tier2\Pastry" />
+    <Folder Include="Tier2\Pastry\Exception" />
+  </ItemGroup>
+</Project>

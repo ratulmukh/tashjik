@@ -69,9 +69,15 @@ namespace Tashjik.Tier2.Pastry
 			
 		}
 		
-				public void leave()
+		public void leave()
 		{
 			
 		}
+		
+		public void route(Object msg, byte[] key)
+		{
+			
+		}
+				
 	}
 }

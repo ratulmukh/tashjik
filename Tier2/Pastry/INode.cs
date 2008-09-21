@@ -58,6 +58,8 @@ namespace Tashjik.Tier2.Pastry
 		void join(INode newNode);
 		void leave();
 		
+		void route(Object msg, byte[] key);
+		
 		
 		
 	}

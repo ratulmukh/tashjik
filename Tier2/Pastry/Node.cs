@@ -59,9 +59,35 @@ namespace Tashjik.Tier2.Pastry
 	{
 		class Engine
 		{
+			public struct NodeEntry
+			{
+				public INode node;
+				public byte[] nodeID;
+			}
+			
+			
+			
+			private int b = 4; //special Pastry configuration parameter
+			private int L = 128; //special Pastry configuration parameter
+		    
+			private NodeEntry[, ]   routingTable; //     = new NodeEntry[Math.Pow(2, b)-1, 128/b];
+			private List<NodeEntry> neighbourhoodSet = new List<NodeEntry>();
+			private List<NodeEntry> smallerLeafSet;
+			private List<NodeEntry> largerLeafSet; 
+			
+			private readonly Tashjik.Common.NodeBasic selfNodeBasic;
+			private readonly Node self;
+			
+				
+			public void route(Object msg, byte[] key)
+			{
+				//if(smallerLeafSet[L/2-1]<=key)
+				                  ;
+			}
+			
 			public Engine(Node n)
 			{
-/*				self = n;
+				self = n;
 				try
 				{
 					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
@@ -72,8 +98,9 @@ namespace Tashjik.Tier2.Pastry
 					//crash the system
 					//dunno how to do it though :(
 				}
+				
 				initialize();
-*/
+
 			}
 			
 			public Engine(Node n, INode joinOtherNode)
@@ -96,6 +123,13 @@ namespace Tashjik.Tier2.Pastry
 */
 			}
 	
+			private void initialize()
+			{
+				routingTable     = new NodeEntry[(int) (Math.Pow(2, b)-1), 128/b];
+				smallerLeafSet   = new List<NodeEntry>(L/2);
+				largerLeafSet    = new List<NodeEntry>(L/2);	
+				
+			}
 			public void join(INode newNode)
 			{
 				
@@ -109,6 +143,11 @@ namespace Tashjik.Tier2.Pastry
 		}
 		
 		Engine engine;
+		
+		public void route(Object msg, byte[] key)
+		{
+			engine.route(msg, key);
+		}
 		
 		public Node()
 		{
