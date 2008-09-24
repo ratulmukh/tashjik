@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <OutputType>Library</OutputType>
     <RootNamespace>Tashjik.Test</RootNamespace>
-    <AssemblyName>Tashjik.Test</AssemblyName>
+    <AssemblyName>TashjikTest</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -29,8 +29,8 @@
       <HintPath>D:\Program Files\Gallio\bin\Gallio.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="MbUnit">
-      <HintPath>D:\Program Files\Gallio\bin\MbUnit.dll</HintPath>
+    <Reference Include="MbUnit.Framework">
+      <HintPath>D:\Program Files\Gallio\bin\MbUnit2\MbUnit.Framework.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Rhino.Mocks">
@@ -42,14 +42,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Tier2Test\PastryTest\NodeTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Base.Test" />
-    <Folder Include="Common.Test" />
-    <Folder Include="Tier2.Test" />
-    <Folder Include="Tier1.Test" />
-    <Folder Include="Tier2.Test\Chord.Test" />
-    <Folder Include="Tier2.Test\BATON.Test" />
+    <Folder Include="BaseTest" />
+    <Folder Include="CommonTest" />
+    <Folder Include="Tier2Test" />
+    <Folder Include="Tier1Test" />
+    <Folder Include="Tier2Test\ChordTest" />
+    <Folder Include="Tier2Test\BATONTest" />
+    <Folder Include="Tier2Test\PastryTest" />
     <ProjectReference Include="Tashjik.csproj">
       <Project>{2EDD17CC-33CC-409D-8CEC-84A29B4D1F3F}</Project>
       <Name>Tashjik</Name>

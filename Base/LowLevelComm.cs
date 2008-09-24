@@ -50,14 +50,19 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
+using System.Runtime.InteropServices;
+
 
 namespace Tashjik.Base
 {
 	public class LowLevelComm
 	{
-
+		[Serializable]
 		public class Msg
 		{
 			private readonly Guid overlayGuid;
@@ -74,9 +79,9 @@ namespace Tashjik.Base
 				return new Guid(overlayGuid.ToByteArray());
 			}
 
-			public void setData(Object list)
+			public void setData(Object obj)
 			{
-				data = list;
+				data = obj;
 			}	
 
 			public Object getData()
@@ -97,7 +102,14 @@ namespace Tashjik.Base
 				msgQueue = m;
 			}
 		}
-
+		
+		[Serializable]
+		class Sock_Msg
+		{
+			public Socket sock;
+			public Msg msg;
+		}
+		
 		private Dictionary<IPAddress, SockMsgQueue> commRegistry = new Dictionary<IPAddress, SockMsgQueue>();
 		private Dictionary<Guid, ISink> overlayRegistry = new Dictionary<Guid, ISink>();
 
@@ -123,15 +135,55 @@ namespace Tashjik.Base
 				msgQueue.Enqueue(msg);
 
 				Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-				int iPortNo = System.Convert.ToInt16 ("2334");
-				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
-				sock.Connect(ipEnd);
-
 				SockMsgQueue sockMsgQueue1 = new SockMsgQueue(sock, msgQueue);
 				commRegistry.Add(IP, sockMsgQueue1);
+				
+				int iPortNo = System.Convert.ToInt16 ("2334");
+				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+				
+				AsyncCallback beginConnectCallBack = new AsyncCallback(processBeginConnectForForward);
+				Sock_Msg sock_msg = new Sock_Msg();
+				sock_msg.msg = msg;
+				sock_msg.sock = sock;
+				sock.BeginConnect(ipEnd, beginConnectCallBack, sock_msg);
+				// send msg
+
+				
 			}
 		}
+		
+		
+		
+		static private void processBeginConnectForForward(IAsyncResult result)
+		{
+			Msg msg     = ((Sock_Msg)(result.AsyncState)).msg;
+			Socket sock = ((Sock_Msg)(result.AsyncState)).sock;
+		            
+			MemoryStream memStream = new MemoryStream(Marshal.SizeOf(msg));
+			
+			BinaryFormatter formatter = new BinaryFormatter();
+			try 
+        	{
+	            formatter.Serialize(memStream, msg);
+    	    }
+        	catch (SerializationException e) 
+	        {
+    	        Console.WriteLine("Failed to serialize. Reason: " + e.Message);
+        	    throw;
+	        }
+    	    /*finally 
+        	{
+	            memStream.Close();
+    	    }*/
+    	    
+    	    byte[] byteArray = new byte[memStream.Length];
+    	    int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
+			memStream.Close();
 
+			//sock.BeginSend(
+		                                                  	
+		}
+		                                                  
 		private void receive(IPAddress fromIP, Msg msg)
 		{
 			ISink sink;

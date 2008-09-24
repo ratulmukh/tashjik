@@ -48,11 +48,14 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik.Base
 {
 	public interface ILowLevelComm
 	{
-
+		void forward(IPAddress IP, LowLevelComm.Msg msg);
+		void register(Guid guid, LowLevelComm.ISink sink);
 	}
 }

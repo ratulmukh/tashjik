@@ -78,7 +78,8 @@ namespace Tashjik.Tier2.Pastry
 			private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 			private readonly Node self;
 			
-				
+			
+			
 			public void route(Object msg, byte[] key)
 			{
 				//if(smallerLeafSet[L/2-1]<=key)
@@ -167,6 +168,11 @@ namespace Tashjik.Tier2.Pastry
 		public void leave()
 		{
 			engine.leave();
+		}
+		
+		public static string test(int a)
+		{
+			return "1";
 		}
 	}
 }
