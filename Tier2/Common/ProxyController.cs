@@ -54,8 +54,8 @@ using System.Net;
 
 namespace Tashjik.Tier2.Common
 {
-	/*
-	class ProxyController : IProxyController, Controller.ISink
+	
+	public class ProxyController : IProxyController, Controller.ISink
 	{
 	
 		private readonly NodeProxyRegistry nodeProxyRegistry;
@@ -137,7 +137,7 @@ namespace Tashjik.Tier2.Common
 			//RELAX: yes i know this is wrong; have to change it
 			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
 			{
-				NodeProxy n = new NodeProxy(fromIP);
+				NodeProxy n = createNodeProxy(fromIP);
 				nodeProxyRegistry.AddNewEntry(n);
 				n.beginNotifyMsgRec(fromIP, data, null, null);
 			}
@@ -146,13 +146,26 @@ namespace Tashjik.Tier2.Common
 
 
 
-		public ProxyController()
+		public ProxyController(String ov)
 		{
-			nodeProxyRegistry = new NodeProxyRegistry();
-			NodeProxy.setProxyController(this);
 			
+			nodeProxyRegistry = new NodeProxyRegistry();
+			overlay = ov;
 		}
 
+		private String overlay;
+		
+		private NodeProxy createNodeProxy(IPAddress IP)
+		{
+			if(overlay=="Chord")
+				return (NodeProxy)(new Chord.NodeProxy(IP, this));
+			else if(overlay=="Pastry")
+			    return (NodeProxy)(new Pastry.NodeProxy(IP, this));    
+			else
+				return null; 
+				                   
+		}
+		
 		public void register(NodeProxy nodeProxy)
 		{
 			nodeProxyRegistry.AddNewEntry(nodeProxy);
@@ -164,5 +177,5 @@ namespace Tashjik.Tier2.Common
 		}
 
 	}
-	*/
+
 }

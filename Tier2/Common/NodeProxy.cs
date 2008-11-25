@@ -48,16 +48,20 @@
 
 
 using System;
+using System.Net;
 
 namespace Tashjik.Tier2.Common
 {
 	/// <summary>
 	/// Description of NodeProxy.
 	/// </summary>
-	public class NodeProxy
+	public abstract class NodeProxy : INode
 	{
-		public NodeProxy()
-		{
-		}
+		
+		public abstract byte[] getHashedIP();
+		public abstract IPAddress getIP();
+		public abstract void setIP(IPAddress ip);
+		public abstract void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
+		public abstract void setProxyController(ProxyController c);
 	}
 }

@@ -55,7 +55,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2.Common
 {
-	public abstract class Controller : IController, Base.LowLevelComm.ISink
+	public class Controller : IController, Base.LowLevelComm.ISink
 	{
 		public interface ISink
 		{
@@ -135,8 +135,56 @@ namespace Tashjik.Tier2.Common
 				throw new Tashjik.Common.Exception.LocalHostIPNotFoundException();
 		}		
 
-		public abstract IOverlay createNew();	
+		//public abstract IOverlay createNew();	
 		
-		public abstract IOverlay joinExisting(IPAddress IP, Guid guid);
+		//public abstract IOverlay joinExisting(IPAddress IP, Guid guid);
+		
+		public virtual IOverlay createNew(String strOverlay)
+		{
+			IOverlay overlay = createServer(strOverlay);
+			ISink sink = new Tier2.Common.ProxyController(strOverlay);
+			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
+			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
+			return overlay;
+		}
+
+		public virtual IOverlay joinExisting(IPAddress IP, Guid guid, String strOverlay)
+		{
+			ISink sink = new Tier2.Common.ProxyController(strOverlay);
+			IOverlay overlay = createServer(IP, guid, (Tier2.Common.ProxyController)(sink), strOverlay);
+			//IOverlay overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
+			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
+			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
+			return overlay;
+		}
+		
+		private Server createServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController, String strOverlay)
+		{
+			if(strOverlay=="BATON")
+				return new Tashjik.Tier2.BATON.Server(joinOtherIP, joinOtherGuid, proxyController);
+			else if(strOverlay=="Pastry")
+				return new Tashjik.Tier2.Pastry.Server(joinOtherIP, joinOtherGuid, proxyController);
+//			else if(strOverlay=="CAN")
+//				return new Tashjik.Tier2.CAN.Server(joinOtherIP, joinOtherGuid, proxyController);
+			else if(strOverlay=="Chord")
+			    return new Tashjik.Tier2.Chord.Server(joinOtherIP, joinOtherGuid, proxyController);    
+			else
+				return null;
+		}
+		
+		private Server createServer(String overlay)
+		{
+			if(overlay=="BATON")
+				return new Tashjik.Tier2.BATON.Server();
+			else if(overlay=="Pastry")
+				return new Tashjik.Tier2.Pastry.Server();
+//			else if(overlay=="CAN")
+	//			return new Tashjik.Tier2.CAN.Server();
+			else if(overlay=="Chord")
+			    return new Tashjik.Tier2.Chord.Server(); 
+			else 
+				return null;
+		   
+		}
 	}
 }
