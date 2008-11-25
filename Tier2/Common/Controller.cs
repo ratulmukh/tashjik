@@ -55,7 +55,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2.Common
 {
-	public class Controller : IController, Base.LowLevelComm.ISink
+/*	public class Controller : IController, Base.LowLevelComm.ISink
 	{
 		public interface ISink
 		{
@@ -103,16 +103,16 @@ namespace Tashjik.Tier2.Common
 		//private readonly Guid guid = new Guid("0c400880-0722-420e-a792-0a764d6539ee");
 
 		protected readonly Guid guid;
-		protected Dictionary<Guid, OverlayInstanceInfo> overlayInstanceRegistry =
+		protected readonly Dictionary<Guid, OverlayInstanceInfo> overlayInstanceRegistry =
 			new Dictionary<Guid, OverlayInstanceInfo>();
+		private readonly String strOverlay;
 
 
-
-		public Controller(Guid g)
+		public Controller(Guid g, String strOv)
 		{
 			guid = g;
 			Base.LowLevelComm.getRefLowLevelComm().register(guid, this);
-
+			strOverlay = strOv;
 		}
 
 		public ArrayList getList()
@@ -139,7 +139,7 @@ namespace Tashjik.Tier2.Common
 		
 		//public abstract IOverlay joinExisting(IPAddress IP, Guid guid);
 		
-		public virtual IOverlay createNew(String strOverlay)
+		public virtual IOverlay createNew()
 		{
 			IOverlay overlay = createServer(strOverlay);
 			ISink sink = new Tier2.Common.ProxyController(strOverlay);
@@ -148,17 +148,17 @@ namespace Tashjik.Tier2.Common
 			return overlay;
 		}
 
-		public virtual IOverlay joinExisting(IPAddress IP, Guid guid, String strOverlay)
+		public virtual IOverlay joinExisting(IPAddress IP, Guid guid)
 		{
 			ISink sink = new Tier2.Common.ProxyController(strOverlay);
-			IOverlay overlay = createServer(IP, guid, (Tier2.Common.ProxyController)(sink), strOverlay);
+			IOverlay overlay = createServer(IP, guid, (Tier2.Common.ProxyController)(sink));
 			//IOverlay overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
 			return overlay;
 		}
 		
-		private Server createServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController, String strOverlay)
+		private Server createServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
 			if(strOverlay=="BATON")
 				return new Tashjik.Tier2.BATON.Server(joinOtherIP, joinOtherGuid, proxyController);
@@ -187,4 +187,5 @@ namespace Tashjik.Tier2.Common
 		   
 		}
 	}
+	*/
 }

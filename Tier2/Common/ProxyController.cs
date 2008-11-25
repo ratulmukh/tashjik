@@ -59,7 +59,27 @@ namespace Tashjik.Tier2.Common
 	{
 	
 		private readonly NodeProxyRegistry nodeProxyRegistry;
+		
+		/*
+		public enum TransmitModeEnum
+		{
+			SEND,
+			REPLY
+		}
+		
+		public struct MsgHandlerInfo
+		{
+			TransmitModeEnum mode;
+			int msgType;
+			
+		}
 
+		
+		public void addMessageHandler(TransmitModeEnum mode)
+		{
+			
+		}
+*/
 		class NodeProxyRegistry
 		{
 			List<NodeProxyData> proxyDataList;
@@ -146,20 +166,20 @@ namespace Tashjik.Tier2.Common
 
 
 
-		public ProxyController(String ov)
+		public ProxyController(CTashjik.OverlayTypeEnum ovType)
 		{
 			
 			nodeProxyRegistry = new NodeProxyRegistry();
-			overlay = ov;
+			overlayType = ovType;
 		}
 
-		private String overlay;
+		private CTashjik.OverlayTypeEnum overlayType;
 		
 		private NodeProxy createNodeProxy(IPAddress IP)
 		{
-			if(overlay=="Chord")
+			if(overlayType==CTashjik.OverlayTypeEnum.Chord)
 				return (NodeProxy)(new Chord.NodeProxy(IP, this));
-			else if(overlay=="Pastry")
+			else if(overlayType==CTashjik.OverlayTypeEnum.Pastry)
 			    return (NodeProxy)(new Pastry.NodeProxy(IP, this));    
 			else
 				return null; 

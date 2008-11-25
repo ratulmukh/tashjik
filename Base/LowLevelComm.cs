@@ -61,7 +61,7 @@ using System.Threading;
 
 namespace Tashjik.Base
 {
-	public class LowLevelComm
+	internal class LowLevelComm
 	{
 		[Serializable]
 		public class Msg
@@ -194,7 +194,7 @@ namespace Tashjik.Base
 		private Dictionary<IPAddress, SockMsgQueue> commRegistry = new Dictionary<IPAddress, SockMsgQueue>();
 		private Dictionary<Guid, ISink> overlayRegistry = new Dictionary<Guid, ISink>();
 
-		public interface ISink
+		internal interface ISink
 		{
 			void notifyMsg(IPAddress fromIP, Object data);
 		}

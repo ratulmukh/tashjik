@@ -60,10 +60,10 @@
     <Compile Include="Common\NodeBasic.cs" />
     <Compile Include="Common\ObjectAsyncResult.cs" />
     <Compile Include="Common\UtilityMethod.cs" />
+    <Compile Include="Controller.cs" />
     <Compile Include="CTashjik.cs" />
     <Compile Include="IController.cs" />
     <Compile Include="IOverlay.cs" />
-    <Compile Include="ITashjik.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Tier1\STUN\Server.cs" />
     <Compile Include="Tier2\BATON\DataStore.cs" />
@@ -88,7 +88,6 @@
     <Compile Include="Tier2\Chord\Common\MessageCapsule.cs" />
     <Compile Include="Tier2\Chord\Common\Node.cs" />
     <Compile Include="Tier2\Chord\Common\PendingLookUpRequest.cs" />
-    <Compile Include="Tier2\Chord\Controller.cs" />
     <Compile Include="Tier2\Chord\DataStore.cs" />
     <Compile Include="Tier2\Chord\Exception\DataNotFoundInStoreException.cs" />
     <Compile Include="Tier2\Chord\Exception\Exception.cs" />

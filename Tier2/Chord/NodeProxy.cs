@@ -87,13 +87,13 @@ namespace Tashjik.Tier2.Chord
 
 		private class Msg
 		{
+	
 			public enum TransmitModeEnum
 			{
 				SEND,
 				REPLY
 			}
-	
-			public enum TypeEnum
+			public enum TypeEnum 
 			{
 				FIND_SUCCESSOR,
 				GET_PREDECESSOR,

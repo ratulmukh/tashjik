@@ -64,4 +64,6 @@ namespace Tashjik.Tier2.Common
 		public abstract void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
 		public abstract void setProxyController(ProxyController c);
 	}
+
+
 }
