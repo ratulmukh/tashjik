@@ -53,14 +53,14 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Tashjik.Tier2.Chord
+namespace Tashjik.Tier2
 {
 	/*********************************************
 	* SEMANTICS: call methods on a remote machine
 	*********************************************/
-	public class NodeProxy : Tier2.Common.NodeProxy, INode, Tier2.Common.ProxyController.IProxy
+	internal class ChordNodeProxy : Tier2.Common.NodeProxy, IChordNode, Tier2.Common.ProxyController.IProxy
 	{
-		internal static Node thisNode;
+		internal static ChordNode thisNode;
 	
 		private Tashjik.Common.NodeBasic selfNodeBasic;
 		private Base.LowLevelComm lowLevelComm;
@@ -157,10 +157,10 @@ namespace Tashjik.Tier2.Chord
 			}
 		}
 
-		class INode_INode_Msg
+		class IChordNode_INode_Msg
 		{
-			public INode node1;
-			public INode node2;
+			public IChordNode node1;
+			public IChordNode node2;
 			public Msg msg;
 		}
 
@@ -169,8 +169,8 @@ namespace Tashjik.Tier2.Chord
 			Tashjik.Common.Data_Object data_Object = (Tashjik.Common.Data_Object)(result.AsyncState);
 			Tashjik.Common.Data data = data_Object.data;
 
-			INode_INode_Msg thisAppState = (INode_INode_Msg)(data_Object.obj);
-			NodeProxy iNode = (NodeProxy)(thisAppState.node2);
+			IChordNode_INode_Msg thisAppState = (IChordNode_INode_Msg)(data_Object.obj);
+			ChordNodeProxy iNode = (ChordNodeProxy)(thisAppState.node2);
 
 			Msg msg = thisAppState.msg;
 			msg.setReturnValue((Object)data);
@@ -181,11 +181,11 @@ namespace Tashjik.Tier2.Chord
 
 		void processGetPredecessorForNotifyMsgRec(IAsyncResult result)
 		{
-			Common.ByteKey_INode byteKey_INode = (Common.ByteKey_INode) (result.AsyncState);
-			INode predecessor = byteKey_INode.node;
-			INode_INode_Msg thisAppState = (INode_INode_Msg)(byteKey_INode.obj);
-			INode thisNode = thisAppState.node1;
-			NodeProxy iNode = (NodeProxy)(thisAppState.node2);
+			ChordCommon.ByteKey_IChordNode byteKey_INode = (ChordCommon.ByteKey_IChordNode) (result.AsyncState);
+			IChordNode predecessor = byteKey_INode.node;
+			IChordNode_INode_Msg thisAppState = (IChordNode_INode_Msg)(byteKey_INode.obj);
+			IChordNode thisNode = thisAppState.node1;
+			ChordNodeProxy iNode = (ChordNodeProxy)(thisAppState.node2);
 			if(predecessor==thisNode)
 			{
 				//no need to add successorProxyForm to registry
@@ -193,7 +193,7 @@ namespace Tashjik.Tier2.Chord
 				//we are creating a NodeProxy of thisNode
 				//because it needs to be transferred back
 				IPAddress predecessorIP = predecessor.getIP();
-				predecessor = new NodeProxy(predecessorIP, proxyController);
+				predecessor = new ChordNodeProxy(predecessorIP, proxyController);
 			}
 			Msg msg = thisAppState.msg;
 			msg.setReturnValue((Object)predecessor);
@@ -204,12 +204,12 @@ namespace Tashjik.Tier2.Chord
 
 		void processFindSuccessorForNotifyMsgRec(IAsyncResult result)
 		{
-			Common.INode_Object iNode_Object = (Common.INode_Object) (result.AsyncState);
-			INode successor = iNode_Object.node;
-			INode_INode_Msg thisAppState = (INode_INode_Msg)(iNode_Object.obj);
+			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object) (result.AsyncState);
+			IChordNode successor = iNode_Object.node;
+			IChordNode_INode_Msg thisAppState = (IChordNode_INode_Msg)(iNode_Object.obj);
 		
-			INode thisNode = thisAppState.node1;
-			NodeProxy iNode = (NodeProxy)(thisAppState.node2);
+			IChordNode thisNode = thisAppState.node1;
+			ChordNodeProxy iNode = (ChordNodeProxy)(thisAppState.node2);
 
 			if(successor==thisNode)
 			{
@@ -218,7 +218,7 @@ namespace Tashjik.Tier2.Chord
 				//we are creating a NodeProxy of thisNode
 				//because it needs to be transferred back
 				IPAddress successorIP = successor.getIP();
-				successor = new NodeProxy(successorIP, proxyController);
+				successor = new ChordNodeProxy(successorIP, proxyController);
 			}
 
 			Msg msg = thisAppState.msg;
@@ -242,10 +242,10 @@ namespace Tashjik.Tier2.Chord
 					if(msg.getType()==Msg.TypeEnum.FIND_SUCCESSOR)
 					{
 						byte[] queryHashedKey = System.Text.Encoding.ASCII.GetBytes((String)msg.getParameter1());
-						INode queryingNode = (INode)msg.getParameter2();
+						IChordNode queryingNode = (IChordNode)msg.getParameter2();
 						//INode successor = thisNode.findSuccessor(queryHashedKey, queryingNode);
 
-						INode_INode_Msg iNode_Msg = new INode_INode_Msg();
+						IChordNode_INode_Msg iNode_Msg = new IChordNode_INode_Msg();
 						iNode_Msg.node1 = thisNode;
 						iNode_Msg.node2 = this;
 						iNode_Msg.msg = msg;
@@ -267,7 +267,7 @@ namespace Tashjik.Tier2.Chord
 					}
 					else if(msg.getType()==Msg.TypeEnum.GET_PREDECESSOR)
 					{
-						INode_INode_Msg iNode_Msg = new INode_INode_Msg();
+						IChordNode_INode_Msg iNode_Msg = new IChordNode_INode_Msg();
 						iNode_Msg.node1 = thisNode;
 						iNode_Msg.node2 = this;
 						iNode_Msg.msg = msg;
@@ -291,10 +291,10 @@ namespace Tashjik.Tier2.Chord
 					}
 					else if(msg.getType()==Msg.TypeEnum.NOTIFY)
 						//thisNode.notify((INode)msg.getParameter1());
-						thisNode.beginNotify((INode)msg.getParameter1(), null, null);
+						thisNode.beginNotify((IChordNode)msg.getParameter1(), null, null);
 					else if(msg.getType()==Msg.TypeEnum.GET_DATA)
 					{
-						INode_INode_Msg iNode_Msg = new INode_INode_Msg();
+						IChordNode_INode_Msg iNode_Msg = new IChordNode_INode_Msg();
 						iNode_Msg.node1 = null;
 						iNode_Msg.node2 = this;
 						iNode_Msg.msg = msg;
@@ -322,17 +322,17 @@ namespace Tashjik.Tier2.Chord
 					if(msg.getType()==Msg.TypeEnum.FIND_SUCCESSOR)
 					{
 						byte[] queryHashedKey = (byte[])msg.getParameter1();
-						INode successor = (INode)msg.getReturnValue();
+						IChordNode successor = (IChordNode)msg.getReturnValue();
 
 						//AsyncCallback findSuccessorCallBack;
 						Tashjik.Common.AsyncCallback_Object asyncCallback_Object;
 						if(findSuccessorRegistry.TryGetValue(queryHashedKey, out asyncCallback_Object))
 						{
-							Common.INode_Object iNode_Object = new Common.INode_Object();
+							ChordCommon.IChordNode_Object iNode_Object = new ChordCommon.IChordNode_Object();
 							iNode_Object.node = successor;
 							iNode_Object.obj = asyncCallback_Object.obj;
 
-							IAsyncResult findSuccessorResult = new Chord.Common.INode_ObjectAsyncResult(iNode_Object, false, true);
+							IAsyncResult findSuccessorResult = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, false, true);
 							findSuccessorRegistry.Remove(queryHashedKey);
 							asyncCallback_Object.callBack(findSuccessorResult);
 						}
@@ -345,13 +345,13 @@ namespace Tashjik.Tier2.Chord
 						getPredecessorCallBack(getPredecessorResult);
 						*/
 
-						INode predecessor = (INode)msg.getParameter1();
+						IChordNode predecessor = (IChordNode)msg.getParameter1();
 						foreach(Tashjik.Common.AsyncCallback_Object asyncCallback_Object in getPredecessorRegistry)
 						{
-							Common.INode_Object iNode_Object = new Common.INode_Object();
+							ChordCommon.IChordNode_Object iNode_Object = new ChordCommon.IChordNode_Object();
 							iNode_Object.node = predecessor;
 							iNode_Object.obj = asyncCallback_Object.obj;
-							IAsyncResult getPredecessorResult = new Chord.Common.INode_ObjectAsyncResult(iNode_Object, false, true);
+							IAsyncResult getPredecessorResult = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, false, true);
 							asyncCallback_Object.callBack(getPredecessorResult);
 						}
 	
@@ -430,12 +430,12 @@ namespace Tashjik.Tier2.Chord
 			//relay this call to the actual node via forwarder
 		}
 		*/
-		public void beginFindSuccessor(INode queryNode, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
 			beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState);
 		}
 
-		public void beginFindSuccessor(byte[] queryHashedKey, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
 			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 			thisAppState.callBack = findSuccessorCallBack;
@@ -466,7 +466,7 @@ namespace Tashjik.Tier2.Chord
 			proxyController.sendMsg((Object)msgList, this);
 		}
 
-		public void beginNotify(INode possiblePred, AsyncCallback notifyCallBack, Object appState)
+		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
 			Msg msg = new Msg(Msg.TypeEnum.NOTIFY, (Object)possiblePred, null);
 			List<Msg> msgList = new List<Msg>();
@@ -485,7 +485,7 @@ namespace Tashjik.Tier2.Chord
 	
 		}	
 
-		public NodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		public ChordNodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);

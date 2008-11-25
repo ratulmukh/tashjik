@@ -51,12 +51,12 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Tashjik.Tier2.Chord
+namespace Tashjik.Tier2
 {
-	internal class Server : Tier2.Common.Server, IOverlay
+	public class ChordServer : Tier2.Common.Server, IOverlay
 	{
 		private readonly Guid guid;
-		internal readonly Node thisNode;
+		internal readonly ChordNode thisNode;
 	
 		public override Guid getGuid()
 		{
@@ -67,14 +67,14 @@ namespace Tashjik.Tier2.Chord
 		{
 			
 		}
-		public Server()
+		public ChordServer()
 		{
 			guid = System.Guid.NewGuid();
-			thisNode = new Node();
-			NodeProxy.thisNode = thisNode;
+			thisNode = new ChordNode();
+			ChordNodeProxy.thisNode = thisNode;
 		}
 		
-		public Server(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		public ChordServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
 /*			guid = joinOtherGuid;
 			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
@@ -117,8 +117,8 @@ namespace Tashjik.Tier2.Chord
 
 		static void processFindSuccessorForGetData(IAsyncResult result)
 		{
-			Common.INode_Object iNode_Object = (Common.INode_Object)(result.AsyncState);
-			INode successor = iNode_Object.node;
+			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+			IChordNode successor = iNode_Object.node;
 			Tashjik.Common.ByteArray_AsyncCallback_Object recAppState = (Tashjik.Common.ByteArray_AsyncCallback_Object)(iNode_Object.obj);
 		
 			byte[] queryByteKey = recAppState.byteArray;
@@ -148,8 +148,8 @@ namespace Tashjik.Tier2.Chord
 	
 		static void processFindSuccessorForPutData(IAsyncResult result)
 		{
-			Common.INode_Object iNode_Object = (Common.INode_Object)(result.AsyncState);
-			INode successor = iNode_Object.node;
+			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+			IChordNode successor = iNode_Object.node;
 			Tashjik.Common.ByteArray_Data_AsyncCallback_Object recAppState = (Tashjik.Common.ByteArray_Data_AsyncCallback_Object)(iNode_Object.obj);
 
 			byte[] queryByteKey = recAppState.byteArray;

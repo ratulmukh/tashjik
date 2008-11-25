@@ -51,32 +51,52 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Tashjik.Tier2.Pastry
+namespace Tashjik.Tier2
 {
-	public class Controller : Tier2.Common.Controller
-	{
 
-		public Controller(Guid g): base(g)
+	internal class PastryServer : Tier2.Common.Server, IOverlay
+	{
+		private  readonly Guid guid;
+		internal readonly PastryNode thisNode;
+		
+		public PastryServer()
+		{
+			guid = System.Guid.NewGuid();
+			thisNode = new PastryNode();
+			//NodeProxy.thisNode = thisNode;
+		}
+		
+		public PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		{
+			guid = joinOtherGuid;
+			IPastryNode joinOtherINode = new PastryNodeProxy(joinOtherIP, proxyController);
+			thisNode = new PastryNode(joinOtherINode);
+		}
+		
+		
+			
+		public override Guid getGuid()
+		{
+			return new Guid();
+		}
+
+		//Common.Data getData(String key);
+		//void putData(String key, Common.Data data);
+
+		public override void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
 		{
 			
 		}
-		public override IOverlay createNew()
+		public override void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
 		{
-			IOverlay pastry = new Server();
-			ISink sink = new ProxyController();
-			OverlayInstanceInfo pastryInstanceInfo = new OverlayInstanceInfo(pastry, sink);
-			overlayInstanceRegistry.Add(pastry.getGuid(), pastryInstanceInfo);
-			return pastry;
+			
 		}
-
-		public override IOverlay joinExisting(IPAddress IP, Guid guid)
+		
+		public override void shutdown()
 		{
-			IOverlay pastry = new Server(IP, guid);
-			ISink sink = new ProxyController();
-			OverlayInstanceInfo pastryInstanceInfo = new OverlayInstanceInfo(pastry, sink);
-			overlayInstanceRegistry.Add(pastry.getGuid(), pastryInstanceInfo);
-			return pastry;
+			
 		}
-	
+		
+		
 	}
 }

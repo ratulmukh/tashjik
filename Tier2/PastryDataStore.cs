@@ -49,14 +49,14 @@
 
 using System;
 
-namespace Tashjik.Tier2.CAN
+namespace Tashjik.Tier2
 {
 	/// <summary>
-	/// Description of Node.
+	/// Description of DataStore.
 	/// </summary>
-	public class Node
+	public class PastryDataStore
 	{
-		public Node()
+		public PastryDataStore()
 		{
 		}
 	}

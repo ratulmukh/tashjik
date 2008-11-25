@@ -49,12 +49,15 @@
 
 using System;
 
-namespace Tashjik.Tier2.Chord.Exception
+namespace Tashjik.Tier2
 {
-
-public class SearchPendingLookUpRequestListFailedException : Exception
-{
-public SearchPendingLookUpRequestListFailedException() : base("Searching in the controller.getPendingLookUpRequestList() did not yield anything")
-{}
-}
+	/// <summary>
+	/// Description of Node.
+	/// </summary>
+	internal class CANNode
+	{
+		public CANNode()
+		{
+		}
+	}
 }

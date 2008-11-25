@@ -48,13 +48,42 @@
 
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace Tashjik.Tier2.Chord.Exception
+namespace Tashjik.Tier2
 {
+	internal class ChordDataStore
+	{
+		//IOldController controller;
+	
+		//public DataStore(IOldController con)
+		//{
+		// controller = con;
+		//}
 
-public class LookUpDelayedException : Exception
-{
-public LookUpDelayedException() : base("Lookup delayed due to finger not having enough value for successor. Search has been relayed further along the chord")
-{}
-}
+		public ChordDataStore()
+		{
+
+		}	
+
+		private Dictionary<byte[], Tashjik.Common.Data> dataHolder =
+			new Dictionary<byte[], Tashjik.Common.Data>();
+
+		public void putData(byte[] hashedKey, Tashjik.Common.Data data)
+		{
+			dataHolder.Add(hashedKey, data);
+		}
+
+		public Tashjik.Common.Data getData(byte[] hashedKey)
+		{
+			Tashjik.Common.Data data = new Tashjik.Common.Data();
+			if(dataHolder.TryGetValue(hashedKey, out data))
+				return data;
+			else
+				throw new ChordException.DataNotFoundInStoreException();
+	
+
+		}
+	}
 }

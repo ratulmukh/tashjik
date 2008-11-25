@@ -53,11 +53,11 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2
 {
-	public class NodeProxy : Tier2.Common.NodeProxy, INode, Tier2.Common.ProxyController.IProxy
+	public class BATONNodeProxy : Tier2.Common.NodeProxy, IBATONNode, Tier2.Common.ProxyController.IProxy
 	{
-		internal static Node thisNode;
+		internal static BATONNode thisBATONNode;
 	
 		private Tashjik.Common.NodeBasic selfNodeBasic;
 		private Base.LowLevelComm lowLevelComm;
@@ -65,12 +65,12 @@ namespace Tashjik.Tier2.BATON
 		private readonly int iPortNo = System.Convert.ToInt16 ("2334");
 		private readonly Socket sock = null;
 
-		//not necessary; NodeProxy will be added to the registry in ProxyController by ProxyController itself
+		//not necessary; BATONNodeProxy will be added to the registry in ProxyController by ProxyController itself
 		//BUT TO SEND MSGS, U NEED THE INTERFACE
 		private Tier2.Common.ProxyController proxyController;
 
 		
-		public NodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		public BATONNodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
@@ -104,33 +104,33 @@ namespace Tashjik.Tier2.BATON
 			
 		}
 		
-		public void join(INode newNode)
+		public void join(IBATONNode newBATONNode)
 		{
 			
 		}
 		
-		public void join(INode newNode, Guid overlayInstanceGuid)
+		public void join(IBATONNode newBATONNode, Guid overlayInstanceGuid)
 		{
 			
 		}
 		
-		public void requestReplacement(INode repNode)
+		public void requestReplacement(IBATONNode repBATONNode)
 		{
 			
 		}
 		
-		public void replyReplacement(INode newNode)
+		public void replyReplacement(IBATONNode newBATONNode)
 		{
 			
 		}
 		
 			
-		public void requestPersonalData(INode reqNode)
+		public void requestPersonalData(IBATONNode reqBATONNode)
 		{
 			
 		}
 			
-		public void  sendPersonalData(INode sendingNode, int newLevel, int newNumber, INode newParent, INode newLeftChild, INode newRightChild, INode newLeftAdjacent, INode newRightAdjacent, List<Node.RoutingTableEntry> newleftRoutingTable,  List<Node.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
+		public void  sendPersonalData(IBATONNode sendingBATONNode, int newLevel, int newNumber, IBATONNode newParent, IBATONNode newLeftChild, IBATONNode newRightChild, IBATONNode newLeftAdjacent, IBATONNode newRightAdjacent, List<BATONNode.RoutingTableEntry> newleftRoutingTable,  List<BATONNode.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable)
 		{
 				
 		}
@@ -146,12 +146,12 @@ namespace Tashjik.Tier2.BATON
 			
 		}
 		
-		public void notiifyLeftAdjacentAboutReplacement(INode newNode, INode oldNode)
+		public void notiifyLeftAdjacentAboutReplacement(IBATONNode newBATONNode, IBATONNode oldBATONNode)
 		{
 			
 		}
 			
-		public void notiifyRightAdjacentAboutReplacement(INode newNode, INode oldNode)
+		public void notiifyRightAdjacentAboutReplacement(IBATONNode newBATONNode, IBATONNode oldBATONNode)
 		{
 			
 		}
@@ -162,42 +162,42 @@ namespace Tashjik.Tier2.BATON
 		
 		
 		
-		public void joinAccepted(INode acceptingNode, Node.Position pos, INode adjacent, int newLevel, int newNumber)
+		public void joinAccepted(IBATONNode acceptingBATONNode, BATONNode.Position pos, IBATONNode adjacent, int newLevel, int newNumber)
 		{
 		
 		}
-		public void setAdjacent(INode newAdjacent, Node.Position pos, INode prevNode)
+		public void setAdjacent(IBATONNode newAdjacent, BATONNode.Position pos, IBATONNode prevBATONNode)
 		{
 			
 		}
-		public void notifyNewChild(INode notifyingNode, Node.Position pos, INode newChild)
-		{
-			
-		}
-		
-		public void requestRoutingTableForChild( INode requestingChild, Node.Position pos)
-		{
-		
-		}
-		public void sendNodeOnlyRoutingTableToChild(List<Node.RoutingTableEntry> routingTable, Node.Position pos)
-		{
-			
-		}
-		public void requestChildren(INode requestingNode)
-		{
-			
-		}
-		public void notifyChildren(INode notifyingNode, INode leftChild, INode rightChild)
+		public void notifyNewChild(IBATONNode notifyingBATONNode, BATONNode.Position pos, IBATONNode newChild)
 		{
 			
 		}
 		
-		public void setNewPeer(int routingTablepointer, Node.Position pos, INode newChild)
+		public void requestRoutingTableForChild( IBATONNode requestingChild, BATONNode.Position pos)
+		{
+		
+		}
+		public void sendBATONNodeOnlyRoutingTableToChild(List<BATONNode.RoutingTableEntry> routingTable, BATONNode.Position pos)
+		{
+			
+		}
+		public void requestChildren(IBATONNode requestingBATONNode)
+		{
+			
+		}
+		public void notifyChildren(IBATONNode notifyingBATONNode, IBATONNode leftChild, IBATONNode rightChild)
 		{
 			
 		}
 		
-		public void notifyParentAboutReplacement(INode newChild, INode oldChild)
+		public void setNewPeer(int routingTablepointer, BATONNode.Position pos, IBATONNode newChild)
+		{
+			
+		}
+		
+		public void notifyParentAboutReplacement(IBATONNode newChild, IBATONNode oldChild)
 		{
 			
 		}

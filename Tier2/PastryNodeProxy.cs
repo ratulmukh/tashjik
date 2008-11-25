@@ -48,13 +48,72 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace Tashjik.Tier2.Chord.Exception
+namespace Tashjik.Tier2
 {
-public class DataNotFoundInStoreException : ApplicationException
-{
-public DataNotFoundInStoreException() : base ("Tashjik.Common.Data not found in the Tashjik.Common.Data Store")
-{}
+	public class PastryNodeProxy :Tier2.Common.NodeProxy, IPastryNode
+	{
+		
+		internal static PastryNode thisNode;
+	
+		private Tashjik.Common.NodeBasic selfNodeBasic;
+		private Base.LowLevelComm lowLevelComm;		
+		
+		private Tier2.Common.ProxyController proxyController;
+		
+		public PastryNodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		{
+			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
+			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+			setProxyController(proxyController);
+		}
+		
+		public override void setProxyController(Tier2.Common.ProxyController c)
+		{
+			//need to handle synchronised calls here
+			if(proxyController!=null)
+			proxyController = c;
+		}
+		
+		public override byte[] getHashedIP()
+		{
+			return selfNodeBasic.getHashedIP();
+		}
 
-}
+		public override IPAddress getIP()
+		{
+			return selfNodeBasic.getIP();
+		}
+
+		public override void setIP(IPAddress ip)
+		{
+			selfNodeBasic.setIP(ip);
+		}
+		
+		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		{
+			
+		}
+		
+		public void join(IPastryNode newNode)
+		{
+			
+		}
+		
+		public void leave()
+		{
+			
+		}
+		
+		public void route(Object msg, byte[] key)
+		{
+			
+		}
+		
+						
+	}
 }

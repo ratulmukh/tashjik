@@ -49,15 +49,13 @@
 
 using System;
 
-namespace Tashjik.Tier2.CAN
+namespace Tashjik.Tier2
 {
-	/// <summary>
-	/// Description of NodeProxy.
-	/// </summary>
-	public class NodeProxy
+	public class PrevBATONNodeNotMatching : ApplicationException
 	{
-		public NodeProxy()
+		public PrevBATONNodeNotMatching() : base("Adjacent node to be changed is not matching with the one currently existitng")
 		{
+			
 		}
 	}
 }

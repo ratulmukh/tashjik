@@ -49,14 +49,15 @@
 
 using System;
 
-namespace Tashjik.Tier2.Chord.Exception
+namespace Tashjik.Tier2
 {
-public class SuccessorNotDeterminedFromRoutingTableException : Exception
-{
-public byte[] hashedKey;
-public SuccessorNotDeterminedFromRoutingTableException(byte[] hK): base ("Successor could not be determined from routing table")
-{
-hashedKey = hK;
-}
-}
+	/// <summary>
+	/// Description of DataStore.
+	/// </summary>
+	public class BATONDataStore
+	{
+		public BATONDataStore()
+		{
+		}
+	}
 }

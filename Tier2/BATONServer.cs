@@ -48,12 +48,53 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
-namespace Tashjik.Tier2.Chord.Exception
+namespace Tashjik.Tier2
 {
-public class Exception : ApplicationException
-{
-public Exception(string str) : base(str)
-{}
-}
+
+	internal class BATONServer : Tier2.Common.Server, IOverlay
+	{
+		private  readonly Guid guid;
+		internal readonly BATONNode thisNode;
+		
+		public BATONServer()
+		{
+			guid = System.Guid.NewGuid();
+			thisNode = new BATONNode();
+			//NodeProxy.thisNode = thisNode;
+		}
+		
+		public BATONServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		{
+			guid = joinOtherGuid;
+			IBATONNode joinOtherINode = new BATONNodeProxy(joinOtherIP, proxyController);
+			thisNode = new BATONNode(joinOtherINode);
+		}
+			
+		public override Guid getGuid()
+		{
+			return new Guid();
+		}
+
+		//Common.Data getData(String key);
+		//void putData(String key, Common.Data data);
+
+		public override void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
+		{
+			
+		}
+		public override void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		{
+			
+		}
+		
+		public override void shutdown()
+		{
+			
+		}
+		
+		
+	}
 }

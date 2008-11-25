@@ -48,71 +48,21 @@
 
 
 using System;
-using System.Threading;
-using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
 
-namespace Tashjik.Tier2.Chord.Common
+namespace Tashjik.Tier2
 {
-	/*****************************************
-	* THREADSAFE
-	* state safety ensured with private lock
-	*****************************************/
-	public class PendingLookUpRequest
+	public interface IPastryNode
 	{
-		private Object pendingLookUpRequestLock = new Object();
-		private readonly Thread thread;
-		//int threadHashCode;
-		private readonly byte[] hashedKey;
-		private Socket socket;
-
-		public void setSocket(Socket s)
-		{
-			lock(pendingLookUpRequestLock)
-			{
-				socket = s;
-			}
-		}
+		void join(IPastryNode newNode);
+		void leave();
 		
-		public Thread getThread()
-		{
-			lock(pendingLookUpRequestLock)
-			{
-				return thread;
-			}
-		}
-
-		public Socket getSocket()
-		{
-			lock(pendingLookUpRequestLock)
-			{
-				return socket;
-			}
-		}
-
-		public byte[] getHashedKey()
-		{
-			lock(pendingLookUpRequestLock)
-			{
-				return hashedKey;
-			}
-	
-		}
-
-		public PendingLookUpRequest(/*int hC*/Thread th, byte[] hK)
-		{	
-			thread = th;
-			//threadHashCode = hC;
-			hashedKey = hK;
-			socket = null;
-		}
-
-		public PendingLookUpRequest(/*int hC*/Thread th, byte[] hK, Socket sock)
-		{
-			thread = th;
-			//threadHashCode = hC;
-			hashedKey = hK;
-			socket = sock;
-		}
-
+		void route(Object msg, byte[] key);
+		
+		
+		byte[] getHashedIP();
 	}
 }
+
+	

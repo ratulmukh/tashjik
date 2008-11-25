@@ -51,19 +51,19 @@ using System;
 using System.Net;
 using System.Threading;
 
-namespace Tashjik.Tier2.Chord
+namespace Tashjik.Tier2
 {
 	/*********************************************
 	* SEMANTICS: call methods on local machine
 	*********************************************/
-	public class Node : Tier2.Common.Node, INode
+	internal class ChordNode : Tier2.Common.Node, IChordNode
 	{
 
 		//private readonly IController controller;
-		private readonly DataStore dataStore = null;
+		private readonly ChordDataStore dataStore = null;
 
 
-		public static bool operator==(Node n1, INode n2)
+		public static bool operator==(ChordNode n1, IChordNode n2)
 		{
 			String strHash1 = n1.getHashedIP().ToString();
 			String strHash2 = n2.getHashedIP().ToString();
@@ -75,7 +75,7 @@ namespace Tashjik.Tier2.Chord
 
 		}
 
-		public static bool operator!=(Node n1, INode n2)
+		public static bool operator!=(ChordNode n1, IChordNode n2)
 		{
 			String strHash1 = n1.getHashedIP().ToString();
 			String strHash2 = n2.getHashedIP().ToString();
@@ -87,7 +87,7 @@ namespace Tashjik.Tier2.Chord
 
 		}
 
-		public bool Equals(Node n1, INode n2)
+		public bool Equals(ChordNode n1, IChordNode n2)
 		{
 			String strHash1 = n1.getHashedIP().ToString();
 			String strHash2 = n2.getHashedIP().ToString();
@@ -114,7 +114,7 @@ namespace Tashjik.Tier2.Chord
 			{
 				// lock(nodeLock)
 				// {
-				if (engine.getIP().ToString() == ((Node)obj).getIP().ToString())
+				if (engine.getIP().ToString() == ((ChordNode)obj).getIP().ToString())
 					return true;
 				else
 					return false;
@@ -131,7 +131,7 @@ namespace Tashjik.Tier2.Chord
 				return 1; // :O :O
 			}
 
-			public static bool operator<(Node n1, INode n2)
+			public static bool operator<(ChordNode n1, IChordNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -142,7 +142,7 @@ namespace Tashjik.Tier2.Chord
 					return false;
 			}	
 
-			public static bool operator>(Node n1, INode n2)
+			public static bool operator>(ChordNode n1, IChordNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -154,7 +154,7 @@ namespace Tashjik.Tier2.Chord
 			}
 
 
-			public static bool operator>(Node n1, byte[] hash2)
+			public static bool operator>(ChordNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -164,7 +164,7 @@ namespace Tashjik.Tier2.Chord
 				else return false;
 			}
 
-			public static bool operator<(Node n1, byte[] hash2)
+			public static bool operator<(ChordNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -175,7 +175,7 @@ namespace Tashjik.Tier2.Chord
 					return false;
 			}
 
-			public static bool operator<(byte[] hash1, Node n2)
+			public static bool operator<(byte[] hash1, ChordNode n2)
 			{
 				String strHash1 = hash1.ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -186,7 +186,7 @@ namespace Tashjik.Tier2.Chord
 					return false;
 			}
 
-			public static bool operator>(byte[] hash1, Node n2)
+			public static bool operator>(byte[] hash1, ChordNode n2)
 			{
 				String strHash1 = hash1.ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -206,13 +206,13 @@ namespace Tashjik.Tier2.Chord
 				private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 		
 				//private readonly static Engine singleton = null;
-				private readonly Node self;
-				private INode predecessor;
-				private INode successor;
+				private readonly ChordNode self;
+				private IChordNode predecessor;
+				private IChordNode successor;
 
 				//the 1st node will be an Node
 				//need to take care of that
-				private readonly INode[] finger = new INode[160];
+				private readonly IChordNode[] finger = new IChordNode[160];
 				private int fingerNext = -1;
 	
 				/*public void stabilize()
@@ -228,8 +228,8 @@ namespace Tashjik.Tier2.Chord
 				//to be used only to pass application state while making async calls
 				class StabilizeAppState
 				{
-					public Node self;
-					public INode successor;
+					public ChordNode self;
+					public IChordNode successor;
 					public AsyncCallback callBack;
 					public Object appState;
 				}
@@ -253,7 +253,7 @@ namespace Tashjik.Tier2.Chord
 
 				static void processGetPredecessorForStabilize(IAsyncResult result)
 				{
-					Common.INode_Object iNode_Object = (Common.INode_Object)(result.AsyncState);
+					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 					Object appState = iNode_Object.obj;
 	
 					AsyncCallback callBack = ((StabilizeAppState)appState).callBack;
@@ -261,11 +261,11 @@ namespace Tashjik.Tier2.Chord
 
 
 
-					INode x = iNode_Object.node;
-					Node self = ((StabilizeAppState)appState).self;
-					INode successor = ((StabilizeAppState)appState).successor;
+					IChordNode x = iNode_Object.node;
+					ChordNode self = ((StabilizeAppState)appState).self;
+					IChordNode successor = ((StabilizeAppState)appState).successor;
 
-					if((self<(Node)x) && ((Node)x<(successor)))
+					if((self<(ChordNode)x) && ((ChordNode)x<(successor)))
 						successor = x;
 					successor.beginNotify(self, callBack, appState1);
 
@@ -276,7 +276,7 @@ namespace Tashjik.Tier2.Chord
 				class FixFingersAppState
 				{
 					public int fingerNext;
-					public INode[] finger;
+					public IChordNode[] finger;
 					public AsyncCallback callback;
 					public Object appState;
 				}
@@ -311,7 +311,7 @@ namespace Tashjik.Tier2.Chord
 
 				static void processFindSuccessorForFixFingers(IAsyncResult result)
 				{
-					Chord.Common.INode_Object iNode_Object = (Chord.Common.INode_Object) (result.AsyncState);
+					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object) (result.AsyncState);
 		
 					FixFingersAppState fixFingersAppState = (FixFingersAppState)(iNode_Object.obj);
 					int i = fixFingersAppState.fingerNext;
@@ -336,7 +336,7 @@ namespace Tashjik.Tier2.Chord
 				//to be used only to pass application state while making async calls
 				class CheckPredecessorAppState
 				{
-					public INode predecessor;
+					public IChordNode predecessor;
 					public AsyncCallback callback ;
 					public Object appState;
 				}
@@ -361,7 +361,7 @@ namespace Tashjik.Tier2.Chord
 				{
 					Tashjik.Common.Bool_Object thisAppState = (Tashjik.Common.Bool_Object)(result.AsyncState);
 					CheckPredecessorAppState checkPredecessorAppState = (CheckPredecessorAppState)(thisAppState.obj);
-					INode predecessor = checkPredecessorAppState.predecessor;
+					IChordNode predecessor = checkPredecessorAppState.predecessor;
 
 					if(!(thisAppState.b))
 						predecessor = null;
@@ -382,12 +382,12 @@ namespace Tashjik.Tier2.Chord
 				//to be used only to pass application state while making async calls
 				class JoinAppState
 				{
-					public INode successor;
+					public IChordNode successor;
 					public AsyncCallback callback;
 					public Object appState;
 				}
 	
-				private void beginJoin(INode joinNode, AsyncCallback joinCallBack, Object appState)
+				private void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 				{
 					/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = joinCallBack;
@@ -407,7 +407,7 @@ namespace Tashjik.Tier2.Chord
 
 				static void processFindSuccessorForJoin(IAsyncResult result)
 				{
-					Chord.Common.INode_Object iNode_Object = (Chord.Common.INode_Object)(result.AsyncState);
+					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 					JoinAppState joinAppState = (JoinAppState)(iNode_Object.obj);
 					joinAppState.successor = iNode_Object.node;
 	
@@ -444,9 +444,9 @@ namespace Tashjik.Tier2.Chord
 					selfNodeBasic.setIP(ip);
 				}
 
-				public void notify(INode possiblePred) //IPAddress possiblePredIP, byte[] possiblePredHashedIP)
+				public void notify(IChordNode possiblePred) //IPAddress possiblePredIP, byte[] possiblePredHashedIP)
 				{
-					if((predecessor==null) || (((Node)possiblePred<self) && ((Node)predecessor<possiblePred)))
+					if((predecessor==null) || (((ChordNode)possiblePred<self) && ((ChordNode)predecessor<possiblePred)))
 					predecessor = possiblePred;
 				}
 
@@ -467,33 +467,33 @@ namespace Tashjik.Tier2.Chord
 				}
 			}
 			*/
-			public void beginFindSuccessor(byte[] queryHashedKey, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+			public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 			{
-				Common.INode_Object iNode_Object;
-				if((Node)self<queryHashedKey && queryHashedKey<(Node)successor)
+				ChordCommon.IChordNode_Object iNode_Object;
+				if((ChordNode)self<queryHashedKey && queryHashedKey<(ChordNode)successor)
 				{
 					if(!(findSuccessorCallBack==null))
 					{
-						iNode_Object = new Common.INode_Object();
+						iNode_Object = new ChordCommon.IChordNode_Object();
 						iNode_Object.node = successor;
 						iNode_Object.obj = appState;
 
-						IAsyncResult res = new Chord.Common.INode_ObjectAsyncResult(iNode_Object, true, true);
+						IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
 						findSuccessorCallBack(res);
 					}
 				}
 				else
 				{
-					INode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
+					IChordNode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
 					if (closestPrecNode==self)
 					{
 						if(!(findSuccessorCallBack==null))
 						{
-							iNode_Object = new Common.INode_Object();
+							iNode_Object = new ChordCommon.IChordNode_Object();
 							iNode_Object.node = successor;
 							iNode_Object.obj = appState;
 
-							IAsyncResult res = new Chord.Common.INode_ObjectAsyncResult(iNode_Object, true, true);
+							IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
 							findSuccessorCallBack(res);
 						}
 					}		
@@ -503,10 +503,10 @@ namespace Tashjik.Tier2.Chord
 				}
 			}
 
-			private INode findClosestPreceedingNode(byte[] hashedKey)
+			private IChordNode findClosestPreceedingNode(byte[] hashedKey)
 			{
 				for(int i=159; i>=0 && finger[i]!=null; i--)
-					if((Node)self<finger[i] && (Node)(finger[i])<hashedKey)
+					if((ChordNode)self<finger[i] && (ChordNode)(finger[i])<hashedKey)
 						return finger[i];
 				return self;
 			}
@@ -516,12 +516,12 @@ namespace Tashjik.Tier2.Chord
 				return selfNodeBasic.getHashedIP();
 			}
 
-			public INode getPredecessor()
+			public IChordNode getPredecessor()
 			{
 				return predecessor;
 			}
 
-			public Engine(Node encapsulatingNode)
+			public Engine(ChordNode encapsulatingNode)
 			{
 				try
 				{
@@ -678,12 +678,12 @@ namespace Tashjik.Tier2.Chord
 		private readonly Engine engine;
 		private readonly EngineMgr engineMgr;
 	
-		public Node()
+		public ChordNode()
 		{
 			engine = new Engine(this);
 			//engine = Engine.createEngine(this);
 			engineMgr = EngineMgr.createEngineMgr(1000, engine);
-			DataStore dataStore = new DataStore();
+			ChordDataStore dataStore = new ChordDataStore();
 
 			/*
 			NOTE: THIS FUNCTIONALITY GOES INTO ENGINE
@@ -725,12 +725,12 @@ namespace Tashjik.Tier2.Chord
 		}
 		*/
 
-		public void beginFindSuccessor(INode queryNode, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
 			engine.beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState);
 		}
 
-		public void beginFindSuccessor(byte[] queryHashedKey, INode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
 			engine.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState);
 		}
@@ -746,15 +746,15 @@ namespace Tashjik.Tier2.Chord
 
 		public void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState)
 		{
-			INode predecessor = engine.getPredecessor();
+			IChordNode predecessor = engine.getPredecessor();
 		
-			Chord.Common.INode_Object iNode_Object = new Chord.Common.INode_Object();
+			ChordCommon.IChordNode_Object iNode_Object = new ChordCommon.IChordNode_Object();
 			iNode_Object.node = predecessor;
 			iNode_Object.obj = appState;
 
 			if(!(getPredecessorCallBack==null))
 			{
-				IAsyncResult res = new Chord.Common.INode_ObjectAsyncResult(iNode_Object, false,true);
+				IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, false,true);
 				getPredecessorCallBack(res);
 			}
 		}
@@ -766,7 +766,7 @@ namespace Tashjik.Tier2.Chord
 		}
 		*/
 
-		public void beginNotify(INode possiblePred, AsyncCallback notifyCallBack, Object appState)
+		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
 	
 

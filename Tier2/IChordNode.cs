@@ -48,16 +48,29 @@
 
 
 using System;
+using System.Net;
 
-namespace Tashjik.Tier2.CAN
+namespace Tashjik.Tier2
 {
-	/// <summary>
-	/// Description of DataStore.
-	/// </summary>
-	public class DataStore
+	internal interface IChordNode : Tier2.Common.INode
 	{
-		public DataStore()
-		{
-		}
+		//INode findSuccessor(INode queryNode, INode queryingNode);
+		//INode findSuccessor(byte[] queryHashedKey, INode queryingNode);
+		void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
+		void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
+		//INode getPredecessor();
+		void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState);
+		//void notify(INode possiblePred);
+		void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState);
+		//bool ping();
+		void beginPing(AsyncCallback pingCallBack, Object appState);
+		byte[] getHashedIP();
+		IPAddress getIP();
+		void setIP(IPAddress ip);
+		//Tashjik.Common.Data getData(byte[] byteKey);
+		void beginGetData(byte[] byteKey, AsyncCallback getDataCallBack, Object appState);
+		void beginPutData(byte[] byteKey, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState);
+		//void putData(byte[] byteKey, Tashjik.Common.Data data);
+
 	}
 }

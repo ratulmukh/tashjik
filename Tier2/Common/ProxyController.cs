@@ -166,21 +166,21 @@ namespace Tashjik.Tier2.Common
 
 
 
-		public ProxyController(CTashjik.OverlayTypeEnum ovType)
+		public ProxyController(OverlayTypeEnum ovType)
 		{
 			
 			nodeProxyRegistry = new NodeProxyRegistry();
 			overlayType = ovType;
 		}
 
-		private CTashjik.OverlayTypeEnum overlayType;
+		private OverlayTypeEnum overlayType;
 		
 		private NodeProxy createNodeProxy(IPAddress IP)
 		{
-			if(overlayType==CTashjik.OverlayTypeEnum.Chord)
-				return (NodeProxy)(new Chord.NodeProxy(IP, this));
-			else if(overlayType==CTashjik.OverlayTypeEnum.Pastry)
-			    return (NodeProxy)(new Pastry.NodeProxy(IP, this));    
+			if(overlayType==OverlayTypeEnum.Chord)
+				return (NodeProxy)(new ChordNodeProxy(IP, this));
+			else if(overlayType==OverlayTypeEnum.Pastry)
+			    return (NodeProxy)(new PastryNodeProxy(IP, this));    
 			else
 				return null; 
 				                   

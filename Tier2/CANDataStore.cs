@@ -48,53 +48,16 @@
 
 
 using System;
-using System.Net;
-using System.Net.Sockets;
 
-namespace Tashjik.Tier2.BATON
+namespace Tashjik.Tier2
 {
-
-	internal class Server : Tier2.Common.Server, IOverlay
+	/// <summary>
+	/// Description of DataStore.
+	/// </summary>
+	internal class CANDataStore
 	{
-		private  readonly Guid guid;
-		internal readonly Node thisNode;
-		
-		public Server()
+		public CANDataStore()
 		{
-			guid = System.Guid.NewGuid();
-			thisNode = new Node();
-			//NodeProxy.thisNode = thisNode;
 		}
-		
-		public Server(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
-		{
-			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
-			thisNode = new Node(joinOtherINode);
-		}
-			
-		public override Guid getGuid()
-		{
-			return new Guid();
-		}
-
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		public override void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
-		{
-			
-		}
-		public override void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
-		{
-			
-		}
-		
-		public override void shutdown()
-		{
-			
-		}
-		
-		
 	}
 }

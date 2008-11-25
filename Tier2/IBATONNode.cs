@@ -51,39 +51,31 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Tashjik.Tier2.Chord
+namespace Tashjik.Tier2
 {
-	class DataStore
+	public interface IBATONNode
 	{
-		//IOldController controller;
-	
-		//public DataStore(IOldController con)
-		//{
-		// controller = con;
-		//}
-
-		public DataStore()
-		{
-
-		}	
-
-		private Dictionary<byte[], Tashjik.Common.Data> dataHolder =
-			new Dictionary<byte[], Tashjik.Common.Data>();
-
-		public void putData(byte[] hashedKey, Tashjik.Common.Data data)
-		{
-			dataHolder.Add(hashedKey, data);
-		}
-
-		public Tashjik.Common.Data getData(byte[] hashedKey)
-		{
-			Tashjik.Common.Data data = new Tashjik.Common.Data();
-			if(dataHolder.TryGetValue(hashedKey, out data))
-				return data;
-			else
-				throw new Exception.DataNotFoundInStoreException();
-	
-
-		}
+		void join(IBATONNode newNode);
+		void leave();
+		
+		void notifyLeave();
+		void requestReplacement(IBATONNode repNode);
+	    void replyReplacement(IBATONNode newNode);
+	    
+		void requestPersonalData(IBATONNode reqNode);
+		void  sendPersonalData(IBATONNode sendingNode, int newLevel, int newNumber, IBATONNode newParent, IBATONNode newLeftChild, IBATONNode newRightChild, IBATONNode newLeftAdjacent, IBATONNode newRightAdjacent, List<BATONNode.RoutingTableEntry> newleftRoutingTable,  List<BATONNode.RoutingTableEntry> newRightRoutingTable, bool newFullLeftRoutingTable, bool newFullRightRoutingTable);
+		void notifyParentAboutReplacement(IBATONNode newChild, IBATONNode oldChild);
+		void notiifyLeftAdjacentAboutReplacement(IBATONNode newNode, IBATONNode oldNode);
+		void notiifyRightAdjacentAboutReplacement(IBATONNode newNode, IBATONNode oldNode);
+			
+		//Data searchExact(...)
+		void joinAccepted(IBATONNode acceptingNode, BATONNode.Position pos, IBATONNode adjacent, int newLevel, int newNumber);
+		void setAdjacent(IBATONNode newAdjacent, BATONNode.Position pos, IBATONNode prevNode);
+		void notifyNewChild(IBATONNode notifyingNode, BATONNode.Position pos, IBATONNode newChild);
+		void requestRoutingTableForChild( IBATONNode requestingChild, BATONNode.Position pos);
+		void sendBATONNodeOnlyRoutingTableToChild(List<BATONNode.RoutingTableEntry> routingTable, BATONNode.Position pos);
+		void requestChildren(IBATONNode requestingNode);
+		void notifyChildren(IBATONNode notifyingNode, IBATONNode leftChild, IBATONNode rightChild);
+		void setNewPeer(int routingTablepointer, BATONNode.Position pos, IBATONNode newChild);		
 	}
 }

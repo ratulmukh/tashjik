@@ -48,21 +48,25 @@
 
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Net;
 
-namespace Tashjik.Tier2.Pastry
+namespace Tashjik.Tier2
 {
-	public interface INode
+	/// <summary>
+	/// Description of Server.
+	/// </summary>
+	public class CANServer 
 	{
-		void join(INode newNode);
-		void leave();
+		public CANServer()
+		{
+		}
 		
-		void route(Object msg, byte[] key);
-		
-		
-		byte[] getHashedIP();
+		public CANServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		{
+/*			guid = joinOtherGuid;
+			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
+			thisNode = new Node(joinOtherINode);
+*/
+		}
 	}
 }
-
-	
