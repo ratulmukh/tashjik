@@ -61,7 +61,7 @@ namespace Tashjik.Tier2.Pastry
 		void route(Object msg, byte[] key);
 		
 		
-		
+		byte[] getHashedIP();
 	}
 }
 

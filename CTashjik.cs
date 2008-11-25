@@ -66,6 +66,7 @@ namespace Tashjik
 
 		private static IController chordController = null;
 		private static IController BATONController = null;
+		private static IController pastryController = null;
 		
 		private static IController getRefChordController()
 		{
@@ -73,7 +74,7 @@ namespace Tashjik
 				return chordController;
 			else
 			{
-				chordController = new Tier2.Chord.Controller(new Guid("0c400880-0722-420e-a792-0a764d6539ee"));
+				chordController = new Tier2.Common.Controller(new Guid("0c400880-0722-420e-a792-0a764d6539ee"));
 				return chordController;
 			}
 		}
@@ -84,8 +85,20 @@ namespace Tashjik
 				return BATONController;
 			else
 			{
-				BATONController = new Tier2.BATON.Controller(new Guid("59a86e1b-27d1-45bb-bbfe-b9cbfbb4fdd9"));
+				BATONController = new Tier2.Common.Controller(new Guid("59a86e1b-27d1-45bb-bbfe-b9cbfbb4fdd9"));
 				return BATONController;
+			}
+		}
+		
+		private static IController getRefPastrydController()
+		{
+			if(pastryController != null)
+				return pastryController;
+			else
+			{
+				//new guid to be added here
+				pastryController = new Tier2.Common.Controller(new Guid("0c400880-0722-420e-a792-0a764d6539ee"));
+				return pastryController;
 			}
 		}
 	}

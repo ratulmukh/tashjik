@@ -62,9 +62,9 @@ namespace Tashjik
 		IOverlay retrieve(Guid guid);
 		
 		//create a completely new overlay
-		IOverlay createNew();
+		IOverlay createNew(String strOverlay);
 		
 		//join an existing overlay to which this node is not yet a part of 
-		IOverlay joinExisting(IPAddress IP, Guid guid);
+		IOverlay joinExisting(IPAddress IP, Guid guid, String strOverlay);
 	}
 }

@@ -56,7 +56,7 @@ namespace Tashjik.Tier2.Chord
 	/*********************************************
 	* SEMANTICS: call methods on local machine
 	*********************************************/
-	public class Node : INode
+	public class Node : Tier2.Common.Node, INode
 	{
 
 		//private readonly IController controller;

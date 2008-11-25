@@ -56,6 +56,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 
 namespace Tashjik.Base
@@ -93,13 +94,93 @@ namespace Tashjik.Base
 
 		private class SockMsgQueue
 		{
-			public Socket sock;
-			public Queue<Msg> msgQueue;
+			private readonly Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
 
-			public SockMsgQueue(Socket s, Queue<Msg> m)
+			public SockMsgQueue(IPAddress IP)
 			{
-				sock = s;
-				msgQueue = m;
+					int iPortNo = System.Convert.ToInt16 ("2334");
+					IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+				
+//					AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackForDispatchMsg);
+//					Sock_Msg sock_msg = new Sock_Msg();
+//					sock_msg.msg = msg;
+//					sock_msg.sock = sock;
+					sock.BeginConnect(ipEnd, null, null);
+		
+			}
+				
+			
+			public void enqueue(Msg msg)
+			{
+				msgQueue.Enqueue(msg);
+			}
+			public void dispatchMsg()
+			{
+				BinaryFormatter formatter = new BinaryFormatter();
+				MemoryStream memStream;
+				byte[] byteArray;
+					
+				for(int i=0; i<msgQueue.Count; i++)
+				{
+					Msg msg = msgQueue.Dequeue();
+					
+					memStream = new MemoryStream(Marshal.SizeOf(msg));
+								
+					try 
+	    	    	{
+	    		        formatter.Serialize(memStream, msg);
+    		    	}
+		        	catch (SerializationException e) 
+			        {
+    			        Console.WriteLine("Failed to serialize. Reason: " + e.Message);
+        			    throw;
+			        }
+    			    /*finally 
+        			{
+	        		    memStream.Close();
+	    	    	}*/
+    	    	
+	    		    byteArray = new byte[memStream.Length];
+    			    int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
+						
+    			    SocketFlags f = new SocketFlags();  // :O
+    			    sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, null, null);
+			        //I think thr is a corresponding CloseSend to be called in the callback
+			        
+					memStream.Close();
+					
+				}
+			}
+			
+			static private void beginConnectCallBackForDispatchMsg(IAsyncResult result)
+			{
+				Msg msg     = ((Sock_Msg)(result.AsyncState)).msg;
+				Socket sock = ((Sock_Msg)(result.AsyncState)).sock;
+		            
+				MemoryStream memStream = new MemoryStream(Marshal.SizeOf(msg));
+			
+				BinaryFormatter formatter = new BinaryFormatter();
+				try 
+	        	{
+	    	        formatter.Serialize(memStream, msg);
+    		    }
+	        	catch (SerializationException e) 
+		        {
+    		        Console.WriteLine("Failed to serialize. Reason: " + e.Message);
+        		    throw;
+		        }
+    		    /*finally 
+        		{
+	        	    memStream.Close();
+	    	    }*/
+    	    
+    		    byte[] byteArray = new byte[memStream.Length];
+    		    int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
+				memStream.Close();
+
+				//sock.BeginSend(
+		                                                  	
 			}
 		}
 		
@@ -127,62 +208,20 @@ namespace Tashjik.Base
 		public void forward(IPAddress IP, Msg msg)
 		{
 			SockMsgQueue sockMsgQueue;
+											
 			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
-				sockMsgQueue.msgQueue.Enqueue(msg);
+				sockMsgQueue.enqueue(msg);
 			else
 			{
-				Queue<Msg> msgQueue= new Queue<Msg>();
-				msgQueue.Enqueue(msg);
-
-				Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-				SockMsgQueue sockMsgQueue1 = new SockMsgQueue(sock, msgQueue);
-				commRegistry.Add(IP, sockMsgQueue1);
-				
-				int iPortNo = System.Convert.ToInt16 ("2334");
-				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
-				
-				AsyncCallback beginConnectCallBack = new AsyncCallback(processBeginConnectForForward);
-				Sock_Msg sock_msg = new Sock_Msg();
-				sock_msg.msg = msg;
-				sock_msg.sock = sock;
-				sock.BeginConnect(ipEnd, beginConnectCallBack, sock_msg);
-				// send msg
-
-				
+				sockMsgQueue = new SockMsgQueue(IP);
+				sockMsgQueue.enqueue(msg);
+				commRegistry.Add(IP, sockMsgQueue);
 			}
 		}
 		
 		
 		
-		static private void processBeginConnectForForward(IAsyncResult result)
-		{
-			Msg msg     = ((Sock_Msg)(result.AsyncState)).msg;
-			Socket sock = ((Sock_Msg)(result.AsyncState)).sock;
-		            
-			MemoryStream memStream = new MemoryStream(Marshal.SizeOf(msg));
-			
-			BinaryFormatter formatter = new BinaryFormatter();
-			try 
-        	{
-	            formatter.Serialize(memStream, msg);
-    	    }
-        	catch (SerializationException e) 
-	        {
-    	        Console.WriteLine("Failed to serialize. Reason: " + e.Message);
-        	    throw;
-	        }
-    	    /*finally 
-        	{
-	            memStream.Close();
-    	    }*/
-    	    
-    	    byte[] byteArray = new byte[memStream.Length];
-    	    int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
-			memStream.Close();
 
-			//sock.BeginSend(
-		                                                  	
-		}
 		                                                  
 		private void receive(IPAddress fromIP, Msg msg)
 		{
@@ -203,15 +242,40 @@ namespace Tashjik.Base
 
 		}
 
-		//never call this directy
+		//never call this directly
 		public LowLevelComm()
 		{
-
+			init();
+		}
+		
+		private void init()
+		{
+			//start thread to constantly traverse through 
+			//commRegistry and dispatch msgs
+		    ThreadStart job = new ThreadStart(this.messageDispatch);
+			Thread messageDispatcher = new Thread(job);
+			messageDispatcher.Start();	
+			
+			//initialise connection acceptor thread, etc,. 
+			
+		}
+			
+		private void messageDispatch()
+		{
+			Dictionary<IPAddress, SockMsgQueue>.Enumerator enumerator = commRegistry.GetEnumerator();
+			while(true)
+			{
+				SockMsgQueue sockMsgQueue = enumerator.Current.Value;
+				sockMsgQueue.dispatchMsg();
+				enumerator.MoveNext();
+				//if enumerator reaches the end, does it circle around??
+			}
 		}
 
 		//singleton
 		private static LowLevelComm lowLevelComm = null;
-
+		
+		//need to take care of threading issues
 		public static LowLevelComm getRefLowLevelComm()
 		{
 			if(lowLevelComm!=null)

@@ -55,13 +55,53 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2.BATON
 {
-	public class NodeProxy :INode
+	public class NodeProxy : Tier2.Common.NodeProxy, INode, Tier2.Common.ProxyController.IProxy
 	{
+		internal static Node thisNode;
+	
+		private Tashjik.Common.NodeBasic selfNodeBasic;
+		private Base.LowLevelComm lowLevelComm;
+
+		private readonly int iPortNo = System.Convert.ToInt16 ("2334");
+		private readonly Socket sock = null;
+
+		//not necessary; NodeProxy will be added to the registry in ProxyController by ProxyController itself
+		//BUT TO SEND MSGS, U NEED THE INTERFACE
+		private Tier2.Common.ProxyController proxyController;
+
 		
-		public NodeProxy(IPAddress IP)
+		public NodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
 		{
-			//initialize new NodeProxy
-			//add itself to ProxyController registry
+			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
+			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+			setProxyController(proxyController);
+		}
+		
+		public override void setProxyController(Tier2.Common.ProxyController c)
+		{
+			//need to handle synchronised calls here
+			if(proxyController!=null)
+			proxyController = c;
+		}	
+		
+		public override byte[] getHashedIP()
+		{
+			return selfNodeBasic.getHashedIP();
+		}
+
+		public override IPAddress getIP()
+		{
+			return selfNodeBasic.getIP();
+		}
+
+		public override void setIP(IPAddress ip)
+		{
+			selfNodeBasic.setIP(ip);
+		}
+		
+		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		{
+			
 		}
 		
 		public void join(INode newNode)

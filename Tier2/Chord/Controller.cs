@@ -62,16 +62,16 @@ namespace Tashjik.Tier2.Chord
 		{
 			
 		}
-		public override IOverlay createNew()
+		public override IOverlay createNew(String strOverlay)
 		{
 			IOverlay chord = new Server();
-			ISink sink = new ProxyController();
+			ISink sink = new Tier2.Common.ProxyController("Chord");
 			OverlayInstanceInfo chordInstanceInfo = new OverlayInstanceInfo(chord, sink);
 			overlayInstanceRegistry.Add(chord.getGuid(), chordInstanceInfo);
 			return chord;
 		}
 
-		public override IOverlay joinExisting(IPAddress IP, Guid guid)
+		public override IOverlay joinExisting(IPAddress IP, Guid guid, String strOverlay)
 		{
 			//need to implement this
 			return new Server();

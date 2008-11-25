@@ -53,17 +53,17 @@ using System.Net.Sockets;
 
 namespace Tashjik.Tier2.Chord
 {
-	internal class Server : IOverlay
+	internal class Server : Tier2.Common.Server, IOverlay
 	{
 		private readonly Guid guid;
 		internal readonly Node thisNode;
 	
-		public Guid getGuid()
+		public override Guid getGuid()
 		{
 			return guid;
 		}
 
-		public void shutdown()
+		public override void shutdown()
 		{
 			
 		}
@@ -73,6 +73,15 @@ namespace Tashjik.Tier2.Chord
 			thisNode = new Node();
 			NodeProxy.thisNode = thisNode;
 		}
+		
+		public Server(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		{
+/*			guid = joinOtherGuid;
+			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
+			thisNode = new Node(joinOtherINode);
+*/
+		}
+
 
 
 		/*
@@ -92,7 +101,7 @@ namespace Tashjik.Tier2.Chord
 			successor.putData(byteKey, data);
 		}
 		*/
-		public void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
+		public override void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
 		{
 			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
 
@@ -122,7 +131,7 @@ namespace Tashjik.Tier2.Chord
 	
 
 
-		public void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		public override void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
 		{
 			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
 		

@@ -58,7 +58,7 @@ namespace Tashjik.Tier2.Chord
 	/*********************************************
 	* SEMANTICS: call methods on a remote machine
 	*********************************************/
-	public class NodeProxy : INode, ProxyController.IProxy
+	public class NodeProxy : Tier2.Common.NodeProxy, INode, Tier2.Common.ProxyController.IProxy
 	{
 		internal static Node thisNode;
 	
@@ -70,14 +70,14 @@ namespace Tashjik.Tier2.Chord
 
 		//not necessary; NodeProxy will be added to the registry in ProxyController by ProxyController itself
 		//BUT TO SEND MSGS, U NEED THE INTERFACE
-		private static IProxyController proxyController;
+		private Tier2.Common.ProxyController proxyController;
 
 		//needs to be synchronized
 		private Dictionary<byte[], Tashjik.Common.AsyncCallback_Object > findSuccessorRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
 		private List<Tashjik.Common.AsyncCallback_Object> getPredecessorRegistry = new List<Tashjik.Common.AsyncCallback_Object>();
 		private Dictionary<byte[], Tashjik.Common.AsyncCallback_Object > getDataRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
 
-		public static void setProxyController(IProxyController c)
+		public override void setProxyController(Tier2.Common.ProxyController c)
 		{
 			//need to handle synchronised calls here
 			if(proxyController!=null)
@@ -164,7 +164,7 @@ namespace Tashjik.Tier2.Chord
 			public Msg msg;
 		}
 
-		static void processGetDataForNotifyMsgRec(IAsyncResult result)
+		void processGetDataForNotifyMsgRec(IAsyncResult result)
 		{
 			Tashjik.Common.Data_Object data_Object = (Tashjik.Common.Data_Object)(result.AsyncState);
 			Tashjik.Common.Data data = data_Object.data;
@@ -179,7 +179,7 @@ namespace Tashjik.Tier2.Chord
 			proxyController.sendMsg((Object)returnMsgList, iNode);
 		}
 
-		static void processGetPredecessorForNotifyMsgRec(IAsyncResult result)
+		void processGetPredecessorForNotifyMsgRec(IAsyncResult result)
 		{
 			Common.ByteKey_INode byteKey_INode = (Common.ByteKey_INode) (result.AsyncState);
 			INode predecessor = byteKey_INode.node;
@@ -193,7 +193,7 @@ namespace Tashjik.Tier2.Chord
 				//we are creating a NodeProxy of thisNode
 				//because it needs to be transferred back
 				IPAddress predecessorIP = predecessor.getIP();
-				predecessor = new NodeProxy(predecessorIP);
+				predecessor = new NodeProxy(predecessorIP, proxyController);
 			}
 			Msg msg = thisAppState.msg;
 			msg.setReturnValue((Object)predecessor);
@@ -202,7 +202,7 @@ namespace Tashjik.Tier2.Chord
 			proxyController.sendMsg((Object)returnMsgList, iNode);
 		}
 
-		static void processFindSuccessorForNotifyMsgRec(IAsyncResult result)
+		void processFindSuccessorForNotifyMsgRec(IAsyncResult result)
 		{
 			Common.INode_Object iNode_Object = (Common.INode_Object) (result.AsyncState);
 			INode successor = iNode_Object.node;
@@ -218,7 +218,7 @@ namespace Tashjik.Tier2.Chord
 				//we are creating a NodeProxy of thisNode
 				//because it needs to be transferred back
 				IPAddress successorIP = successor.getIP();
-				successor = new NodeProxy(successorIP);
+				successor = new NodeProxy(successorIP, proxyController);
 			}
 
 			Msg msg = thisAppState.msg;
@@ -230,7 +230,7 @@ namespace Tashjik.Tier2.Chord
 		}	
 
 		//need to make this asynchronous
-		public void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
 		{
 			List<Msg> dataList = (List<Msg>)data;
 			List<Msg> returnMsgList = new List<Msg>();
@@ -396,17 +396,17 @@ namespace Tashjik.Tier2.Chord
 
 
 
-		public byte[] getHashedIP()
+		public override byte[] getHashedIP()
 		{
 			return selfNodeBasic.getHashedIP();
 		}
 
-		public IPAddress getIP()
+		public override IPAddress getIP()
 		{
 			return selfNodeBasic.getIP();
 		}
 
-		public void setIP(IPAddress ip)
+		public override void setIP(IPAddress ip)
 		{
 			selfNodeBasic.setIP(ip);
 		}
@@ -485,10 +485,11 @@ namespace Tashjik.Tier2.Chord
 	
 		}	
 
-		public NodeProxy(IPAddress ip)
+		public NodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+			setProxyController(proxyController);
 		}
 
 		public void beginPing(AsyncCallback pingCallBack, Object appState)

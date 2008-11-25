@@ -54,7 +54,7 @@ using System.Net.Sockets;
 namespace Tashjik.Tier2.BATON
 {
 
-	internal class Server : IOverlay
+	internal class Server : Tier2.Common.Server, IOverlay
 	{
 		private  readonly Guid guid;
 		internal readonly Node thisNode;
@@ -66,14 +66,14 @@ namespace Tashjik.Tier2.BATON
 			//NodeProxy.thisNode = thisNode;
 		}
 		
-		public Server(IPAddress joinOtherIP, Guid joinOtherGuid)
+		public Server(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
 			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP);
+			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
 			thisNode = new Node(joinOtherINode);
 		}
 			
-		public Guid getGuid()
+		public override Guid getGuid()
 		{
 			return new Guid();
 		}
@@ -81,16 +81,16 @@ namespace Tashjik.Tier2.BATON
 		//Common.Data getData(String key);
 		//void putData(String key, Common.Data data);
 
-		public void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
+		public override void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
 		{
 			
 		}
-		public void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		public override void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
 		{
 			
 		}
 		
-		public void shutdown()
+		public override void shutdown()
 		{
 			
 		}

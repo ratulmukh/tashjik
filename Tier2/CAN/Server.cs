@@ -48,16 +48,25 @@
 
 
 using System;
+using System.Net;
 
 namespace Tashjik.Tier2.CAN
 {
 	/// <summary>
 	/// Description of Server.
 	/// </summary>
-	public class Server
+	public class Server 
 	{
 		public Server()
 		{
+		}
+		
+		public Server(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		{
+/*			guid = joinOtherGuid;
+			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
+			thisNode = new Node(joinOtherINode);
+*/
 		}
 	}
 }

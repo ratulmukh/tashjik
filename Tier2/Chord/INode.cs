@@ -52,7 +52,7 @@ using System.Net;
 
 namespace Tashjik.Tier2.Chord
 {
-	public interface INode
+	public interface INode : Tier2.Common.INode
 	{
 		//INode findSuccessor(INode queryNode, INode queryingNode);
 		//INode findSuccessor(byte[] queryHashedKey, INode queryingNode);
