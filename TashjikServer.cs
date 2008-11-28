@@ -53,27 +53,27 @@ using System.Net;
 
 namespace Tashjik
 {
-	public static class CTashjik 
+	public enum OverlayTypeEnum
 	{
-		public enum OverlayTypeEnum
-		{
-			Chord,
-			BATON,
-			Pastry
-		}
-		
+		Chord,
+		BATON,
+		Pastry
+	}
+	
+	public static class TashjikServer 
+	{
 		public static ArrayList getList(Guid overlayGuid)
 		{
 			Controller overlayController = getController(overlayGuid);
 			return overlayController.getList();
-
+			
 		}
 		
 		public static ArrayList getList(OverlayTypeEnum overlayType)
 		{
 			Controller overlayController = getController(overlayType);
 			return overlayController.getList();
-
+			
 		}
 		
 		//get access to an overlay to which this node is already part of 

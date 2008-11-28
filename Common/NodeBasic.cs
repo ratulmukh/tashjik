@@ -53,7 +53,7 @@ using System.Net.Sockets;
 
 namespace Tashjik.Common
 {
-	public class NodeBasic
+	internal class NodeBasic
 	{
 		private readonly Object nodeBasicLock;
 		private IPAddress IP;

@@ -45,25 +45,29 @@
 * Modification History:
 *
 ************************************************************/
-
+/*
 
 using System;
+using Tashjik;
+using MbUnit.Framework;
 
-namespace Tashjik
+	
+namespace TashjikTest.Tier2Test.PastryTest
 {
-	/// <summary>
-	/// Description of Program.
-	/// </summary>
-	public class Program
+	[TestFixture]
+	public class NodeTests
 	{
-		public Program()
+		public NodeTests()
 		{
 		}
 		
-		public static void Main()
+		[Row(1)]
+		[Row(2)]
+		[RowTest]
+		public void test_Send1_Returns1(int NumberToTest)
 		{
-			Guid g = Guid.NewGuid();
-			Console.Write(g.ToString());
+			//Assert.AreEqual(NumberToTest.ToString(), Tashjik.Tier2.PastryNode.test(NumberToTest));
 		}
 	}
 }
+*/

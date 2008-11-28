@@ -52,7 +52,7 @@ using System;
 namespace Tashjik.Common
 {
 
-	public class Data_AsyncCallback_Object
+	internal class Data_AsyncCallback_Object
 	{
 		public Data data;
 		public AsyncCallback callBack;

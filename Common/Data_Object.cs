@@ -51,7 +51,7 @@ using System;
 
 namespace Tashjik.Common
 {
-	public class Data_Object
+	internal class Data_Object
 	{
 		public Data data;
 		public Object obj;

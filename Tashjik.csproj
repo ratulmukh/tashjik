@@ -3,13 +3,17 @@
     <ProjectGuid>{2EDD17CC-33CC-409D-8CEC-84A29B4D1F3F}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <RootNamespace>Tashjik</RootNamespace>
     <AssemblyName>Tashjik</AssemblyName>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>true</DebugSymbols>
     <DebugType>Full</DebugType>
     <Optimize>False</Optimize>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
@@ -23,20 +27,15 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <BaseAddress>4194304</BaseAddress>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="Gallio">
-      <HintPath>D:\Program Files\Gallio\bin\Gallio.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="MbUnit">
-      <HintPath>D:\Program Files\Gallio\bin\MbUnit.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Rhino.Mocks">
-      <HintPath>D:\Program Files\RhinoMocks\Rhino.Mocks.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -61,56 +60,52 @@
     <Compile Include="Common\ObjectAsyncResult.cs" />
     <Compile Include="Common\UtilityMethod.cs" />
     <Compile Include="Controller.cs" />
-    <Compile Include="CTashjik.cs" />
-    <Compile Include="IController.cs" />
+    <Compile Include="TashjikServer.cs" />
     <Compile Include="IOverlay.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="Tier1\STUN\Server.cs" />
-    <Compile Include="Tier2\BATON\DataStore.cs" />
-    <Compile Include="Tier2\BATON\Exception\PrevNodeNotMatching.cs" />
-    <Compile Include="Tier2\BATON\INode.cs" />
-    <Compile Include="Tier2\BATON\Node.cs" />
-    <Compile Include="Tier2\BATON\NodeProxy.cs" />
-    <Compile Include="Tier2\BATON\Server.cs" />
-    <Compile Include="Tier2\CAN\Controller.cs" />
-    <Compile Include="Tier2\CAN\DataStore.cs" />
-    <Compile Include="Tier2\CAN\INode.cs" />
-    <Compile Include="Tier2\CAN\Node.cs" />
-    <Compile Include="Tier2\CAN\NodeProxy.cs" />
-    <Compile Include="Tier2\CAN\Server.cs" />
-    <Compile Include="Tier2\Chord\Common\ByteKey_Data.cs" />
-    <Compile Include="Tier2\Chord\Common\ByteKey_DataAsyncResult.cs" />
-    <Compile Include="Tier2\Chord\Common\ByteKey_INode.cs" />
-    <Compile Include="Tier2\Chord\Common\ByteKey_INodeAsyncResult.cs" />
-    <Compile Include="Tier2\Chord\Common\INodeAsyncResult.cs" />
-    <Compile Include="Tier2\Chord\Common\INode_Object.cs" />
-    <Compile Include="Tier2\Chord\Common\INode_ObjectAsyncResult.cs" />
-    <Compile Include="Tier2\Chord\Common\MessageCapsule.cs" />
-    <Compile Include="Tier2\Chord\Common\Node.cs" />
-    <Compile Include="Tier2\Chord\Common\PendingLookUpRequest.cs" />
-    <Compile Include="Tier2\Chord\DataStore.cs" />
-    <Compile Include="Tier2\Chord\Exception\DataNotFoundInStoreException.cs" />
-    <Compile Include="Tier2\Chord\Exception\Exception.cs" />
-    <Compile Include="Tier2\Chord\Exception\LookUpDelayedException.cs" />
-    <Compile Include="Tier2\Chord\Exception\NotificationArrivedInterruptedException.cs" />
-    <Compile Include="Tier2\Chord\Exception\SearchPendingLookUpRequestListFailedException.cs" />
-    <Compile Include="Tier2\Chord\Exception\SuccessorNotDeterminedFromRoutingTableException.cs" />
-    <Compile Include="Tier2\Chord\INode.cs" />
-    <Compile Include="Tier2\Chord\Node.cs" />
-    <Compile Include="Tier2\Chord\NodeProxy.cs" />
-    <Compile Include="Tier2\Chord\Server.cs" />
-    <Compile Include="Tier2\Common\Controller.cs" />
+    <Compile Include="Tier2\BATONDataStore.cs" />
+    <Compile Include="Tier2\BATONNode.cs" />
+    <Compile Include="Tier2\BATONNodeProxy.cs" />
+    <Compile Include="Tier2\BATONServer.cs" />
+    <Compile Include="Tier2\CANDataStore.cs" />
+    <Compile Include="Tier2\CANNode.cs" />
+    <Compile Include="Tier2\CANNodeProxy.cs" />
+    <Compile Include="Tier2\CANServer.cs" />
+    <Compile Include="Tier2\ChordCommon\ByteKey_Data.cs" />
+    <Compile Include="Tier2\ChordCommon\ByteKey_DataAsyncResult.cs" />
+    <Compile Include="Tier2\ChordCommon\ByteKey_IChordNode.cs" />
+    <Compile Include="Tier2\ChordCommon\ByteKey_IChordNodeAsyncResult.cs" />
+    <Compile Include="Tier2\ChordCommon\IChordAsyncResult.cs" />
+    <Compile Include="Tier2\ChordCommon\IChordNode_Object.cs" />
+    <Compile Include="Tier2\ChordCommon\IChordNode_ObjectAsyncResult.cs" />
+    <Compile Include="Tier2\ChordCommon\MessageCapsule.cs" />
+    <Compile Include="Tier2\ChordCommon\NodeBase.cs" />
+    <Compile Include="Tier2\ChordCommon\PendingLookUpRequest.cs" />
+    <Compile Include="Tier2\ChordDataStore.cs" />
+    <Compile Include="Tier2\ChordException\DataNotFoundInStoreException.cs" />
+    <Compile Include="Tier2\ChordException\Exception.cs" />
+    <Compile Include="Tier2\ChordException\LookUpDelayedException.cs" />
+    <Compile Include="Tier2\ChordException\NotificationArrivedInterruptedException.cs" />
+    <Compile Include="Tier2\ChordException\SearchPendingLookUpRequestListFailedException.cs" />
+    <Compile Include="Tier2\ChordException\SuccessorNotDeterminedFromRoutingTableException.cs" />
+    <Compile Include="Tier2\ChordNode.cs" />
+    <Compile Include="Tier2\ChordNodeProxy.cs" />
+    <Compile Include="Tier2\ChordServer.cs" />
     <Compile Include="Tier2\Common\INode.cs" />
     <Compile Include="Tier2\Common\IProxyController.cs" />
     <Compile Include="Tier2\Common\Node.cs" />
     <Compile Include="Tier2\Common\NodeProxy.cs" />
     <Compile Include="Tier2\Common\ProxyController.cs" />
     <Compile Include="Tier2\Common\Server.cs" />
-    <Compile Include="Tier2\Pastry\DataStore.cs" />
-    <Compile Include="Tier2\Pastry\INode.cs" />
-    <Compile Include="Tier2\Pastry\Node.cs" />
-    <Compile Include="Tier2\Pastry\NodeProxy.cs" />
-    <Compile Include="Tier2\Pastry\Server.cs" />
+    <Compile Include="Tier2\IBATONNode.cs" />
+    <Compile Include="Tier2\ICANNode.cs" />
+    <Compile Include="Tier2\IChordNode.cs" />
+    <Compile Include="Tier2\IPastryNode.cs" />
+    <Compile Include="Tier2\PastryDataStore.cs" />
+    <Compile Include="Tier2\PastryNode.cs" />
+    <Compile Include="Tier2\PastryNodeProxy.cs" />
+    <Compile Include="Tier2\PastryServer.cs" />
+    <Compile Include="Tier2\PrevBATONNodeNotMatching.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Base" />
@@ -119,16 +114,8 @@
     <Folder Include="Tier1\STUN" />
     <Folder Include="Tier2" />
     <Folder Include="Tier1" />
-    <Folder Include="Tier2\BATON\Exception" />
-    <Folder Include="Tier2\CAN\Common" />
-    <Folder Include="Tier2\CAN\Exception" />
-    <Folder Include="Tier2\Chord" />
-    <Folder Include="Tier2\BATON" />
-    <Folder Include="Tier2\Chord\Common" />
-    <Folder Include="Tier2\Chord\Exception" />
+    <Folder Include="Tier2\ChordCommon" />
+    <Folder Include="Tier2\ChordException" />
     <Folder Include="Tier2\Common" />
-    <Folder Include="Tier2\CAN" />
-    <Folder Include="Tier2\Pastry" />
-    <Folder Include="Tier2\Pastry\Exception" />
   </ItemGroup>
 </Project>

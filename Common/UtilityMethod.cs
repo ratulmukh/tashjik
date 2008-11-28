@@ -54,7 +54,7 @@ using System.Net.Sockets;
 
 namespace Tashjik.Common
 {
-	public static class UtilityMethod
+	internal static class UtilityMethod
 	{
 		public static SHA1 sha = new SHA1CryptoServiceProvider();
 	

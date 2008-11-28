@@ -51,7 +51,7 @@ using System;
 
 namespace Tashjik.Common
 {
-	public class Bool_Object
+	internal class Bool_Object
 	{
 		public bool b;
 		public Object obj;
