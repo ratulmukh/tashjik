@@ -32,6 +32,8 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="TashjikServerTest.cs" />
     <Compile Include="Tier2Test\PastryTest\NodeTests.cs" />
+    <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaBootStrapperTest.cs" />
+    <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaNodeTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="BaseTest" />
@@ -40,7 +42,9 @@
     <Folder Include="Tier1Test" />
     <Folder Include="Tier2Test\ChordTest" />
     <Folder Include="Tier2Test\BATONTest" />
+    <Folder Include="Tier2Test\StreamingTest" />
     <Folder Include="Tier2Test\PastryTest" />
+    <Folder Include="Tier2Test\StreamingTest\NaradaTest" />
     <ProjectReference Include="Tashjik.csproj">
       <Project>{2EDD17CC-33CC-409D-8CEC-84A29B4D1F3F}</Project>
       <Name>Tashjik</Name>

@@ -36,6 +36,10 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="Rhino.Mocks">
+      <HintPath>D:\Program Files\RhinoMocks\Rhino.Mocks.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -106,6 +110,11 @@
     <Compile Include="Tier2\PastryNodeProxy.cs" />
     <Compile Include="Tier2\PastryServer.cs" />
     <Compile Include="Tier2\PrevBATONNodeNotMatching.cs" />
+    <Compile Include="Tier2\Streaming\INaradaNode.cs" />
+    <Compile Include="Tier2\Streaming\NaradaBootstrapper.cs" />
+    <Compile Include="Tier2\Streaming\NaradaNode.cs" />
+    <Compile Include="Tier2\Streaming\NaradaNodeProxy.cs" />
+    <Compile Include="Tier2\Streaming\NaradaServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Base" />
@@ -117,5 +126,6 @@
     <Folder Include="Tier2\ChordCommon" />
     <Folder Include="Tier2\ChordException" />
     <Folder Include="Tier2\Common" />
+    <Folder Include="Tier2\Streaming" />
   </ItemGroup>
 </Project>
