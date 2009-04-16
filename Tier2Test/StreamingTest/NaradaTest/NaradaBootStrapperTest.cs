@@ -13,12 +13,10 @@ using Tashjik.Tier2.Streaming;
 
 namespace TashjikTest.Tier2Test.StreamingTest.NaradaTest
 {
-	/// <summary>
-	/// Description of NaradaBootStrapper.
-	/// </summary>
-	public class NaradaBootStrapper
+
+	public class NaradaBootStrapperTest
 	{
-		public NaradaBootStrapper()
+		public NaradaBootStrapperTest()
 		{
 		}
 		
