@@ -18,7 +18,7 @@ namespace Tashjik.Tier2.Streaming
 			
 		}
 		
-		public List<INaradaNode> getnodes()
+		public List<INaradaNode> getNodes()
 		{
 			List<INaradaNode> nodeList = new List<INaradaNode>();
 			return nodeList;
