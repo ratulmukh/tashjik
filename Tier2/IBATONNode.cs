@@ -53,7 +53,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2
 {
-	public interface IBATONNode
+	internal interface IBATONNode
 	{
 		void join(IBATONNode newNode);
 		void leave();

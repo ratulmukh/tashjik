@@ -55,7 +55,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2
 {
-	public class BATONNodeProxy : Tier2.Common.NodeProxy, IBATONNode, Tier2.Common.ProxyController.IProxy
+	internal class BATONNodeProxy : Tier2.Common.NodeProxy, IBATONNode, Tier2.Common.ProxyController.IProxy
 	{
 		internal static BATONNode thisBATONNode;
 	

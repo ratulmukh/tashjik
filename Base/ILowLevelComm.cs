@@ -53,7 +53,7 @@ using System.Net.Sockets;
 
 namespace Tashjik.Base
 {
-	internal interface ILowLevelComm
+	public interface ILowLevelComm
 	{
 		void forward(IPAddress IP, LowLevelComm.Msg msg);
 		void register(Guid guid, LowLevelComm.ISink sink);

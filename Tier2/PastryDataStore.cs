@@ -54,7 +54,7 @@ namespace Tashjik.Tier2
 	/// <summary>
 	/// Description of DataStore.
 	/// </summary>
-	public class PastryDataStore
+	internal class PastryDataStore
 	{
 		public PastryDataStore()
 		{

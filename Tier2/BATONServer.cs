@@ -54,7 +54,7 @@ using System.Net.Sockets;
 namespace Tashjik.Tier2
 {
 
-	internal class BATONServer : Tier2.Common.Server, IOverlay
+	public class BATONServer : Tier2.Common.Server, IOverlay
 	{
 		private  readonly Guid guid;
 		internal readonly BATONNode thisNode;

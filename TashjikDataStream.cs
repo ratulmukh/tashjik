@@ -1,21 +1,23 @@
 ﻿/*
  * Created by SharpDevelop.
  * User: ratul
- * Date: 11/21/2008
- * Time: 10:44 AM
+ * Date: 4/19/2009
+ * Time: 6:59 AM
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 
 using System;
 
-namespace Tashjik.Tier2.Common
+namespace Tashjik
 {
 	/// <summary>
-	/// Description of INode.
+	/// Description of TashjikDataStream.
 	/// </summary>
-	public interface INode
+	public class TashjikDataStream
 	{
-		
+		public TashjikDataStream()
+		{
+		}
 	}
 }

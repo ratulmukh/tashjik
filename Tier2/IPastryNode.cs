@@ -53,7 +53,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2
 {
-	public interface IPastryNode
+	internal interface IPastryNode
 	{
 		void join(IPastryNode newNode);
 		void leave();

@@ -53,9 +53,10 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 
+
 namespace Tashjik.Tier2
 {
-	public class PastryNode : Tier2.Common.Node, IPastryNode
+	internal class PastryNode : Tashjik.Node, IPastryNode
 	{
 	
 		

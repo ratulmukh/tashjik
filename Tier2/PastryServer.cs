@@ -50,23 +50,26 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("TashjikServer")]
 
 namespace Tashjik.Tier2
 {
 
-	internal class PastryServer : Tier2.Common.Server, IOverlay
+	public class PastryServer : Server, IOverlay
 	{
 		private  readonly Guid guid;
 		internal readonly PastryNode thisNode;
 		
-		public PastryServer()
+		internal PastryServer()
 		{
 			guid = System.Guid.NewGuid();
 			thisNode = new PastryNode();
 			//NodeProxy.thisNode = thisNode;
 		}
 		
-		public PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		internal PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid, ProxyController proxyController)
 		{
 			guid = joinOtherGuid;
 			IPastryNode joinOtherINode = new PastryNodeProxy(joinOtherIP, proxyController);

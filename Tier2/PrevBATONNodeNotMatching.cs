@@ -51,7 +51,7 @@ using System;
 
 namespace Tashjik.Tier2
 {
-	public class PrevBATONNodeNotMatching : ApplicationException
+	internal class PrevBATONNodeNotMatching : ApplicationException
 	{
 		public PrevBATONNodeNotMatching() : base("Adjacent node to be changed is not matching with the one currently existitng")
 		{

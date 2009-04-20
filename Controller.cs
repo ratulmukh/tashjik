@@ -52,6 +52,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+
+[assembly:InternalsVisibleTo("Tier2Common")]
 
 namespace Tashjik
 {
@@ -98,15 +102,17 @@ namespace Tashjik
 				sink = si;
 			}
 		}
-
+		
+		private TashjikFactory tashjikFactory;
 		private readonly Guid guid;
 		private readonly Dictionary<Guid, OverlayInstanceInfo> overlayInstanceRegistry =
 			new Dictionary<Guid, OverlayInstanceInfo>();
 		private readonly OverlayTypeEnum overlayType;
 
 
-		public  Controller(Guid g, OverlayTypeEnum ovType)
+		public  Controller(TashjikFactory tashjikFactory, Guid g, OverlayTypeEnum ovType)
 		{
+			this.tashjikFactory = tashjikFactory ;
 			guid = g;
 			Base.LowLevelComm.getRefLowLevelComm().register(guid, this);
 			overlayType = ovType;
@@ -134,8 +140,8 @@ namespace Tashjik
 
 		public  IOverlay createNew()
 		{
-			IOverlay overlay = createServer();
-			ISink sink = new Tier2.Common.ProxyController(overlayType);
+			IOverlay overlay = tashjikFactory.createServer(overlayType);
+			ISink sink = new ProxyController(tashjikFactory, overlayType);
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
 			return overlay;
@@ -143,13 +149,14 @@ namespace Tashjik
 
 		public  IOverlay joinExisting(IPAddress IP, Guid guid)
 		{
-			ISink sink = new Tier2.Common.ProxyController(overlayType);
-			IOverlay overlay = createServer(IP, guid, (Tier2.Common.ProxyController)(sink));
+			ISink sink = new ProxyController(tashjikFactory, overlayType);
+			IOverlay overlay = tashjikFactory.createServer(overlayType, IP, guid, (ProxyController)(sink));
 			//IOverlay overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
 			return overlay;
 		}
+/*
 		
 		private Tier2.Common.Server createServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
@@ -179,5 +186,6 @@ namespace Tashjik
 				return null;
 		   
 		}
+*/
 	}
 }

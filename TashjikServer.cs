@@ -57,18 +57,32 @@ namespace Tashjik
 	{
 		Chord,
 		BATON,
-		Pastry
+		Pastry, 
+		CAN,
+		Narada
 	}
 	
 	public static class TashjikServer 
 	{
+		
+		private static TashjikFactory tashjikFactory = new TashjikFactory();
+		
+	/*	public TashjikServer()
+		{
+			init();
+		}
+		
+		private static void init()
+		{
+			tashjikFactory = new TashjikFactory();
+		}
+	*/	
 		public static ArrayList getList(Guid overlayGuid)
 		{
 			Controller overlayController = getController(overlayGuid);
 			return overlayController.getList();
 			
 		}
-		
 		public static ArrayList getList(OverlayTypeEnum overlayType)
 		{
 			Controller overlayController = getController(overlayType);
@@ -147,7 +161,7 @@ namespace Tashjik
 				return chordController;
 			else
 			{
-				chordController = new Controller(new Guid(chordGUID), overlayType);
+				chordController = new Controller(tashjikFactory, new Guid(chordGUID), overlayType);
 				return chordController;
 			}
 		}
@@ -158,7 +172,7 @@ namespace Tashjik
 				return BATONController;
 			else
 			{
-				BATONController = new Controller(new Guid(BATONGUID), overlayType);
+				BATONController = new Controller(tashjikFactory, new Guid(BATONGUID), overlayType);
 				return BATONController;
 			}
 		}
@@ -170,7 +184,7 @@ namespace Tashjik
 			else
 			{
 				//new guid to be added here
-				pastryController = new Controller(new Guid(pastryGUID), overlayType);
+				pastryController = new Controller(tashjikFactory, new Guid(pastryGUID), overlayType);
 				return pastryController;
 			}
 		}

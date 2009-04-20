@@ -52,10 +52,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
+using Tashjik;
 
 namespace Tashjik.Tier2
 {
-	public class PastryNodeProxy :Tier2.Common.NodeProxy, IPastryNode
+	internal class PastryNodeProxy : NodeProxy, IPastryNode
 	{
 		
 		internal static PastryNode thisNode;
@@ -63,16 +64,16 @@ namespace Tashjik.Tier2
 		private Tashjik.Common.NodeBasic selfNodeBasic;
 		private Base.LowLevelComm lowLevelComm;		
 		
-		private Tier2.Common.ProxyController proxyController;
+		private ProxyController proxyController;
 		
-		public PastryNodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		public PastryNodeProxy(IPAddress ip, ProxyController proxyController)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
 			setProxyController(proxyController);
 		}
 		
-		public override void setProxyController(Tier2.Common.ProxyController c)
+		public override void setProxyController(ProxyController c)
 		{
 			//need to handle synchronised calls here
 			if(proxyController!=null)
