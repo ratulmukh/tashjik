@@ -53,7 +53,7 @@ using System.Net;
 
 namespace Tashjik
 {
-	public enum OverlayTypeEnum
+/*	public enum String
 	{
 		Chord,
 		BATON,
@@ -61,11 +61,11 @@ namespace Tashjik
 		CAN,
 		Narada
 	}
-	
+*/	
 	public static class TashjikServer 
 	{
 		
-		private static TashjikFactory tashjikFactory = new TashjikFactory();
+		private static OverlayServerFactory overlayServerFactory = new OverlayServerFactory();
 		
 	/*	public TashjikServer()
 		{
@@ -74,7 +74,7 @@ namespace Tashjik
 		
 		private static void init()
 		{
-			tashjikFactory = new TashjikFactory();
+			overlayServerFactory = new OverlayServerFactory();
 		}
 	*/	
 		public static ArrayList getList(Guid overlayGuid)
@@ -83,9 +83,9 @@ namespace Tashjik
 			return overlayController.getList();
 			
 		}
-		public static ArrayList getList(OverlayTypeEnum overlayType)
+		public static ArrayList getList(String strOverlayType)
 		{
-			Controller overlayController = getController(overlayType);
+			Controller overlayController = getController(strOverlayType);
 			return overlayController.getList();
 			
 		}
@@ -104,9 +104,9 @@ namespace Tashjik
 			return overlayController.createNew();
 			
 		}
-		public static IOverlay createNew(OverlayTypeEnum overlayType)
+		public static IOverlay createNew(String strOverlayType)
 		{
-			Controller overlayController = getController(overlayType);
+			Controller overlayController = getController(strOverlayType);
 			return overlayController.createNew();
 			
 		}
@@ -117,20 +117,20 @@ namespace Tashjik
 			Controller overlayController = getController(overlayGuid);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
-		public static IOverlay joinExisting(IPAddress IP, OverlayTypeEnum overlayType, Guid overlayInstanceGuid)
+		public static IOverlay joinExisting(IPAddress IP, String strOverlayType, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(overlayType);
+			Controller overlayController = getController(strOverlayType);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
 		
-		private static Controller getController(OverlayTypeEnum overlayType)
+		private static Controller getController(String strOverlayType)
 		{
-			if(overlayType==OverlayTypeEnum.Chord)
-				return getRefChordController(overlayType);
-			else if(overlayType==OverlayTypeEnum.BATON)
-				return getRefBATONController(overlayType);
-			else if(overlayType==OverlayTypeEnum.Pastry)
-				return getRefBATONController(overlayType);
+			if(strOverlayType=="Chord")
+				return getRefChordController(strOverlayType);
+			else if(strOverlayType=="BATON")
+				return getRefBATONController(strOverlayType);
+			else if(strOverlayType=="Pastry")
+				return getRefBATONController(strOverlayType);
 			else
 				throw new Exception();
 		}
@@ -138,11 +138,11 @@ namespace Tashjik
 		private static Controller getController(Guid overlayGuid)
 		{
 			if(overlayGuid==new Guid(chordGUID))
-				return getRefChordController(OverlayTypeEnum.Chord);
+				return getRefChordController("Chord");
 			else if(overlayGuid==new Guid(BATONGUID))
-				return getRefBATONController(OverlayTypeEnum.BATON);
+				return getRefBATONController("BATON");
 			else if(overlayGuid==new Guid(pastryGUID))
-				return getRefBATONController(OverlayTypeEnum.Pastry);
+				return getRefBATONController("Pastry");
 			else
 				throw new Exception();
 		}
@@ -155,36 +155,36 @@ namespace Tashjik
 		private static Controller BATONController = null;
 		private static Controller pastryController = null;
 		
-		private static Controller getRefChordController(OverlayTypeEnum overlayType)
+		private static Controller getRefChordController(String strOverlayType)
 		{
 			if(chordController != null)
 				return chordController;
 			else
 			{
-				chordController = new Controller(tashjikFactory, new Guid(chordGUID), overlayType);
+				chordController = new Controller(overlayServerFactory, new Guid(chordGUID), strOverlayType);
 				return chordController;
 			}
 		}
 		
-		private static Controller getRefBATONController(OverlayTypeEnum overlayType)
+		private static Controller getRefBATONController(String strOverlayType)
 		{
 			if(BATONController != null)
 				return BATONController;
 			else
 			{
-				BATONController = new Controller(tashjikFactory, new Guid(BATONGUID), overlayType);
+				BATONController = new Controller(overlayServerFactory, new Guid(BATONGUID), strOverlayType);
 				return BATONController;
 			}
 		}
 		
-		private static Controller getRefPastrydController(OverlayTypeEnum overlayType)
+		private static Controller getRefPastrydController(String strOverlayType)
 		{
 			if(pastryController != null)
 				return pastryController;
 			else
 			{
 				//new guid to be added here
-				pastryController = new Controller(tashjikFactory, new Guid(pastryGUID), overlayType);
+				pastryController = new Controller(overlayServerFactory, new Guid(pastryGUID), strOverlayType);
 				return pastryController;
 			}
 		}

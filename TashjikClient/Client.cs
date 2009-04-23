@@ -18,8 +18,8 @@ namespace TashjikClient
 			Guid g = Guid.NewGuid();
 			Console.Write(g.ToString());
 			
-			//ChordServer chord = (ChordServer)(TashjikServer.createNew(OverlayTypeEnum.Chord));
-			ArrayList arr = TashjikServer.getList(OverlayTypeEnum.Chord);
+			//ChordServer chord = (ChordServer)(TashjikServer.createNew(String.Chord));
+			ArrayList arr = TashjikServer.getList(String.Chord);
 			ChordServer chord = (ChordServer)(arr[0]);
 			
 			String key = "key";

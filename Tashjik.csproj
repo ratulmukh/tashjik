@@ -70,11 +70,11 @@
     <Compile Include="Node.cs" />
     <Compile Include="NodeProxy.cs" />
     <Compile Include="ProxyController.cs" />
-    <Compile Include="PseudoTashjikFactory.cs" />
+    <Compile Include="PseudoOverlayServerFactory.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="StreamingServer.cs" />
     <Compile Include="TashjikDataStream.cs" />
-    <Compile Include="TashjikFactory.cs" />
+    <Compile Include="OverlayServerFactory.cs" />
     <Compile Include="TashjikServer.cs" />
     <Compile Include="IOverlay.cs" />
     <Compile Include="Tier1\STUN\Server.cs" />

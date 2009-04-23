@@ -103,19 +103,19 @@ namespace Tashjik
 			}
 		}
 		
-		private TashjikFactory tashjikFactory;
+		private OverlayServerFactory overlayServerFactory;
 		private readonly Guid guid;
 		private readonly Dictionary<Guid, OverlayInstanceInfo> overlayInstanceRegistry =
 			new Dictionary<Guid, OverlayInstanceInfo>();
-		private readonly OverlayTypeEnum overlayType;
+		private readonly String strOverlayType;
 
 
-		public  Controller(TashjikFactory tashjikFactory, Guid g, OverlayTypeEnum ovType)
+		public  Controller(OverlayServerFactory overlayServerFactory, Guid g, String strOverlayType)
 		{
-			this.tashjikFactory = tashjikFactory ;
+			this.overlayServerFactory = overlayServerFactory ;
 			guid = g;
 			Base.LowLevelComm.getRefLowLevelComm().register(guid, this);
-			overlayType = ovType;
+			this.strOverlayType = strOverlayType;
 		}
 
 		public  ArrayList getList()
@@ -140,8 +140,8 @@ namespace Tashjik
 
 		public  IOverlay createNew()
 		{
-			IOverlay overlay = tashjikFactory.createServer(overlayType);
-			ISink sink = new ProxyController(tashjikFactory, overlayType);
+			IOverlay overlay = overlayServerFactory.createServer(strOverlayType);
+			ISink sink = new ProxyController(overlayServerFactory, strOverlayType);
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
 			return overlay;
@@ -149,8 +149,8 @@ namespace Tashjik
 
 		public  IOverlay joinExisting(IPAddress IP, Guid guid)
 		{
-			ISink sink = new ProxyController(tashjikFactory, overlayType);
-			IOverlay overlay = tashjikFactory.createServer(overlayType, IP, guid, (ProxyController)(sink));
+			ISink sink = new ProxyController(overlayServerFactory, strOverlayType);
+			IOverlay overlay = overlayServerFactory.createServer(strOverlayType, IP, guid, (ProxyController)(sink));
 			//IOverlay overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);

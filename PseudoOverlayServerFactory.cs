@@ -16,23 +16,23 @@ namespace Tashjik
 	/// <summary>
 	/// Description of PseudoTashjikFactory.
 	/// </summary>
-	internal class TashjikFactory
+	internal class OverlayServerFactory
 	{
-		internal TashjikFactory()
+		internal OverlayServerFactory()
 		{
 		}
 		
-		internal Server createServer(OverlayTypeEnum overlayType)
-		{
-			return null;
-		}
-		
-		internal Server createServer(OverlayTypeEnum overlayType, IPAddress joinOtherIP, Guid joinOtherGuid, ProxyController proxyController)
+		internal Server createServer(String strOverlayType)
 		{
 			return null;
 		}
 		
-		internal NodeProxy createNodeProxy(OverlayTypeEnum overlayType, IPAddress IP, ProxyController ProxyController)
+		internal Server createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid, ProxyController proxyController)
+		{
+			return null;
+		}
+		
+		internal NodeProxy createNodeProxy(String strOverlayType, IPAddress IP, ProxyController ProxyController)
 		{
 			return null;
 		}
