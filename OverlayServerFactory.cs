@@ -27,21 +27,7 @@ namespace Tashjik
 		
 		internal Server createServer(String strOverlayType)
 		{
-			Type overlayServerType; 
-			if(overlayServerTypeRegistry.TryGetValue(strOverlayType, out overlayServerType))
-			{
-				return (Server)(Activator.CreateInstance(overlayServerType));
-			}
-			else
-			{
-				Assembly overlayAssembly = Assembly.Load(strOverlayType);
-				String strOverlayServerType = strOverlayType + "Server";
-				overlayServerType = overlayAssembly.GetType(strOverlayServerType);
-				overlayServerTypeRegistry.Add(strOverlayType, overlayServerType );
-							
-				return (Server)(Activator.CreateInstance(overlayServerType));
-				
-			}
+			createServer(strOverlayType, null, null, null);
 		
 		}
 		
@@ -59,9 +45,16 @@ namespace Tashjik
 				String strOverlayServerType = strOverlayType + "Server";
 				overlayServerType = overlayAssembly.GetType(strOverlayServerType);
 				overlayServerTypeRegistry.Add(strOverlayType, overlayServerType );
-								
-				Object[] constructorArgs = new Object[3]{joinOtherIP, joinOtherGuid, proxyController};
-				return (Server)(Activator.CreateInstance(overlayServerType, constructorArgs));
+						
+				
+				//Activator.CreateInstance is very slow and should be optimized 
+				if(joinOtherIP==null || joinOtherGuid==null || proxyController==null)
+					return (Server)(Activator.CreateInstance(overlayServerType));
+				else
+				{
+					Object[] constructorArgs = new Object[3]{joinOtherIP, joinOtherGuid, proxyController};
+					return (Server)(Activator.CreateInstance(overlayServerType, constructorArgs));
+				}
 
 			}
 		

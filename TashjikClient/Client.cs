@@ -27,8 +27,7 @@ namespace TashjikClient
 			AsyncCallback putDataCallBack = new AsyncCallback(processPutDataCallBack);
 			//chord.beginGetData(key, data, putDataCallBack, null);
 			
-		
-			
+
 		}
 		
 		
