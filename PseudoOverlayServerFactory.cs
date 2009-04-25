@@ -27,7 +27,7 @@ namespace Tashjik
 			return null;
 		}
 		
-		internal Server createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid, ProxyController proxyController)
+		internal Server createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
 			return null;
 		}

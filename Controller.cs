@@ -52,10 +52,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+//using System.Runtime.CompilerServices;
 
 
-[assembly:InternalsVisibleTo("Tier2Common")]
+//[assembly:InternalsVisibleTo("Tier2Common")]
 
 namespace Tashjik
 {
@@ -94,9 +94,9 @@ namespace Tashjik
 
 		internal class OverlayInstanceInfo
 		{
-			public IOverlay overlay;
+			public Server overlay;
 			public ISink sink;
-			public OverlayInstanceInfo(IOverlay ov, ISink si)
+			public OverlayInstanceInfo(Server ov, ISink si)
 			{
 				overlay = ov;
 				sink = si;
@@ -128,7 +128,7 @@ namespace Tashjik
 			return guids;
 		}
 
-		public  IOverlay retrieve(Guid guid)
+		public  Server retrieve(Guid guid)
 		{
 			OverlayInstanceInfo overlayInstanceInfo;
 			if(overlayInstanceRegistry.TryGetValue(guid, out overlayInstanceInfo))
@@ -138,20 +138,20 @@ namespace Tashjik
 				throw new Tashjik.Common.Exception.LocalHostIPNotFoundException();
 		}		
 
-		public  IOverlay createNew()
+		public  Server createNew()
 		{
-			IOverlay overlay = overlayServerFactory.createServer(strOverlayType);
-			ISink sink = new ProxyController(overlayServerFactory, strOverlayType);
+			Server overlay = overlayServerFactory.createServer(strOverlayType);
+			ISink sink = overlay.getProxyController();
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
 			return overlay;
 		}
 
-		public  IOverlay joinExisting(IPAddress IP, Guid guid)
+		public  Server joinExisting(IPAddress IP, Guid guid)
 		{
-			ISink sink = new ProxyController(overlayServerFactory, strOverlayType);
-			IOverlay overlay = overlayServerFactory.createServer(strOverlayType, IP, guid, (ProxyController)(sink));
-			//IOverlay overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
+			Server overlay = overlayServerFactory.createServer(strOverlayType, IP, guid);
+			ISink sink = overlay.getProxyController();
+			//Server overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
 			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
 			return overlay;

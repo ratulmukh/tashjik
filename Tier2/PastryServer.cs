@@ -60,24 +60,30 @@ namespace Tashjik.Tier2
 	public class PastryServer : Server, IOverlay
 	{
 		private  readonly Guid guid;
-		internal readonly PastryNode thisNode;
+		private readonly PastryNode thisNode;
 		
 		internal PastryServer()
 		{
 			guid = System.Guid.NewGuid();
 			thisNode = new PastryNode();
 			//NodeProxy.thisNode = thisNode;
+			CreateNodeProxyDelegate createNodeProxyDelegate = new  CreateNodeProxyDelegate(createPastryNodeProxy);
+			base.setCreateNodeProxyDelegate(createNodeProxyDelegate);
 		}
 		
-		internal PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid, ProxyController proxyController)
+		internal PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
 			guid = joinOtherGuid;
-			IPastryNode joinOtherINode = new PastryNodeProxy(joinOtherIP, proxyController);
+			CreateNodeProxyDelegate createNodeProxyDelegate = new  CreateNodeProxyDelegate(createPastryNodeProxy);
+			base.setCreateNodeProxyDelegate(createNodeProxyDelegate);
+			IPastryNode joinOtherINode = (IPastryNode)(base.getNodeProxy(joinOtherIP));
 			thisNode = new PastryNode(joinOtherINode);
+			
+			
 		}
 		
 		
-			
+		
 		public override Guid getGuid()
 		{
 			return new Guid();
@@ -101,5 +107,25 @@ namespace Tashjik.Tier2
 		}
 		
 		
+		
+		
+			
+			
+		private NodeProxy createPastryNodeProxy(IPAddress IP)
+		{
+			return new PastryNodeProxy(IP);
+		}
+		
+		internal IPastryNode getNodeProxy(IPAddress IP)
+		{      
+			return (IPastryNode)(base.getNodeProxy(IP));
+		}
+		
+		/*
+		protected class PastryNode : Tashjik.Node//, IPastryNode
+		{
+			
+		}
+	*/
 	}
 }

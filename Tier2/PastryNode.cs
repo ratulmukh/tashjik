@@ -56,6 +56,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2
 {
+	
 	internal class PastryNode : Tashjik.Node, IPastryNode
 	{
 	
@@ -348,4 +349,5 @@ namespace Tashjik.Tier2
 			return "1";
 		}
 	}
+
 }

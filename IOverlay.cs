@@ -65,5 +65,7 @@ namespace Tashjik
 		
 		void shutdown();
 		
+		//ProxyController getProxyController();
+		
 	}
 }

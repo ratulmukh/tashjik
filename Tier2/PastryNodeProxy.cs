@@ -64,21 +64,22 @@ namespace Tashjik.Tier2
 		private Tashjik.Common.NodeBasic selfNodeBasic;
 		private Base.LowLevelComm lowLevelComm;		
 		
-		private ProxyController proxyController;
+		//private ProxyController proxyController;
 		
-		public PastryNodeProxy(IPAddress ip, ProxyController proxyController)
+		public PastryNodeProxy(IPAddress ip/*, ProxyController proxyController*/)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
-			setProxyController(proxyController);
+			//setProxyController(proxyController);
 		}
-		
+		/*
 		public override void setProxyController(ProxyController c)
 		{
 			//need to handle synchronised calls here
 			if(proxyController!=null)
 			proxyController = c;
 		}
+		*/
 		
 		public override byte[] getHashedIP()
 		{
@@ -117,4 +118,5 @@ namespace Tashjik.Tier2
 		
 						
 	}
+
 }

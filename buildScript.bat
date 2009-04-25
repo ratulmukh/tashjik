@@ -34,6 +34,8 @@ C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Rat
 cd I:\ratul\code\tashjik\ratul-Narada
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikBase.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\Pastry.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\Tier2Common.dll /target:library IOverlay.cs IStreamingOverlay.cs TashjikDataStream.cs OverlayServerFactory.cs Controller.cs Server.cs StreamingServer.cs TashjikServer.cs INode.cs IProxyController.cs Node.cs NodeProxy.cs ProxyController.cs 
 
+cd I:\ratul\code\tashjik\ratul-Narada\TashjikClient
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikClient.exe /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /target:exe Client.cs 
 
 
 

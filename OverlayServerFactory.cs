@@ -4,11 +4,11 @@ using System.Net;
 using Tashjik.Tier2;
 //using Tashjik.Tier2.Streaming;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+//using System.Runtime.CompilerServices;
 using System.Collections;
 using System.Collections.Generic;
 
-[assembly:InternalsVisibleTo("Pastry")]
+//[assembly:InternalsVisibleTo("Pastry")]
 
 namespace Tashjik
 {
@@ -27,11 +27,10 @@ namespace Tashjik
 		
 		internal Server createServer(String strOverlayType)
 		{
-			createServer(strOverlayType, null, null, null);
-		
+			return createServer(strOverlayType, null, new Guid());
 		}
 		
-		internal Server createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid, ProxyController proxyController)
+		internal Server createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
 			
 			Type overlayServerType; 
@@ -48,11 +47,11 @@ namespace Tashjik
 						
 				
 				//Activator.CreateInstance is very slow and should be optimized 
-				if(joinOtherIP==null || joinOtherGuid==null || proxyController==null)
+				if(joinOtherIP==null || joinOtherGuid==null)
 					return (Server)(Activator.CreateInstance(overlayServerType));
 				else
 				{
-					Object[] constructorArgs = new Object[3]{joinOtherIP, joinOtherGuid, proxyController};
+					Object[] constructorArgs = new Object[2]{joinOtherIP, joinOtherGuid};
 					return (Server)(Activator.CreateInstance(overlayServerType, constructorArgs));
 				}
 
@@ -113,7 +112,7 @@ namespace Tashjik
 		}
 */
 
-		
+/*		
 		internal NodeProxy createNodeProxy(String strOverlayType, IPAddress IP, ProxyController proxyController)
 		{
 //			if(strOverlayType==String.Chord)
@@ -124,6 +123,6 @@ namespace Tashjik
 				return null; 
 			
 		}
-
+*/
 	}
 }

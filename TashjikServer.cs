@@ -91,20 +91,20 @@ namespace Tashjik
 		}
 		
 		//get access to an overlay to which this node is already part of 
-		public static IOverlay retrieve(Guid overlayGuid, Guid overlayInstanceGuid)
+		public static Server retrieve(Guid overlayGuid, Guid overlayInstanceGuid)
 		{
 			Controller overlayController = getController(overlayGuid);
 			return overlayController.retrieve(overlayInstanceGuid);
 		}
 		
 		//create a completely new overlay
-		public static IOverlay createNew(Guid overlayGuid)
+		public static Server createNew(Guid overlayGuid)
 		{
 			Controller overlayController = getController(overlayGuid);
 			return overlayController.createNew();
 			
 		}
-		public static IOverlay createNew(String strOverlayType)
+		public static Server createNew(String strOverlayType)
 		{
 			Controller overlayController = getController(strOverlayType);
 			return overlayController.createNew();
@@ -112,12 +112,12 @@ namespace Tashjik
 		}
 		
 		//join an existing overlay to which this node is not yet a part of 
-		public static IOverlay joinExisting(IPAddress IP, Guid overlayGuid, Guid overlayInstanceGuid)
+		public static Server joinExisting(IPAddress IP, Guid overlayGuid, Guid overlayInstanceGuid)
 		{
 			Controller overlayController = getController(overlayGuid);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
-		public static IOverlay joinExisting(IPAddress IP, String strOverlayType, Guid overlayInstanceGuid)
+		public static Server joinExisting(IPAddress IP, String strOverlayType, Guid overlayInstanceGuid)
 		{
 			Controller overlayController = getController(strOverlayType);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
