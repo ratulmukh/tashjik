@@ -55,7 +55,7 @@ using System.Net;
 namespace Tashjik
 {
 	
-	internal class ProxyController : IProxyController , Controller.ISink
+	internal class NodeProxyController : INodeProxyController , OverlayController.ISink
 	{
 	
 		private readonly NodeProxyRegistry nodeProxyRegistry;
@@ -180,9 +180,9 @@ namespace Tashjik
 			}
 		}
 
-		private Server.CreateNodeProxyDelegate createNodeProxyDelegate;
+		private OverlayServer.CreateNodeProxyDelegate createNodeProxyDelegate;
 		
-		internal void setCreateNodeProxyDelegate(Server.CreateNodeProxyDelegate createNodeProxyDelegate)
+		internal void setCreateNodeProxyDelegate(OverlayServer.CreateNodeProxyDelegate createNodeProxyDelegate)
 		{
 			this.createNodeProxyDelegate = createNodeProxyDelegate;
 		}
@@ -197,7 +197,7 @@ namespace Tashjik
 		}
 		*/
 		
-		internal ProxyController()
+		internal NodeProxyController()
 		{
 		
 		}

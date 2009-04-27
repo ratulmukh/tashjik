@@ -1,5 +1,4 @@
-﻿/****************************************************************
-*  File Name: 
+﻿/* File Name: 
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -50,50 +49,25 @@
 
 
 using System;
-using System.Net;
-using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Tashjik
 {
 	/// <summary>
-	/// Description of Server.
+	/// Description of StreamingServer.
 	/// </summary>
-	public abstract class Server //: IOverlay
+	public abstract class StreamingOverlayServer : IStreamingOverlayServer
 	{
-	
+		public StreamingOverlayServer()
+		{
+		}
 		public abstract Guid getGuid();
-
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		public abstract void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
-		public abstract void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState);
+		
+		public abstract List<TashjikDataStream> search(String key);
+		public abstract void beginGetStream(TashjikDataStream stream, AsyncCallback getStreamCallBack, Object appState); 
+		public abstract void addRepository(String directoryPath);
 		
 		public abstract void shutdown();
-		
-		private ProxyController proxyController;
-		
-		public Server()
-		{
-			proxyController = new ProxyController();
-		}
-		
-		internal protected NodeProxy getNodeProxy(IPAddress IP)
-		{
-			return proxyController.getNodeProxy(IP);
-		}
-		
-		internal ProxyController getProxyController()
-		{
-			return proxyController;
-		}
-		
-		internal protected delegate NodeProxy CreateNodeProxyDelegate(IPAddress IP);
-		
-		internal protected void setCreateNodeProxyDelegate(CreateNodeProxyDelegate createNodeProxyDelegate)
-		{
-			proxyController.setCreateNodeProxyDelegate(createNodeProxyDelegate);
-		}
-
 	}
 }

@@ -1,5 +1,5 @@
-﻿/************************************************************
-* File Name: 
+﻿/****************************************************************
+*  File Name: 
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -32,8 +32,10 @@
 *
 *
 * Description:
-* 
-* 
+* This class is only to circumvent cicrcular referencing between
+* TashjikServer.dll and Tier2Common.dll. It is the same as 
+* ProxyController.cs, but with all its TashjikServer.dll
+* references removed.
 *
 * Supporting Documentation:
 *
@@ -48,13 +50,50 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik
 {
-	internal interface IProxyController
+	/// <summary>
+	/// Description of Server.
+	/// </summary>
+	public abstract class OverlayServer //: IOverlay
 	{
-		void register(NodeProxy nodeProxy);
-		void sendMsg(Object data, NodeProxy sender);
 	
+		public abstract Guid getGuid();
+
+		//Common.Data getData(String key);
+		//void putData(String key, Common.Data data);
+
+		public abstract void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
+		public abstract void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState);
+		
+		public abstract void shutdown();
+		
+		private NodeProxyController nodeProxyController;
+		
+		public OverlayServer()
+		{
+			nodeProxyController = new NodeProxyController();
+		}
+		
+		internal protected NodeProxy getNodeProxy(IPAddress IP)
+		{
+			return nodeProxyController.getNodeProxy(IP);
+		}
+		
+		internal NodeProxyController getNodeProxyController()
+		{
+			return nodeProxyController;
+		}
+		
+		internal protected delegate NodeProxy CreateNodeProxyDelegate(IPAddress IP);
+		
+		internal protected void setCreateNodeProxyDelegate(CreateNodeProxyDelegate createNodeProxyDelegate)
+		{
+			nodeProxyController.setCreateNodeProxyDelegate(createNodeProxyDelegate);
+		}
+
 	}
 }

@@ -57,7 +57,7 @@ using System.Runtime.CompilerServices;
 namespace Tashjik.Tier2
 {
 
-	public class PastryServer : Server, IOverlay
+	public class PastryServer : OverlayServer, IOverlayServer
 	{
 		private  readonly Guid guid;
 		private readonly PastryNode thisNode;

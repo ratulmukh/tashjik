@@ -8,16 +8,16 @@
  */
 
 using System;
-//using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-//[assembly:InternalsVisibleTo("Pastry")]
+[assembly:InternalsVisibleTo("Pastry")]
 
 namespace Tashjik 
 {
 	/// <summary>
 	/// Description of Node.
 	/// </summary>
-	public abstract class Node : INode
+	internal abstract class Node : INode
 	{
 		public Node()
 		{
@@ -25,4 +25,4 @@ namespace Tashjik
 	}
 
 }
--
+

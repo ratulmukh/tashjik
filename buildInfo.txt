@@ -2,7 +2,7 @@ I:\ratul\code\tashjik\ratul-Narada>svn copy https://tashjik.googlecode.com/svn/t
 runk/ https://tashjik.googlecode.com/svn/branches/ratul-Narada -m "Creating a pr
 ivate branch for Narada"
 
-I:\ratul\code\tashjik\ratul-Narada>svn checkout https://tashjik.googlecode.com/s
+I:\ratul\code\tashjik>svn checkout https://tashjik.googlecode.com/s
 vn/branches/ratul-Narada
 
 

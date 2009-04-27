@@ -79,51 +79,51 @@ namespace Tashjik
 	*/	
 		public static ArrayList getList(Guid overlayGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.getList();
 			
 		}
 		public static ArrayList getList(String strOverlayType)
 		{
-			Controller overlayController = getController(strOverlayType);
+			OverlayController overlayController = getController(strOverlayType);
 			return overlayController.getList();
 			
 		}
 		
 		//get access to an overlay to which this node is already part of 
-		public static Server retrieve(Guid overlayGuid, Guid overlayInstanceGuid)
+		public static OverlayServer retrieve(Guid overlayGuid, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.retrieve(overlayInstanceGuid);
 		}
 		
 		//create a completely new overlay
-		public static Server createNew(Guid overlayGuid)
+		public static OverlayServer createNew(Guid overlayGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.createNew();
 			
 		}
-		public static Server createNew(String strOverlayType)
+		public static OverlayServer createNew(String strOverlayType)
 		{
-			Controller overlayController = getController(strOverlayType);
+			OverlayController overlayController = getController(strOverlayType);
 			return overlayController.createNew();
 			
 		}
 		
 		//join an existing overlay to which this node is not yet a part of 
-		public static Server joinExisting(IPAddress IP, Guid overlayGuid, Guid overlayInstanceGuid)
+		public static OverlayServer joinExisting(IPAddress IP, Guid overlayGuid, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
-		public static Server joinExisting(IPAddress IP, String strOverlayType, Guid overlayInstanceGuid)
+		public static OverlayServer joinExisting(IPAddress IP, String strOverlayType, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(strOverlayType);
+			OverlayController overlayController = getController(strOverlayType);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
 		
-		private static Controller getController(String strOverlayType)
+		private static OverlayController getController(String strOverlayType)
 		{
 			if(strOverlayType=="Chord")
 				return getRefChordController(strOverlayType);
@@ -135,7 +135,7 @@ namespace Tashjik
 				throw new Exception();
 		}
 
-		private static Controller getController(Guid overlayGuid)
+		private static OverlayController getController(Guid overlayGuid)
 		{
 			if(overlayGuid==new Guid(chordGUID))
 				return getRefChordController("Chord");
@@ -151,40 +151,40 @@ namespace Tashjik
 		private const string BATONGUID  = "59a86e1b-27d1-45bb-bbfe-b9cbfbb4fdd9";
 		private const string pastryGUID = "73dc00d1-40e9-4111-91a5-fa55881f0e35";
 		
-		private static Controller chordController = null;
-		private static Controller BATONController = null;
-		private static Controller pastryController = null;
+		private static OverlayController chordController = null;
+		private static OverlayController BATONController = null;
+		private static OverlayController pastryController = null;
 		
-		private static Controller getRefChordController(String strOverlayType)
+		private static OverlayController getRefChordController(String strOverlayType)
 		{
 			if(chordController != null)
 				return chordController;
 			else
 			{
-				chordController = new Controller(overlayServerFactory, new Guid(chordGUID), strOverlayType);
+				chordController = new OverlayController(overlayServerFactory, new Guid(chordGUID), strOverlayType);
 				return chordController;
 			}
 		}
 		
-		private static Controller getRefBATONController(String strOverlayType)
+		private static OverlayController getRefBATONController(String strOverlayType)
 		{
 			if(BATONController != null)
 				return BATONController;
 			else
 			{
-				BATONController = new Controller(overlayServerFactory, new Guid(BATONGUID), strOverlayType);
+				BATONController = new OverlayController(overlayServerFactory, new Guid(BATONGUID), strOverlayType);
 				return BATONController;
 			}
 		}
 		
-		private static Controller getRefPastrydController(String strOverlayType)
+		private static OverlayController getRefPastrydController(String strOverlayType)
 		{
 			if(pastryController != null)
 				return pastryController;
 			else
 			{
 				//new guid to be added here
-				pastryController = new Controller(overlayServerFactory, new Guid(pastryGUID), strOverlayType);
+				pastryController = new OverlayController(overlayServerFactory, new Guid(pastryGUID), strOverlayType);
 				return pastryController;
 			}
 		}

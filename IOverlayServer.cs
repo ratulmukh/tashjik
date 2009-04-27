@@ -1,4 +1,5 @@
-﻿/* File Name: 
+﻿/************************************************************
+* File Name: 
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -31,10 +32,8 @@
 *
 *
 * Description:
-* This class is only to circumvent cicrcular referencing between
-* TashjikServer.dll and Tier2Common.dll. It is the same as 
-* ProxyController.cs, but with all its TashjikServer.dll
-* references removed.
+* 
+* 
 *
 * Supporting Documentation:
 *
@@ -49,25 +48,24 @@
 
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik
 {
-	/// <summary>
-	/// Description of StreamingServer.
-	/// </summary>
-	public abstract class StreamingServer : IStreamingOverlay
+	public interface IOverlayServer
 	{
-		public StreamingServer()
-		{
-		}
-		public abstract Guid getGuid();
+		Guid getGuid();
+
+		//Common.Data getData(String key);
+		//void putData(String key, Common.Data data);
+
+		void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
+		void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState);
 		
-		public abstract List<TashjikDataStream> search(String key);
-		public abstract void beginGetStream(TashjikDataStream stream, AsyncCallback getStreamCallBack, Object appState); 
-		public abstract void addRepository(String directoryPath);
+		void shutdown();
 		
-		public abstract void shutdown();
+		//ProxyController getProxyController();
+		
 	}
 }

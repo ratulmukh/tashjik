@@ -48,24 +48,13 @@
 
 
 using System;
-using System.Net;
-using System.Net.Sockets;
 
 namespace Tashjik
 {
-	public interface IOverlay
+	internal interface INodeProxyController
 	{
-		Guid getGuid();
-
-		//Common.Data getData(String key);
-		//void putData(String key, Common.Data data);
-
-		void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
-		void beginPutData(String key, Common.Data data, AsyncCallback putDataCallBack, Object appState);
-		
-		void shutdown();
-		
-		//ProxyController getProxyController();
-		
+		void register(NodeProxy nodeProxy);
+		void sendMsg(Object data, NodeProxy sender);
+	
 	}
 }

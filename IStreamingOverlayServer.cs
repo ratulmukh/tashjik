@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace Tashjik
 {
 
-	public interface IStreamingOverlay
+	public interface IStreamingOverlayServer
 	{
 		Guid getGuid();
 		

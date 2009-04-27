@@ -1,7 +1,7 @@
 ﻿
 using System;
 using System.Net;
-using Tashjik.Tier2;
+//using Tashjik.Tier2;
 //using Tashjik.Tier2.Streaming;
 using System.Reflection;
 //using System.Runtime.CompilerServices;
@@ -25,18 +25,18 @@ namespace Tashjik
 			overlayServerTypeRegistry = new Dictionary<String, Type>();
 		}
 		
-		internal Server createServer(String strOverlayType)
+		internal OverlayServer createServer(String strOverlayType)
 		{
 			return createServer(strOverlayType, null, new Guid());
 		}
 		
-		internal Server createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
+		internal OverlayServer createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
 			
 			Type overlayServerType; 
 			if(overlayServerTypeRegistry.TryGetValue(strOverlayType, out overlayServerType))
 			{
-				return (Server)(Activator.CreateInstance(overlayServerType));
+				return (OverlayServer)(Activator.CreateInstance(overlayServerType));
 			}
 			else
 			{
@@ -48,11 +48,11 @@ namespace Tashjik
 				
 				//Activator.CreateInstance is very slow and should be optimized 
 				if(joinOtherIP==null || joinOtherGuid==null)
-					return (Server)(Activator.CreateInstance(overlayServerType));
+					return (OverlayServer)(Activator.CreateInstance(overlayServerType));
 				else
 				{
 					Object[] constructorArgs = new Object[2]{joinOtherIP, joinOtherGuid};
-					return (Server)(Activator.CreateInstance(overlayServerType, constructorArgs));
+					return (OverlayServer)(Activator.CreateInstance(overlayServerType, constructorArgs));
 				}
 
 			}
