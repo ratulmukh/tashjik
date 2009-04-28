@@ -57,11 +57,11 @@ using System.Collections.Generic;
 namespace Tashjik.Tier2
 {
 	
-	internal class PastryNode : Tashjik.Node, IPastryNode
+	internal class PastryRealNode : Tashjik.RealNode, IPastryNode
 	{
 	
 		
-			public static bool operator<(PastryNode n1, IPastryNode n2)
+			public static bool operator<(PastryRealNode n1, IPastryNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -72,7 +72,7 @@ namespace Tashjik.Tier2
 					return false;
 			}	
 
-			public static bool operator>(PastryNode n1, IPastryNode n2)
+			public static bool operator>(PastryRealNode n1, IPastryNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -84,7 +84,7 @@ namespace Tashjik.Tier2
 			}
 
 
-			public static bool operator>(PastryNode n1, byte[] hash2)
+			public static bool operator>(PastryRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -94,7 +94,7 @@ namespace Tashjik.Tier2
 				else return false;
 			}
 
-			public static bool operator<(PastryNode n1, byte[] hash2)
+			public static bool operator<(PastryRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -105,7 +105,7 @@ namespace Tashjik.Tier2
 					return false;
 			}
 
-			public static bool operator<=(PastryNode n1, byte[] hash2)
+			public static bool operator<=(PastryRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -117,7 +117,7 @@ namespace Tashjik.Tier2
 			}
 			
 
-			public static bool operator>=(PastryNode n1, byte[] hash2)
+			public static bool operator>=(PastryRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -128,7 +128,7 @@ namespace Tashjik.Tier2
 			}
 			
 			
-			public static bool operator<(byte[] hash1, PastryNode n2)
+			public static bool operator<(byte[] hash1, PastryRealNode n2)
 			{
 				String strHash1 = hash1.ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -139,7 +139,7 @@ namespace Tashjik.Tier2
 					return false;
 			}
 
-			public static bool operator>(byte[] hash1, PastryNode n2)
+			public static bool operator>(byte[] hash1, PastryRealNode n2)
 			{
 				String strHash1 = hash1.ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -150,7 +150,7 @@ namespace Tashjik.Tier2
 					return false;
 			}
 			
-			private static int sharedPrefixLength(PastryNode n, byte[] hash)
+			private static int sharedPrefixLength(PastryRealNode n, byte[] hash)
 			{
 				byte[] PastryNodeHashedIP = n.getHashedIP();
 				int maxLength = PastryNodeHashedIP.Length;
@@ -168,7 +168,7 @@ namespace Tashjik.Tier2
 
 			
 			
-			public static int operator-(PastryNode n1, byte[] hash2)
+			public static int operator-(PastryRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -184,7 +184,7 @@ namespace Tashjik.Tier2
 			
 			public struct RoutingTableRow
 			{
-				public IPastryNode[] PastryNode;
+				public IPastryNode[] PastryRealNode;
 			}
 			
 			
@@ -201,21 +201,21 @@ namespace Tashjik.Tier2
 			private readonly List<IPastryNode> largerLeafSet = new List<IPastryNode>(L/2); 
 			
 			private readonly Tashjik.Common.NodeBasic selfPastryNodeBasic;
-			private readonly PastryNode self;
+			private readonly PastryRealNode self;
 			
 			
 			
 			public void route(Object msg, byte[] key)
 			{
-				if((PastryNode)(smallerLeafSet[L/2-1])<=key)
+				if((PastryRealNode)(smallerLeafSet[L/2-1])<=key)
 				{	for(int i=0; i<L/2; i++)
-						if((PastryNode)smallerLeafSet[i]<=key)
+						if((PastryRealNode)smallerLeafSet[i]<=key)
 						smallerLeafSet[i].route(msg, key);
 				}
-				else if((PastryNode)(largerLeafSet[L/2-1])>=key)
+				else if((PastryRealNode)(largerLeafSet[L/2-1])>=key)
 				{
 					for(int i=0; i<L/2; i++)
-						if((PastryNode)largerLeafSet[i]>=key)
+						if((PastryRealNode)largerLeafSet[i]>=key)
 							largerLeafSet[i].route(msg, key);
 				}
 				else
@@ -224,31 +224,31 @@ namespace Tashjik.Tier2
 					int row = prefixLength;
 					int col = (int)(key[prefixLength]);
 					
-					if((routingTable[row].PastryNode[col]) !=null)
-						routingTable[row].PastryNode[col].route(msg, key);
+					if((routingTable[row].PastryRealNode[col]) !=null)
+						routingTable[row].PastryRealNode[col].route(msg, key);
 					else
 					{
 						for(int j=0; j<row; j++)
 							for(int k=0; k<col; k++)
 							{
-								if((sharedPrefixLength((PastryNode)(routingTable[row].PastryNode[col]), key) >= prefixLength)
-							 	&& ((PastryNode)(routingTable[row].PastryNode[col]) - key) < (self - key)) //this needs to absolute
-									routingTable[row].PastryNode[col].route(msg, key);
+								if((sharedPrefixLength((PastryRealNode)(routingTable[row].PastryRealNode[col]), key) >= prefixLength)
+							 	&& ((PastryRealNode)(routingTable[row].PastryRealNode[col]) - key) < (self - key)) //this needs to absolute
+									routingTable[row].PastryRealNode[col].route(msg, key);
 							}
 						for(int i=0; i<L/2; i++)
-							if((sharedPrefixLength((PastryNode)(smallerLeafSet[i]), key) >= prefixLength)
-							&& ((PastryNode)(smallerLeafSet[i]) - key) < (self - key))   //this needs to absolute
+							if((sharedPrefixLength((PastryRealNode)(smallerLeafSet[i]), key) >= prefixLength)
+							&& ((PastryRealNode)(smallerLeafSet[i]) - key) < (self - key))   //this needs to absolute
 								smallerLeafSet[i].route(msg, key);
 						for(int i=0; i<L/2; i++)
-							if((sharedPrefixLength((PastryNode)(smallerLeafSet[i]), key) >= prefixLength)
-							&& ((PastryNode)(largerLeafSet[i]) - key) < (self - key))   //this needs to absolute
+							if((sharedPrefixLength((PastryRealNode)(smallerLeafSet[i]), key) >= prefixLength)
+							&& ((PastryRealNode)(largerLeafSet[i]) - key) < (self - key))   //this needs to absolute
 								largerLeafSet[i].route(msg, key);
 					}
 				}
 				
 			}
 			
-			public Engine(PastryNode n)
+			public Engine(PastryRealNode n)
 			{
 				self = n;
 				try
@@ -271,7 +271,7 @@ namespace Tashjik.Tier2
 
 			}
 			
-			public Engine(PastryNode n, IPastryNode joinOtherPastryNode)
+			public Engine(PastryRealNode n, IPastryNode joinOtherPastryNode)
 			{
 /*
 				self = n;
@@ -319,7 +319,7 @@ namespace Tashjik.Tier2
 			engine.route(msg, key);
 		}
 		
-		public PastryNode()
+		public PastryRealNode()
 		{
 			engine = new Engine(this);
 		}
@@ -329,7 +329,7 @@ namespace Tashjik.Tier2
 			return engine.getSelfPastryNodeBasicHashedIP();
 		}
 		
-		public PastryNode(IPastryNode joinOtherPastryNode)
+		public PastryRealNode(IPastryNode joinOtherPastryNode)
 		{
 			engine = new Engine(this, joinOtherPastryNode);
 		}

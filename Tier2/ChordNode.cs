@@ -316,7 +316,7 @@ namespace Tashjik.Tier2
 					FixFingersAppState fixFingersAppState = (FixFingersAppState)(iNode_Object.obj);
 					int i = fixFingersAppState.fingerNext;
 					fixFingersAppState.finger[i] = iNode_Object.node;
-					//INode finger = fixFingersAppState.finger[i];
+					//Node finger = fixFingersAppState.finger[i];
 					//finger = iNode_Object.node;
 
 
@@ -411,7 +411,7 @@ namespace Tashjik.Tier2
 					JoinAppState joinAppState = (JoinAppState)(iNode_Object.obj);
 					joinAppState.successor = iNode_Object.node;
 	
-					//Object thisAppState = INode_Object.obj;
+					//Object thisAppState = Node_Object.obj;
 
 					AsyncCallback callBack = joinAppState.callback;
 					Object appState1 = joinAppState.appState;
@@ -451,13 +451,13 @@ namespace Tashjik.Tier2
 				}
 
 				/*
-				public INode findSuccessor(byte[] queryHashedKey, INode queryingNode)
+				public Node findSuccessor(byte[] queryHashedKey, Node queryingNode)
 				{
 					if((Node)self<queryHashedKey && queryHashedKey<(Node)successor)
 						return successor;
 					else
 					{
-						INode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
+						Node closestPrecNode = findClosestPreceedingNode(queryHashedKey);
 						if (closestPrecNode==self)
 							return successor;
 						else
@@ -552,7 +552,7 @@ namespace Tashjik.Tier2
 			}
 	
 			//singleton creator
-			/* public static Engine createEngine(INode encapsulatingNode)
+			/* public static Engine createEngine(Node encapsulatingNode)
 			{
 				//have to correct singleton call
 				if(singleton==null)
@@ -689,8 +689,8 @@ namespace Tashjik.Tier2
 			NOTE: THIS FUNCTIONALITY GOES INTO ENGINE
 			finger[0] = this;
 			need to fill up the rest
-			am avoiding filling them up with empty NodeProxys
-			because I want to keepNodeProxys immutable
+			am avoiding filling them up with empty ProxyNodes
+			because I want to keepProxyNodes immutable
 			no need to create now
 			for(int i=1;i<160;i++)
 			finger[i] = blah blah blah
@@ -714,12 +714,12 @@ namespace Tashjik.Tier2
 		}
 
 		/*
-		public INode findSuccessor(INode queryNode, INode queryingNode)
+		public Node findSuccessor(Node queryNode, Node queryingNode)
 		{
 			return findSuccessor(queryNode.getHashedIP(), queryingNode);
 		}
 
-		public INode findSuccessor(byte[] queryHashedKey, INode queryingNode)
+		public Node findSuccessor(byte[] queryHashedKey, Node queryingNode)
 		{
 			return engine.findSuccessor(queryHashedKey, queryingNode);
 		}
@@ -737,7 +737,7 @@ namespace Tashjik.Tier2
 
 
 
-		/* public INode getPredecessor()
+		/* public Node getPredecessor()
 		{
 			return engine.getPredecessor();
 
@@ -759,7 +759,7 @@ namespace Tashjik.Tier2
 			}
 		}
 
-		/* public void notify(INode possiblePred)
+		/* public void notify(Node possiblePred)
 		{
 			engine.notify(possiblePred);
 		

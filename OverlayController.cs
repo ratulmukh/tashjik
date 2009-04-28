@@ -141,7 +141,7 @@ namespace Tashjik
 		public  OverlayServer createNew()
 		{
 			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType);
-			ISink sink = overlayServer.getNodeProxyController();
+			ISink sink = overlayServer.getProxyNodeController();
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
 			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);
 			return overlayServer;
@@ -150,7 +150,7 @@ namespace Tashjik
 		public  OverlayServer joinExisting(IPAddress IP, Guid guid)
 		{
 			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType, IP, guid);
-			ISink sink = overlayServer.getNodeProxyController();
+			ISink sink = overlayServer.getProxyNodeController();
 			//Server overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
 			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);

@@ -1,28 +1,23 @@
 ﻿/*
  * Created by SharpDevelop.
  * User: ratul
- * Date: 11/21/2008
- * Time: 10:44 AM
+ * Date: 4/28/2009
+ * Time: 11:27 AM
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 
 using System;
-using System.Runtime.CompilerServices;
 
-[assembly:InternalsVisibleTo("Pastry")]
-
-namespace Tashjik 
+namespace Tashjik
 {
 	/// <summary>
 	/// Description of Node.
 	/// </summary>
-	internal abstract class Node : INode
+	public abstract class Node
 	{
 		public Node()
 		{
 		}
 	}
-
 }
-

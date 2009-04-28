@@ -58,7 +58,7 @@ namespace Tashjik
 	/// <summary>
 	/// Description of Server.
 	/// </summary>
-	public abstract class OverlayServer //: IOverlay
+	public abstract class OverlayServer 
 	{
 	
 		public abstract Guid getGuid();
@@ -71,28 +71,28 @@ namespace Tashjik
 		
 		public abstract void shutdown();
 		
-		private NodeProxyController nodeProxyController;
+		private ProxyNodeController proxyNodeController;
 		
 		public OverlayServer()
 		{
-			nodeProxyController = new NodeProxyController();
+			proxyNodeController = new ProxyNodeController();
 		}
 		
-		internal protected NodeProxy getNodeProxy(IPAddress IP)
+		internal  ProxyNode getProxyNode(IPAddress IP)
 		{
-			return nodeProxyController.getNodeProxy(IP);
+			return proxyNodeController.getProxyNode(IP);
 		}
 		
-		internal NodeProxyController getNodeProxyController()
+		internal ProxyNodeController getProxyNodeController()
 		{
-			return nodeProxyController;
+			return proxyNodeController;
 		}
 		
-		internal protected delegate NodeProxy CreateNodeProxyDelegate(IPAddress IP);
+		internal delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP);
 		
-		internal protected void setCreateNodeProxyDelegate(CreateNodeProxyDelegate createNodeProxyDelegate)
+		internal void setCreateProxyNodeDelegate(CreateProxyNodeDelegate createProxyNodeDelegate)
 		{
-			nodeProxyController.setCreateNodeProxyDelegate(createNodeProxyDelegate);
+			proxyNodeController.setCreateProxyNodeDelegate(createProxyNodeDelegate);
 		}
 
 	}

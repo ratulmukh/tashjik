@@ -49,21 +49,74 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
+using Tashjik;
 
-namespace Tashjik
+namespace Tashjik.Tier2
 {
-	/// <summary>
-	/// Description of NodeProxy.
-	/// </summary>
-	public abstract class NodeProxy : INode
+	internal class PastryProxyNode : ProxyNode, IPastryNode
 	{
 		
-		public abstract byte[] getHashedIP();
-		public abstract IPAddress getIP();
-		public abstract void setIP(IPAddress ip);
-		public abstract void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
-		//public abstract void setProxyController(ProxyController c);
-	}
+		internal static PastryRealNode thisNode;
+	
+		private Tashjik.Common.NodeBasic selfNodeBasic;
+		private Base.LowLevelComm lowLevelComm;		
+		
+		//private ProxyController proxyController;
+		
+		public PastryProxyNode(IPAddress ip/*, ProxyController proxyController*/)
+		{
+			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
+			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+			//setProxyController(proxyController);
+		}
+		/*
+		public override void setProxyController(ProxyController c)
+		{
+			//need to handle synchronised calls here
+			if(proxyController!=null)
+			proxyController = c;
+		}
+		*/
+		
+		public override byte[] getHashedIP()
+		{
+			return selfNodeBasic.getHashedIP();
+		}
 
+		public override IPAddress getIP()
+		{
+			return selfNodeBasic.getIP();
+		}
+
+		public override void setIP(IPAddress ip)
+		{
+			selfNodeBasic.setIP(ip);
+		}
+		
+		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		{
+			
+		}
+		
+		public void join(IPastryNode newNode)
+		{
+			
+		}
+		
+		public void leave()
+		{
+			
+		}
+		
+		public void route(Object msg, byte[] key)
+		{
+			
+		}
+		
+						
+	}
 
 }

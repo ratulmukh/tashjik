@@ -57,7 +57,7 @@ namespace Tashjik
 	/// <summary>
 	/// Description of StreamingServer.
 	/// </summary>
-	public abstract class StreamingOverlayServer : IStreamingOverlayServer
+	public abstract class StreamingOverlayServer 
 	{
 		public StreamingOverlayServer()
 		{

@@ -93,16 +93,16 @@ namespace Tashjik
 		}
 */
 /*
-		internal NodeProxy createNodeProxy(String strOverlayType, IPAddress IP, ProxyController proxyController)
+		internal ProxyNode createProxyNode(String strOverlayType, IPAddress IP, ProxyController proxyController)
 		{
 			Type[2] overlayTypes;
-			Type overlayNodeProxyType; 
+			Type overlayProxyNodeType; 
 			if(overlayServerTypeRegistry.TryGetValue(strOverlayType, out overlayTypes))
 			{
-				overlayNodeProxyType = overlayTypes[1]
+				overlayProxyNodeType = overlayTypes[1]
 					
 				Object[] constructorArgs = new Object[2]{IP, proxyController};
-				return (NodeProxy)(Activator.CreateInstance(overlayServerType, constructorArgs));
+				return (ProxyNode)(Activator.CreateInstance(overlayServerType, constructorArgs));
 			}
 			else
 			{
@@ -113,12 +113,12 @@ namespace Tashjik
 */
 
 /*		
-		internal NodeProxy createNodeProxy(String strOverlayType, IPAddress IP, ProxyController proxyController)
+		internal ProxyNode createProxyNode(String strOverlayType, IPAddress IP, ProxyController proxyController)
 		{
 //			if(strOverlayType==String.Chord)
-//				return (NodeProxy)(new ChordNodeProxy(IP, proxyController));
+//				return (ProxyNode)(new ChordProxyNode(IP, proxyController));
 			if(strOverlayType=="Pastry")
-			    return (NodeProxy)(new PastryNodeProxy(IP, proxyController));    
+			    return (ProxyNode)(new PastryProxyNode(IP, proxyController));    
 			else
 				return null; 
 			

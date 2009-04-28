@@ -55,10 +55,10 @@ using System.Net;
 namespace Tashjik
 {
 	
-	internal class NodeProxyController : INodeProxyController , OverlayController.ISink
+	internal class ProxyNodeController : IProxyNodeController , OverlayController.ISink
 	{
 	
-		private readonly NodeProxyRegistry nodeProxyRegistry;
+		private readonly ProxyNodeRegistry proxyNodeRegistry;
 		
 		/*
 		public enum TransmitModeEnum
@@ -80,18 +80,18 @@ namespace Tashjik
 			
 		}
 */
-		class NodeProxyRegistry
+		class ProxyNodeRegistry
 		{
-			List<NodeProxyData> proxyDataList;
+			List<ProxyNodeData> proxyDataList;
 	
-			class NodeProxyData
+			class ProxyNodeData
 			{
-				public NodeProxy nodeProxy;
+				public ProxyNode proxyNode;
 				public Queue<Object> msgQueue;
 	
-				public NodeProxyData(NodeProxy n)
+				public ProxyNodeData(ProxyNode n)
 				{
-					nodeProxy = n;
+					proxyNode = n;
 					msgQueue = new Queue<Object>();
 				}
 
@@ -102,39 +102,39 @@ namespace Tashjik
 			}	
 
 
-			public void AddData(NodeProxy n, Object data)
+			public void AddData(ProxyNode n, Object data)
 			{
-				foreach(NodeProxyData nodeProxyData in proxyDataList)
+				foreach(ProxyNodeData proxyNodeData in proxyDataList)
 				{
-					if(n==nodeProxyData.nodeProxy)
+					if(n==proxyNodeData.proxyNode)
 					{
-						nodeProxyData.AddDataToQueue(data);
+						proxyNodeData.AddDataToQueue(data);
 						return;
 					}
 				}
-				//nodeProxy not existing; so create 1
-				NodeProxyData npd = new NodeProxyData(n);
+				//proxyNode not existing; so create 1
+				ProxyNodeData npd = new ProxyNodeData(n);
 				npd.AddDataToQueue(data);
 				proxyDataList.Add(npd);
 			}
 
-			public void AddNewEntry(NodeProxy n)
+			public void AddNewEntry(ProxyNode n)
 			{
-				NodeProxyData npd = new NodeProxyData(n);
+				ProxyNodeData npd = new ProxyNodeData(n);
 				proxyDataList.Add(npd);
 			}
 
 
-			public NodeProxyRegistry()
+			public ProxyNodeRegistry()
 			{
-				proxyDataList = new List<NodeProxyData>();
+				proxyDataList = new List<ProxyNodeData>();
 			}
 
-			public NodeProxy findNodeProxy(IPAddress ip)
+			public ProxyNode findProxyNode(IPAddress ip)
 			{
-				foreach(NodeProxyData nodeProxyData in proxyDataList)
-				if(nodeProxyData.nodeProxy.getIP()==ip)
-					return nodeProxyData.nodeProxy;
+				foreach(ProxyNodeData proxyNodeData in proxyDataList)
+				if(proxyNodeData.proxyNode.getIP()==ip)
+					return proxyNodeData.proxyNode;
 					//RELAX: yes i know this is wrong; have to change it
 					throw new Tashjik.Common.Exception.LocalHostIPNotFoundException();
 				
@@ -151,40 +151,40 @@ namespace Tashjik
 		{
 			try
 			{
-				NodeProxy proxyFound = nodeProxyRegistry.findNodeProxy(fromIP);
+				ProxyNode proxyFound = proxyNodeRegistry.findProxyNode(fromIP);
 				proxyFound.beginNotifyMsgRec(fromIP, data, null, null);
 			}
 			//RELAX: yes i know this is wrong; have to change it
 			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
 			{
-				NodeProxy n = createNodeProxyDelegate(fromIP);
-				nodeProxyRegistry.AddNewEntry(n);
+				ProxyNode n = createProxyNodeDelegate(fromIP);
+				proxyNodeRegistry.AddNewEntry(n);
 				n.beginNotifyMsgRec(fromIP, data, null, null);
 			}
 		
 		}
 		
-		public NodeProxy getNodeProxy(IPAddress IP)
+		public ProxyNode getProxyNode(IPAddress IP)
 		{
 			try
 			{
-				NodeProxy proxyFound = nodeProxyRegistry.findNodeProxy(IP);
+				ProxyNode proxyFound = proxyNodeRegistry.findProxyNode(IP);
 				return proxyFound;
 			}
 			//RELAX: yes i know this is wrong; have to change it
 			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
 			{
-				NodeProxy n = createNodeProxyDelegate(IP);
-				nodeProxyRegistry.AddNewEntry(n);
+				ProxyNode n = createProxyNodeDelegate(IP);
+				proxyNodeRegistry.AddNewEntry(n);
 				return n;
 			}
 		}
 
-		private OverlayServer.CreateNodeProxyDelegate createNodeProxyDelegate;
+		private OverlayServer.CreateProxyNodeDelegate createProxyNodeDelegate;
 		
-		internal void setCreateNodeProxyDelegate(OverlayServer.CreateNodeProxyDelegate createNodeProxyDelegate)
+		internal void setCreateProxyNodeDelegate(OverlayServer.CreateProxyNodeDelegate createProxyNodeDelegate)
 		{
-			this.createNodeProxyDelegate = createNodeProxyDelegate;
+			this.createProxyNodeDelegate = createProxyNodeDelegate;
 		}
 
 		//private OverlayServerFactory overlayServerFactory;
@@ -192,32 +192,32 @@ namespace Tashjik
 		internal ProxyController(OverlayServerFactory overlayServerFactory, String ovType)
 		{
 			this.overlayServerFactory = overlayServerFactory;
-			nodeProxyRegistry = new NodeProxyRegistry();
+			proxyNodeRegistry = new ProxyNodeRegistry();
 			strOverlayType = ovType;
 		}
 		*/
 		
-		internal NodeProxyController()
+		internal ProxyNodeController()
 		{
 		
 		}
 		
 		//private String strOverlayType;
 		
-		/*internal NodeProxy createNodeProxy(IPAddress IP)
+		/*internal ProxyNode createProxyNode(IPAddress IP)
 		{
-			return overlayServerFactory.createNodeProxy(strOverlayType, IP, this);
+			return overlayServerFactory.createProxyNode(strOverlayType, IP, this);
 						                   
 		}*/
 		
-		public void register(NodeProxy nodeProxy)
+		public void register(ProxyNode proxyNode)
 		{
-			nodeProxyRegistry.AddNewEntry(nodeProxy);
+			proxyNodeRegistry.AddNewEntry(proxyNode);
 		}
 
-		public void sendMsg(Object data, NodeProxy sender)
+		public void sendMsg(Object data, ProxyNode sender)
 		{
-			nodeProxyRegistry.AddData(sender, data);
+			proxyNodeRegistry.AddData(sender, data);
 		}
 
 	}

@@ -8,14 +8,21 @@
  */
 
 using System;
+using System.Runtime.CompilerServices;
 
-namespace Tashjik
+[assembly:InternalsVisibleTo("Pastry")]
+
+namespace Tashjik 
 {
 	/// <summary>
-	/// Description of INode.
+	/// Description of Node.
 	/// </summary>
-	public interface INode
+	internal abstract class RealNode : Node
 	{
-		
+		public RealNode()
+		{
+		}
 	}
+
 }
+

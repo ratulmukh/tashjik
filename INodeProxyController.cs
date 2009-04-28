@@ -51,10 +51,10 @@ using System;
 
 namespace Tashjik
 {
-	internal interface INodeProxyController
+	internal interface IProxyNodeController
 	{
-		void register(NodeProxy nodeProxy);
-		void sendMsg(Object data, NodeProxy sender);
+		void register(ProxyNode proxyNode);
+		void sendMsg(Object data, ProxyNode sender);
 	
 	}
 }

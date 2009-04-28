@@ -52,7 +52,7 @@ using System;
 namespace Tashjik.Tier2
 {
 	/// <summary>
-	/// Description of INode.
+	/// Description of Node.
 	/// </summary>
 	internal interface ICANNode
 	{

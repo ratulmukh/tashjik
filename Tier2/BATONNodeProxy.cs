@@ -55,7 +55,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2
 {
-	internal class BATONNodeProxy : Tier2.Common.NodeProxy, IBATONNode, Tier2.Common.ProxyController.IProxy
+	internal class BATONProxyNode : Tier2.Common.ProxyNode, IBATONNode, Tier2.Common.ProxyController.IProxy
 	{
 		internal static BATONNode thisBATONNode;
 	
@@ -65,12 +65,12 @@ namespace Tashjik.Tier2
 		private readonly int iPortNo = System.Convert.ToInt16 ("2334");
 		private readonly Socket sock = null;
 
-		//not necessary; BATONNodeProxy will be added to the registry in ProxyController by ProxyController itself
+		//not necessary; BATONProxyNode will be added to the registry in ProxyController by ProxyController itself
 		//BUT TO SEND MSGS, U NEED THE INTERFACE
 		private Tier2.Common.ProxyController proxyController;
 
 		
-		public BATONNodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		public BATONProxyNode(IPAddress ip, Tier2.Common.ProxyController proxyController)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
