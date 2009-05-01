@@ -10,6 +10,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
+[assembly:InternalsVisibleTo("Narada")]
 [assembly:InternalsVisibleTo("Pastry")]
 
 namespace Tashjik 

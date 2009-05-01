@@ -51,6 +51,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Tashjik
 {
@@ -59,15 +61,37 @@ namespace Tashjik
 	/// </summary>
 	public abstract class StreamingOverlayServer 
 	{
-		public StreamingOverlayServer()
-		{
-		}
 		public abstract Guid getGuid();
 		
-		public abstract List<TashjikDataStream> search(String key);
-		public abstract void beginGetStream(TashjikDataStream stream, AsyncCallback getStreamCallBack, Object appState); 
-		public abstract void addRepository(String directoryPath);
+//		public abstract List<TashjikDataStream> search(String key);
+//		public abstract void beginGetStream(TashjikDataStream stream, AsyncCallback getStreamCallBack, Object appState); 
+//		public abstract void addRepository(String directoryPath);
 		
 		public abstract void shutdown();
+		
+		private ProxyNodeController proxyNodeController;
+		
+		public StreamingOverlayServer()
+		{
+			proxyNodeController = new ProxyNodeController();
+		}
+		
+		internal  ProxyNode getProxyNode(IPAddress IP)
+		{
+			return proxyNodeController.getProxyNode(IP);
+		}
+		
+		internal ProxyNodeController getProxyNodeController()
+		{
+			return proxyNodeController;
+		}
+		
+		//internal delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP);
+		
+		internal void setCreateProxyNodeDelegate(OverlayServer.CreateProxyNodeDelegate createProxyNodeDelegate)
+		{
+			proxyNodeController.setCreateProxyNodeDelegate(createProxyNodeDelegate);
+		}
+
 	}
 }

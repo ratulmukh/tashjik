@@ -65,10 +65,10 @@
     <Compile Include="Common\UtilityMethod.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="OverlayController.cs" />
-    <Compile Include="INodeProxyController.cs" />
+    <Compile Include="IProxyNodeController.cs" />
     <Compile Include="RealNode.cs" />
     <Compile Include="ProxyNode.cs" />
-    <Compile Include="NodeProxyController.cs" />
+    <Compile Include="ProxyNodeController.cs" />
     <Compile Include="OverlayServer.cs" />
     <Compile Include="StreamingOverlayServer.cs" />
     <Compile Include="TashjikDataStream.cs" />
@@ -114,8 +114,8 @@
     <Compile Include="Tier2\PrevBATONNodeNotMatching.cs" />
     <Compile Include="Tier2\Streaming\INaradaNode.cs" />
     <Compile Include="Tier2\Streaming\NaradaBootstrapper.cs" />
-    <Compile Include="Tier2\Streaming\NaradaNode.cs" />
-    <Compile Include="Tier2\Streaming\NaradaNodeProxy.cs" />
+    <Compile Include="Tier2\Streaming\NaradaRealNode.cs" />
+    <Compile Include="Tier2\Streaming\NaradaProxyNode.cs" />
     <Compile Include="Tier2\Streaming\NaradaServer.cs" />
   </ItemGroup>
   <ItemGroup>

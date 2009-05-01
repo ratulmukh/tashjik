@@ -199,7 +199,7 @@ namespace Tashjik
 		
 		internal ProxyNodeController()
 		{
-		
+
 		}
 		
 		//private String strOverlayType;

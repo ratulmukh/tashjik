@@ -7,10 +7,13 @@ cd I:\ratul\code\tashjik\ratul-Narada\Common
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikCommon.dll /target:library AsyncCallback_Object.cs Bool_Object.cs Bool_ObjectAsyncResult.cs ByteArray_AsyncCallback_Object.cs ByteArray_Data_AsyncCallback_Object.cs Data.cs Data_AsyncCallback_Object.cs Data_Object.cs Data_ObjectAsyncResult.cs DataAsyncResult.cs NodeBasic.cs ObjectAsyncResult.cs UtilityMethod.cs Exception\BytesLengthsNotMatchingException.cs Exception\LocalHostIPNotFoundException.cs
 
 cd I:\ratul\code\tashjik\ratul-Narada
-C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikBase.dll  /target:library TashjikDataStream.cs OverlayServerFactory.cs OverlayController.cs OverlayServer.cs StreamingOverlayServer.cs TashjikServer.cs Node.cs INodeProxyController.cs RealNode.cs ProxyNode.cs NodeProxyController.cs 
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikBase.dll  /target:library TashjikDataStream.cs OverlayServerFactory.cs OverlayController.cs OverlayServer.cs StreamingOverlayServer.cs TashjikServer.cs Node.cs IProxyNodeController.cs RealNode.cs ProxyNode.cs ProxyNodeController.cs 
 
 cd I:\ratul\code\tashjik\ratul-Narada\Tier2
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\Pastry.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikBase.dll /target:library IPastryNode.cs PastryDataStore.cs PastryRealNode.cs PastryProxyNode.cs PastryServer.cs
+
+cd I:\ratul\code\tashjik\ratul-Narada\Tier2\Streaming
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\Narada.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikBase.dll /target:library INaradaNode.cs NaradaRealNode.cs NaradaProxyNode.cs NaradaServer.cs
 
 cd I:\ratul\code\tashjik\ratul-Narada\TashjikClient
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikClient.exe /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\TashjikServer.dll /target:exe Client.cs 
