@@ -60,7 +60,7 @@ namespace Tashjik.Tier2
 	
 		public override Guid getGuid()
 		{
-			return guid;
+			return new Guid(guid.ToByteArray());
 		}
 
 		public override void shutdown()

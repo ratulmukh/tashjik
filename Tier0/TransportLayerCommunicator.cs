@@ -59,22 +59,24 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 
-namespace Tashjik.Base
+namespace Tashjik.Tier0
 {
-	public class LowLevelComm
+
+		
+	public class TransportLayerCommunicator
 	{
+
 		[Serializable]
 		public class Msg
 		{
 			private readonly Guid overlayGuid;
 			private Object data;
 
-
-			public Msg(Guid guid)
+			public Msg(Guid overlayGuid)
 			{
-				overlayGuid = guid;
+				this.overlayGuid = overlayGuid;
 			}
-
+	
 			public Guid getGuid()
 			{
 				return new Guid(overlayGuid.ToByteArray());
@@ -84,14 +86,13 @@ namespace Tashjik.Base
 			{
 				data = obj;
 			}	
-
+		
 			public Object getData()
 			{
 				return data;
 			}
-
 		}
-
+		
 		private class SockMsgQueue
 		{
 			private readonly Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
@@ -120,37 +121,28 @@ namespace Tashjik.Base
 				BinaryFormatter formatter = new BinaryFormatter();
 				MemoryStream memStream;
 				byte[] byteArray;
-					
-				for(int i=0; i<msgQueue.Count; i++)
-				{
-					Msg msg = msgQueue.Dequeue();
-					
-					memStream = new MemoryStream(Marshal.SizeOf(msg));
-								
-					try 
-	    	    	{
-	    		        formatter.Serialize(memStream, msg);
-    		    	}
-		        	catch (SerializationException e) 
-			        {
-    			        Console.WriteLine("Failed to serialize. Reason: " + e.Message);
-        			    throw;
-			        }
-    			    /*finally 
-        			{
-	        		    memStream.Close();
-	    	    	}*/
-    	    	
-	    		    byteArray = new byte[memStream.Length];
-    			    int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
-						
-    			    SocketFlags f = new SocketFlags();  // :O
-    			    sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, null, null);
-			        //I think thr is a corresponding CloseSend to be called in the callback
+
+				memStream = new MemoryStream(Marshal.SizeOf(msgQueue));
+				try 
+	    	    {
+					formatter.Serialize(memStream, msgQueue);
+    		    }
+		        catch (SerializationException e) 
+			    {
+    			    Console.WriteLine("Failed to serialize. Reason: " + e.Message);
+        		    throw;
+			    }
+				byteArray = new byte[memStream.Length];
+    			int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
+    			msgQueue.Clear();
+    			SocketFlags f = new SocketFlags();  // :O
+    			sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, null, null);
+			    //I think thr is a corresponding CloseSend to be called in the callback
 			        
-					memStream.Close();
-					
-				}
+				memStream.Close();
+				
+				
+				                     
 			}
 			
 			static private void beginConnectCallBackForDispatchMsg(IAsyncResult result)
@@ -191,7 +183,12 @@ namespace Tashjik.Base
 			public Msg msg;
 		}
 		
+		//dictionary containing IPs and their corresponding queues
+		//for every IP to whom we would like to maintain a connection,
+		//there exists a queue of objects tht need to be dispatched
 		private Dictionary<IPAddress, SockMsgQueue> commRegistry = new Dictionary<IPAddress, SockMsgQueue>();
+		
+		
 		private Dictionary<Guid, ISink> overlayRegistry = new Dictionary<Guid, ISink>();
 
 		public interface ISink
@@ -243,7 +240,7 @@ namespace Tashjik.Base
 		}
 
 		//never call this directly
-		public LowLevelComm()
+		public TransportLayerCommunicator()
 		{
 			init();
 		}
@@ -273,17 +270,17 @@ namespace Tashjik.Base
 		}
 
 		//singleton
-		private static LowLevelComm lowLevelComm = null;
+		private static TransportLayerCommunicator transportLayerCommunicator = null;
 		
 		//need to take care of threading issues
-		public static LowLevelComm getRefLowLevelComm()
+		public static TransportLayerCommunicator getRefTransportLayerCommunicator()
 		{
-			if(lowLevelComm!=null)
-				return lowLevelComm;
+			if(transportLayerCommunicator!=null)
+				return transportLayerCommunicator;
 			else
 			{
-				lowLevelComm = new LowLevelComm();
-				return lowLevelComm;
+				transportLayerCommunicator = new TransportLayerCommunicator();
+				return transportLayerCommunicator;
 			}
 		}
 

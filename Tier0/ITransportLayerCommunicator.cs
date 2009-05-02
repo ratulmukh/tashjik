@@ -51,11 +51,11 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Tashjik.Base
+namespace Tashjik.Tier0
 {
-	public interface ILowLevelComm
+	public interface ITransportLayerCommunicator
 	{
-		void forward(IPAddress IP, LowLevelComm.Msg msg);
-		void register(Guid guid, LowLevelComm.ISink sink);
+		void forward(IPAddress IP, TransportLayerCommunicator.Msg msg);
+		void register(Guid guid, TransportLayerCommunicator.ISink sink);
 	}
 }

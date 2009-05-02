@@ -14,5 +14,10 @@ namespace Tashjik.Tier2.Streaming
 		{
 			
 		}
+		
+		internal List<INaradaNode> bootstrap()
+		{
+			return new List<INaradaNode>();
+		}
 	}
 }

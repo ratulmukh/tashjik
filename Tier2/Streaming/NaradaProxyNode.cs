@@ -42,5 +42,11 @@ namespace Tashjik.Tier2.Streaming
 		{
 			
 		}
+		
+		//need to conved join request to the real node
+		public void join(INaradaNode newNode)
+		{
+			
+		}
 	}
 }

@@ -86,7 +86,7 @@ namespace Tashjik.Tier2
 		
 		public override Guid getGuid()
 		{
-			return guid;
+			return new Guid(guid.ToByteArray());
 		}
 
 		//Common.Data getData(String key);

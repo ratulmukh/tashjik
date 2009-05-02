@@ -46,8 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Base\ILowLevelComm.cs" />
-    <Compile Include="Base\LowLevelComm.cs" />
+    <Compile Include="Tier0\ITransportLayerCommunicator.cs" />
+    <Compile Include="Tier0\TransportLayerCommunicator.cs" />
     <Compile Include="Common\AsyncCallback_Object.cs" />
     <Compile Include="Common\Bool_Object.cs" />
     <Compile Include="Common\Bool_ObjectAsyncResult.cs" />
@@ -119,7 +119,7 @@
     <Compile Include="Tier2\Streaming\NaradaServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Base" />
+    <Folder Include="Tier0" />
     <Folder Include="Common" />
     <Folder Include="Common\Exception" />
     <Folder Include="Tier1\STUN" />
