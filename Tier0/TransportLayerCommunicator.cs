@@ -95,22 +95,42 @@ namespace Tashjik.Tier0
 		
 		private class SockMsgQueue
 		{
+			private enum ConnectionState
+			{
+				NOT_CONNECTED,
+				WAITING_TO_CONNECT,
+				CONNECTED
+			}
+			
+			private IPAddress IP;
 			private readonly Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
 			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
-
+			private ConnectionState connectionState;
+			
 			public SockMsgQueue(IPAddress IP)
 			{
-					int iPortNo = System.Convert.ToInt16 ("2334");
-					IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
-				
-//					AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackForDispatchMsg);
-//					Sock_Msg sock_msg = new Sock_Msg();
-//					sock_msg.msg = msg;
-//					sock_msg.sock = sock;
-					sock.BeginConnect(ipEnd, null, null);
-		
+				this.IP = IP;
+				connectionState = ConnectionState.NOT_CONNECTED;
 			}
+			
+			static private void beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
+			{
+				Socket sock   = ((Socket)(result.AsyncState));
+				sock.EndConnect(result);
+			}
+			
+
+			
+			private void establishRemoteConnection()
+			{
+				connectionState = ConnectionState.WAITING_TO_CONNECT;
+				int iPortNo = System.Convert.ToInt16 ("2334");
+				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
 				
+				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
+				sock.BeginConnect(ipEnd, beginConnectCallBack, null);
+				
+			}
 			
 			public void enqueue(Msg msg)
 			{
@@ -118,31 +138,65 @@ namespace Tashjik.Tier0
 			}
 			public void dispatchMsg()
 			{
+				if(connectionState == ConnectionState.NOT_CONNECTED)
+				{
+					establishRemoteConnection();
+					return;
+				}
+				else if(connectionState == ConnectionState.WAITING_TO_CONNECT)
+				{
+					if(sock.Connected)
+						connectionState = ConnectionState.CONNECTED;
+					else
+					    return;
+				}
+				
+				if(msgQueue.Count ==0)
+					return;
+				
 				BinaryFormatter formatter = new BinaryFormatter();
-				MemoryStream memStream;
-				byte[] byteArray;
-
+				MemoryStream memStream, sizeMemStream;
+				byte[] byteArray, sizeArray;
+				Int64 memStreamSize = new Int64();
+								
 				memStream = new MemoryStream(Marshal.SizeOf(msgQueue));
+				memStreamSize = (long)(memStream.Length);
+				sizeMemStream = new MemoryStream(Marshal.SizeOf(memStreamSize));
 				try 
 	    	    {
 					formatter.Serialize(memStream, msgQueue);
-    		    }
+					formatter.Serialize(sizeMemStream, memStreamSize);
+
+			        sizeArray = new byte[sizeMemStream.Length];
+			        sizeMemStream.Read(sizeArray, 0, (int)(sizeMemStream.Length));
+			        SocketFlags f = new SocketFlags();  // :O
+			        sock.BeginSend(sizeArray, 0, (int)(sizeMemStream.Length), f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), null);
+				
+		    	    byteArray = new byte[memStream.Length];
+    				memStream.Read(byteArray, 0, (int)(memStream.Length));
+    			    msgQueue.Clear();
+    			    //NOTE: I am assuming tht the previous BeginSend will reach before
+    			    //the BeginSend below. This is because the firsst BeginSend contains
+    			    //the size of the data coming in after tht. Hope I am right
+    				sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), null);
+			    	//I think thr is a corresponding CloseSend to be called in the callback
+				        
+					memStream.Close();
+					sizeMemStream.Close();
+				
+				}
 		        catch (SerializationException e) 
 			    {
     			    Console.WriteLine("Failed to serialize. Reason: " + e.Message);
         		    throw;
 			    }
-				byteArray = new byte[memStream.Length];
-    			int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
-    			msgQueue.Clear();
-    			SocketFlags f = new SocketFlags();  // :O
-    			sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, null, null);
-			    //I think thr is a corresponding CloseSend to be called in the callback
-			        
-				memStream.Close();
-				
-				
-				                     
+        
+			}
+
+			static private void beginSendCallBackFor_DispatchMsg(IAsyncResult result)
+			{
+				Socket sock   = ((Socket)(result.AsyncState));
+				sock.EndSend(result);
 			}
 			
 			static private void beginConnectCallBackForDispatchMsg(IAsyncResult result)
@@ -202,7 +256,7 @@ namespace Tashjik.Tier0
 
 		}
 
-		public void forward(IPAddress IP, Msg msg)
+		public void forwardMsgToRemoteHost(IPAddress IP, Msg msg)
 		{
 			SockMsgQueue sockMsgQueue;
 											
