@@ -57,6 +57,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Text;
 
 
 namespace Tashjik.Tier0
@@ -113,13 +114,49 @@ namespace Tashjik.Tier0
 				connectionState = ConnectionState.NOT_CONNECTED;
 			}
 			
+			class SocketState
+			{
+				public Socket sock;
+				public byte[] buffer = new byte[1024];
+				public StringBuilder concatenatedString = new StringBuilder();
+
+			}
+			
 			static private void beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
 			{
 				Socket sock   = ((Socket)(result.AsyncState));
 				sock.EndConnect(result);
+				
+				SocketState socketState = new SocketState();
+				socketState.sock = sock;
+				
+				sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
 			}
 			
-
+			static private void beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
+			{
+				String content = String.Empty;
+				SocketState socketState = ((SocketState)(result.AsyncState));
+				Socket sock = socketState.sock;
+				
+				int bytesRead = sock.EndReceive(result);
+				if(bytesRead > 0)
+				{
+					socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
+					content = socketState.concatenatedString.ToString();
+					if(content.IndexOf("\n") > -1)
+						notifyUpperLayer(content);
+					else 
+						sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
+				}
+				
+				
+			}
+			
+			static private void notifyUpperLayer(String content)
+			{
+				
+			}
 			
 			private void establishRemoteConnection()
 			{
@@ -128,7 +165,7 @@ namespace Tashjik.Tier0
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
 				
 				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
-				sock.BeginConnect(ipEnd, beginConnectCallBack, null);
+				sock.BeginConnect(ipEnd, beginConnectCallBack, sock);
 				
 			}
 			
@@ -155,35 +192,25 @@ namespace Tashjik.Tier0
 					return;
 				
 				BinaryFormatter formatter = new BinaryFormatter();
-				MemoryStream memStream, sizeMemStream;
-				byte[] byteArray, sizeArray;
-				Int64 memStreamSize = new Int64();
-								
-				memStream = new MemoryStream(Marshal.SizeOf(msgQueue));
-				memStreamSize = (long)(memStream.Length);
-				sizeMemStream = new MemoryStream(Marshal.SizeOf(memStreamSize));
+				
+				byte[] byteArray;
+											
+				MemoryStream memStream = new MemoryStream(Marshal.SizeOf(msgQueue));
 				try 
 	    	    {
 					formatter.Serialize(memStream, msgQueue);
-					formatter.Serialize(sizeMemStream, memStreamSize);
-
-			        sizeArray = new byte[sizeMemStream.Length];
-			        sizeMemStream.Read(sizeArray, 0, (int)(sizeMemStream.Length));
+					
 			        SocketFlags f = new SocketFlags();  // :O
-			        sock.BeginSend(sizeArray, 0, (int)(sizeMemStream.Length), f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), null);
-				
-		    	    byteArray = new byte[memStream.Length];
+			        SocketState so2 = new SocketState();
+			        so2.sock = sock;
+			        byteArray = new byte[memStream.Length+1];
     				memStream.Read(byteArray, 0, (int)(memStream.Length));
+    				byteArray[memStream.Length] = (byte)('\n');
     			    msgQueue.Clear();
-    			    //NOTE: I am assuming tht the previous BeginSend will reach before
-    			    //the BeginSend below. This is because the firsst BeginSend contains
-    			    //the size of the data coming in after tht. Hope I am right
-    				sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), null);
-			    	//I think thr is a corresponding CloseSend to be called in the callback
-				        
+    			    sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), so2);
+			    	    
 					memStream.Close();
-					sizeMemStream.Close();
-				
+					
 				}
 		        catch (SerializationException e) 
 			    {
