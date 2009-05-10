@@ -107,9 +107,11 @@ namespace Tashjik.Tier0
 			private readonly Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
 			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
 			private ConnectionState connectionState;
+			private TransportLayerCommunicator transportLayerCommunicator;
 			
-			public SockMsgQueue(IPAddress IP)
+			public SockMsgQueue(IPAddress IP, TransportLayerCommunicator transportLayerCommunicator)
 			{
+				this.transportLayerCommunicator = transportLayerCommunicator;
 				this.IP = IP;
 				connectionState = ConnectionState.NOT_CONNECTED;
 			}
@@ -119,18 +121,15 @@ namespace Tashjik.Tier0
 				public Socket sock;
 				public byte[] buffer = new byte[1024];
 				public StringBuilder concatenatedString = new StringBuilder();
-
+				public TransportLayerCommunicator transportLayerCommunicator;
 			}
 			
 			static private void beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
 			{
-				Socket sock   = ((Socket)(result.AsyncState));
-				sock.EndConnect(result);
+				SocketState socketState  = ((SocketState)(result.AsyncState));
+				socketState.sock.EndConnect(result);
 				
-				SocketState socketState = new SocketState();
-				socketState.sock = sock;
-				
-				sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
+				socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
 			}
 			
 			static private void beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
@@ -143,9 +142,12 @@ namespace Tashjik.Tier0
 				if(bytesRead > 0)
 				{
 					socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
-					content = socketState.concatenatedString.ToString();
+					
 					if(content.IndexOf("\n") > -1)
-						notifyUpperLayer(content);
+					{
+						content = socketState.concatenatedString.ToString();
+						notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+					}
 					else 
 						sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
 				}
@@ -153,9 +155,22 @@ namespace Tashjik.Tier0
 				
 			}
 			
-			static private void notifyUpperLayer(String content)
+			static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
 			{
+				String serialisedObjectStr = content.Substring(0, content.Length - 1);
+				MemoryStream memStream = new MemoryStream(serialisedObjectStr.Length);
+				byte[] serialisedObjectByteArray = System.Text.Encoding.ASCII.GetBytes(serialisedObjectStr.ToString());
+				memStream.Write(serialisedObjectByteArray, 0, serialisedObjectByteArray.Length);
+				BinaryFormatter formatter = new BinaryFormatter();
+				Queue<Msg> msgQueue = (Queue<Msg>)((formatter.Deserialize(memStream)));
 				
+				IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
+				foreach( Msg msg in msgQueue )
+					transportLayerCommunicator.receive(fromIP, msg);
+				
+				                                   
+				
+
 			}
 			
 			private void establishRemoteConnection()
@@ -164,8 +179,11 @@ namespace Tashjik.Tier0
 				int iPortNo = System.Convert.ToInt16 ("2334");
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
 				
+				SocketState socketState = new SocketState();
+				socketState.sock = sock;
+				socketState.transportLayerCommunicator = transportLayerCommunicator;
 				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
-				sock.BeginConnect(ipEnd, beginConnectCallBack, sock);
+				sock.BeginConnect(ipEnd, beginConnectCallBack, socketState);
 				
 			}
 			
@@ -291,7 +309,7 @@ namespace Tashjik.Tier0
 				sockMsgQueue.enqueue(msg);
 			else
 			{
-				sockMsgQueue = new SockMsgQueue(IP);
+				sockMsgQueue = new SockMsgQueue(IP, this);
 				sockMsgQueue.enqueue(msg);
 				commRegistry.Add(IP, sockMsgQueue);
 			}
@@ -301,7 +319,7 @@ namespace Tashjik.Tier0
 		
 
 		                                                  
-		private void receive(IPAddress fromIP, Msg msg)
+		internal void receive(IPAddress fromIP, Msg msg)
 		{
 			ISink sink;
 			if(overlayRegistry.TryGetValue(msg.getGuid(), out sink))
