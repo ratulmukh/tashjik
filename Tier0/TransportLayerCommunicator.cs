@@ -104,7 +104,7 @@ namespace Tashjik.Tier0
 			}
 			
 			private IPAddress IP;
-			private readonly Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+			private readonly Socket sock;
 			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
 			private ConnectionState connectionState;
 			private TransportLayerCommunicator transportLayerCommunicator;
@@ -113,15 +113,20 @@ namespace Tashjik.Tier0
 			{
 				this.transportLayerCommunicator = transportLayerCommunicator;
 				this.IP = IP;
+				sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
 				connectionState = ConnectionState.NOT_CONNECTED;
 			}
 			
-			class SocketState
+			public SockMsgQueue(Socket sock, TransportLayerCommunicator transportLayerCommunicator)
 			{
-				public Socket sock;
-				public byte[] buffer = new byte[1024];
-				public StringBuilder concatenatedString = new StringBuilder();
-				public TransportLayerCommunicator transportLayerCommunicator;
+				this.transportLayerCommunicator = transportLayerCommunicator;
+				this.sock = sock;
+				this.IP = ((IPEndPoint)(sock.RemoteEndPoint)).Address;
+				if(sock.Connected)
+					connectionState = ConnectionState.CONNECTED;
+				else
+					connectionState = ConnectionState.NOT_CONNECTED;
+					
 			}
 			
 			static private void beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
@@ -129,49 +134,9 @@ namespace Tashjik.Tier0
 				SocketState socketState  = ((SocketState)(result.AsyncState));
 				socketState.sock.EndConnect(result);
 				
-				socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
+				socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
 			}
 			
-			static private void beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
-			{
-				String content = String.Empty;
-				SocketState socketState = ((SocketState)(result.AsyncState));
-				Socket sock = socketState.sock;
-				
-				int bytesRead = sock.EndReceive(result);
-				if(bytesRead > 0)
-				{
-					socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
-					
-					if(content.IndexOf("\n") > -1)
-					{
-						content = socketState.concatenatedString.ToString();
-						notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
-					}
-					else 
-						sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBackFor_beginConnectCallBackFor_establishRemoteConnection), socketState);
-				}
-				
-				
-			}
-			
-			static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
-			{
-				String serialisedObjectStr = content.Substring(0, content.Length - 1);
-				MemoryStream memStream = new MemoryStream(serialisedObjectStr.Length);
-				byte[] serialisedObjectByteArray = System.Text.Encoding.ASCII.GetBytes(serialisedObjectStr.ToString());
-				memStream.Write(serialisedObjectByteArray, 0, serialisedObjectByteArray.Length);
-				BinaryFormatter formatter = new BinaryFormatter();
-				Queue<Msg> msgQueue = (Queue<Msg>)((formatter.Deserialize(memStream)));
-				
-				IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
-				foreach( Msg msg in msgQueue )
-					transportLayerCommunicator.receive(fromIP, msg);
-				
-				                                   
-				
-
-			}
 			
 			private void establishRemoteConnection()
 			{
@@ -348,14 +313,123 @@ namespace Tashjik.Tier0
 		{
 			//start thread to constantly traverse through 
 			//commRegistry and dispatch msgs
-		    ThreadStart job = new ThreadStart(this.messageDispatch);
-			Thread messageDispatcher = new Thread(job);
+		    ThreadStart messageDispatchJob = new ThreadStart(this.messageDispatch);
+			Thread messageDispatcher = new Thread(messageDispatchJob);
 			messageDispatcher.Start();	
 			
 			//initialise connection acceptor thread, etc,. 
-			
+		    ThreadStart listenJob = new ThreadStart(this.StartListening);
+			Thread listener = new Thread(listenJob);
+			listener.Start();	
 		}
 			
+		static ManualResetEvent allDone = new ManualResetEvent(false);
+		
+		private void StartListening()
+		{
+			IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
+        	IPAddress ipAddress = ipHostInfo.AddressList[0];
+        	IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11000);
+        	
+        	Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+        	try 
+        	{
+            	listener.Bind(localEndPoint);
+            	listener.Listen(100);
+
+	            while (true) 
+	            {
+    	            // Set the event to nonsignaled state.
+        	        allDone.Reset();
+	
+    	            // Start an asynchronous socket to listen for connections.
+        	        Console.WriteLine("Waiting for a connection...");
+        	        
+        	        SocketState socketState = new SocketState();
+					socketState.sock = listener;
+					socketState.transportLayerCommunicator = this;
+            	    listener.BeginAccept( 
+                	    new AsyncCallback(beginAcceptCallback_forStartListening),
+                    	socketState );
+
+	                // Wait until a connection is made before continuing.
+    	            allDone.WaitOne();
+        	    }
+
+	        } 
+        	catch (Exception e) 
+        	{
+    	        Console.WriteLine(e.ToString());
+        	}	
+
+		}
+		
+		static private void beginAcceptCallback_forStartListening(IAsyncResult result)
+		{
+			// Signal the main thread to continue.
+        	allDone.Set();
+
+	        // Get the socket that handles the client request.
+    	    SocketState socketState = (SocketState) result.AsyncState;
+    	    Socket listener = socketState.sock;
+        	Socket handler = listener.EndAccept(result);
+			TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
+			
+        	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler, transportLayerCommunicator);
+        	IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
+			transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
+        	
+			
+			socketState.sock = handler;
+	
+	        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+
+		}
+		
+		static private void beginReceiveCallBack(IAsyncResult result)
+		{
+			String content = String.Empty;
+			SocketState socketState = ((SocketState)(result.AsyncState));
+			Socket sock = socketState.sock;
+			
+			int bytesRead = sock.EndReceive(result);
+			if(bytesRead > 0)
+			{
+				socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
+				
+				if(content.IndexOf("\n") > -1)
+				{
+					content = socketState.concatenatedString.ToString();
+					notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+				}
+				else 
+					sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+			}
+		}
+		
+		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
+		{
+			String serialisedObjectStr = content.Substring(0, content.Length - 1);
+			MemoryStream memStream = new MemoryStream(serialisedObjectStr.Length);
+			byte[] serialisedObjectByteArray = System.Text.Encoding.ASCII.GetBytes(serialisedObjectStr.ToString());
+			memStream.Write(serialisedObjectByteArray, 0, serialisedObjectByteArray.Length);
+			BinaryFormatter formatter = new BinaryFormatter();
+			Queue<Msg> msgQueue = (Queue<Msg>)((formatter.Deserialize(memStream)));
+				
+			IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
+			foreach( Msg msg in msgQueue )
+			transportLayerCommunicator.receive(fromIP, msg);
+
+		}
+		
+					internal class SocketState
+			{
+				public Socket sock;
+				public byte[] buffer = new byte[1024];
+				public StringBuilder concatenatedString = new StringBuilder();
+				public TransportLayerCommunicator transportLayerCommunicator;
+			}
+		
 		private void messageDispatch()
 		{
 			Dictionary<IPAddress, SockMsgQueue>.Enumerator enumerator = commRegistry.GetEnumerator();
