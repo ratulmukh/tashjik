@@ -50,6 +50,7 @@
 using System;
 using System.Net;
 using System.Runtime.CompilerServices;
+using Tashjik.Common;
 
 [assembly:InternalsVisibleTo("Narada")]
 [assembly:InternalsVisibleTo("Pastry")]
@@ -59,13 +60,35 @@ namespace Tashjik
 	/// <summary>
 	/// Description of ProxyNode.
 	/// </summary>
-	internal abstract class ProxyNode : Node
+	public abstract class ProxyNode : Node
 	{
+		private Tashjik.Common.NodeBasic selfNodeBasic; 
+		private Tier0.TransportLayerCommunicator transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator();
+
+		public ProxyNode(IPAddress ip)
+		{
+			selfNodeBasic = new NodeBasic(ip);	
+		}
 		
-		public abstract byte[] getHashedIP();
-		public abstract IPAddress getIP();
-		public abstract void setIP(IPAddress ip);
+		public byte[] getHashedIP()
+		{
+			return selfNodeBasic.getHashedIP();
+		}
+
+		public IPAddress getIP()
+		{
+			return selfNodeBasic.getIP();
+		}
+
+		public void setIP(IPAddress ip)
+		{
+			selfNodeBasic.setIP(ip);
+		}
+		
 		public abstract void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
+		
+			
+	//	
 		//public abstract void setProxyController(ProxyController c);
 	}
 

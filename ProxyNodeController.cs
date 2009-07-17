@@ -55,10 +55,10 @@ using System.Net;
 namespace Tashjik
 {
 	
-	internal class ProxyNodeController : IProxyNodeController , OverlayController.ISink
+	public class ProxyNodeController : IProxyNodeController , OverlayController.ISink
 	{
 	
-		private readonly ProxyNodeRegistry proxyNodeRegistry;
+		private readonly ProxyNodeRegistry proxyNodeRegistry = new ProxyNodeRegistry();
 		
 		/*
 		public enum TransmitModeEnum
@@ -197,7 +197,7 @@ namespace Tashjik
 		}
 		*/
 		
-		internal ProxyNodeController()
+		public ProxyNodeController()
 		{
 
 		}

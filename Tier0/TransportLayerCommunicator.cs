@@ -336,6 +336,7 @@ namespace Tashjik.Tier0
         	{
             	listener.Bind(localEndPoint);
             	listener.Listen(100);
+            	//listener.Listen(SocketOptionName.MaxConnections );
 
 	            while (true) 
 	            {

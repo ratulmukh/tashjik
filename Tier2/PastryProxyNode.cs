@@ -61,15 +61,15 @@ namespace Tashjik.Tier2
 		
 		internal static PastryRealNode thisNode;
 	
-		private Tashjik.Common.NodeBasic selfNodeBasic;
-		private Base.LowLevelComm lowLevelComm;		
+		//private Tashjik.Common.NodeBasic selfNodeBasic;
+		//private Tier0.TransportLayerCommunicator transportLayerCommunicator;		
 		
 		//private ProxyController proxyController;
 		
-		public PastryProxyNode(IPAddress ip/*, ProxyController proxyController*/)
+		public PastryProxyNode(IPAddress ip/*, ProxyController proxyController*/) : base(ip)
 		{
-			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
-			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+			//transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefLowLevelComm();
+			//selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
 			//setProxyController(proxyController);
 		}
 		/*
@@ -80,7 +80,7 @@ namespace Tashjik.Tier2
 			proxyController = c;
 		}
 		*/
-		
+		/*
 		public override byte[] getHashedIP()
 		{
 			return selfNodeBasic.getHashedIP();
@@ -95,7 +95,7 @@ namespace Tashjik.Tier2
 		{
 			selfNodeBasic.setIP(ip);
 		}
-		
+		*/
 		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
 		{
 			

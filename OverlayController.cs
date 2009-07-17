@@ -59,7 +59,7 @@ using System.Collections.Generic;
 
 namespace Tashjik
 {
-	internal class OverlayController : Base.LowLevelComm.ISink
+	internal class OverlayController : Tier0.TransportLayerCommunicator.ISink
 	{
 		internal interface ISink
 		{
@@ -114,7 +114,7 @@ namespace Tashjik
 		{
 			this.overlayServerFactory = overlayServerFactory ;
 			guid = g;
-			Base.LowLevelComm.getRefLowLevelComm().register(guid, this);
+			Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator().register(guid, this);
 			this.strOverlayType = strOverlayType;
 		}
 

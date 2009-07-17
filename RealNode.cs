@@ -18,7 +18,7 @@ namespace Tashjik
 	/// <summary>
 	/// Description of Node.
 	/// </summary>
-	internal abstract class RealNode : Node
+	public abstract class RealNode : Node
 	{
 		public RealNode()
 		{

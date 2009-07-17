@@ -51,7 +51,7 @@ using System;
 
 namespace Tashjik
 {
-	internal interface IProxyNodeController
+	public interface IProxyNodeController
 	{
 		void register(ProxyNode proxyNode);
 		void sendMsg(Object data, ProxyNode sender);
