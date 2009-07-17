@@ -180,12 +180,13 @@ namespace Tashjik
 			}
 		}
 
-		private OverlayServer.CreateProxyNodeDelegate createProxyNodeDelegate;
+		private CreateProxyNodeDelegate createProxyNodeDelegate;
 		
-		internal void setCreateProxyNodeDelegate(OverlayServer.CreateProxyNodeDelegate createProxyNodeDelegate)
+/*		internal void setCreateProxyNodeDelegate(OverlayServer.CreateProxyNodeDelegate createProxyNodeDelegate)
 		{
 			this.createProxyNodeDelegate = createProxyNodeDelegate;
 		}
+*/
 
 		//private OverlayServerFactory overlayServerFactory;
 /*
@@ -196,10 +197,11 @@ namespace Tashjik
 			strOverlayType = ovType;
 		}
 		*/
+		public delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP);
 		
-		public ProxyNodeController()
+		public ProxyNodeController(CreateProxyNodeDelegate createProxyNodeDelegate)
 		{
-
+			this.createProxyNodeDelegate = createProxyNodeDelegate;
 		}
 		
 		//private String strOverlayType;

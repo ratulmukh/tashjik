@@ -73,9 +73,9 @@ namespace Tashjik
 		
 		private ProxyNodeController proxyNodeController;
 		
-		public OverlayServer()
+		public OverlayServer(ProxyNodeController.CreateProxyNodeDelegate createProxyNodeDelegate)
 		{
-			proxyNodeController = new ProxyNodeController();
+			proxyNodeController = new ProxyNodeController(createProxyNodeDelegate);
 		}
 		
 		internal  ProxyNode getProxyNode(IPAddress IP)
@@ -88,12 +88,12 @@ namespace Tashjik
 			return proxyNodeController;
 		}
 		
-		internal delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP);
+		//internal delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP);
 		
-		internal void setCreateProxyNodeDelegate(CreateProxyNodeDelegate createProxyNodeDelegate)
-		{
-			proxyNodeController.setCreateProxyNodeDelegate(createProxyNodeDelegate);
-		}
+	//	internal void setCreateProxyNodeDelegate(CreateProxyNodeDelegate createProxyNodeDelegate)
+	//	{
+	//		proxyNodeController.setCreateProxyNodeDelegate(createProxyNodeDelegate);
+	//	}
 
 	}
 }

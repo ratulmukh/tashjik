@@ -62,20 +62,20 @@ namespace Tashjik.Tier2
 		private  readonly Guid guid;
 		private readonly PastryRealNode thisNode;
 		
-		internal PastryServer()
+		internal PastryServer() : base(new  ProxyNodeController.CreateProxyNodeDelegate(createPastryProxyNode))
 		{
 			guid = System.Guid.NewGuid();
 			thisNode = new PastryRealNode();
 			//ProxyNode.thisNode = thisNode;
-			CreateProxyNodeDelegate createProxyNodeDelegate = new  CreateProxyNodeDelegate(createPastryProxyNode);
-			base.setCreateProxyNodeDelegate(createProxyNodeDelegate);
+			//CreateProxyNodeDelegate createProxyNodeDelegate = new  CreateProxyNodeDelegate(createPastryProxyNode);
+			//base.setCreateProxyNodeDelegate(createProxyNodeDelegate);
 		}
 		
-		internal PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid)
+		internal PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createPastryProxyNode))
 		{
 			guid = joinOtherGuid;
-			CreateProxyNodeDelegate createProxyNodeDelegate = new  CreateProxyNodeDelegate(createPastryProxyNode);
-			base.setCreateProxyNodeDelegate(createProxyNodeDelegate);
+			//CreateProxyNodeDelegate createProxyNodeDelegate = new  CreateProxyNodeDelegate(createPastryProxyNode);
+			//base.setCreateProxyNodeDelegate(createProxyNodeDelegate);
 			IPastryNode joinOtherNode = (IPastryNode)(base.getProxyNode(joinOtherIP));
 			thisNode = new PastryRealNode(joinOtherNode);
 			
@@ -111,7 +111,7 @@ namespace Tashjik.Tier2
 		
 			
 			
-		private ProxyNode createPastryProxyNode(IPAddress IP)
+		private static ProxyNode createPastryProxyNode(IPAddress IP)
 		{
 			return new PastryProxyNode(IP);
 		}
