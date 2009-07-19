@@ -52,7 +52,7 @@ using System.Net;
 
 namespace Tashjik.Tier2
 {
-	internal interface IChordNode : Tier2.Common.Node
+	internal interface IChordNode
 	{
 		//Node findSuccessor(Node queryNode, Node queryingNode);
 		//Node findSuccessor(byte[] queryHashedKey, Node queryingNode);

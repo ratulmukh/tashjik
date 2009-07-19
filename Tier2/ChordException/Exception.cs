@@ -49,11 +49,11 @@
 
 using System;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.Chord.Exception
 {
-	public class Data_Object
-	{
-		public Data data;
-		public Object obj;
-	}
+public class Exception : ApplicationException
+{
+public Exception(string str) : base(str)
+{}
+}
 }

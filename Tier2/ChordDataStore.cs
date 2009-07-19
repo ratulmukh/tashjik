@@ -81,7 +81,7 @@ namespace Tashjik.Tier2
 			if(dataHolder.TryGetValue(hashedKey, out data))
 				return data;
 			else
-				throw new ChordException.DataNotFoundInStoreException();
+				throw new DataNotFoundInStoreException();
 	
 
 		}

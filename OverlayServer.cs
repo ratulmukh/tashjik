@@ -78,7 +78,7 @@ namespace Tashjik
 			proxyNodeController = new ProxyNodeController(createProxyNodeDelegate);
 		}
 		
-		internal  ProxyNode getProxyNode(IPAddress IP)
+		protected ProxyNode getProxyNode(IPAddress IP)
 		{
 			return proxyNodeController.getProxyNode(IP);
 		}

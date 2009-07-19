@@ -51,7 +51,7 @@ using System;
 
 namespace Tashjik.Common
 {
-	internal class ByteArray_AsyncCallback_Object
+	public class ByteArray_AsyncCallback_Object
 	{
 		public byte[] byteArray;
 		public AsyncCallback callBack;

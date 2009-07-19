@@ -49,11 +49,12 @@
 
 using System;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.Chord.Exception
 {
-	public class Data_Object
-	{
-		public Data data;
-		public Object obj;
-	}
+
+public class LookUpDelayedException : Exception
+{
+public LookUpDelayedException() : base("Lookup delayed due to finger not having enough value for successor. Search has been relayed further along the chord")
+{}
+}
 }

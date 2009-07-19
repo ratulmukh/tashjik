@@ -48,12 +48,71 @@
 
 
 using System;
+using System.Threading;
+using System.Net.Sockets;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.ChordCommon
 {
-	public class Data_Object
+	/*****************************************
+	* THREADSAFE
+	* state safety ensured with private lock
+	*****************************************/
+	public class PendingLookUpRequest
 	{
-		public Data data;
-		public Object obj;
+		private Object pendingLookUpRequestLock = new Object();
+		private readonly Thread thread;
+		//int threadHashCode;
+		private readonly byte[] hashedKey;
+		private Socket socket;
+
+		public void setSocket(Socket s)
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				socket = s;
+			}
+		}
+		
+		public Thread getThread()
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				return thread;
+			}
+		}
+
+		public Socket getSocket()
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				return socket;
+			}
+		}
+
+		public byte[] getHashedKey()
+		{
+			lock(pendingLookUpRequestLock)
+			{
+				return hashedKey;
+			}
+	
+		}
+
+		public PendingLookUpRequest(/*int hC*/Thread th, byte[] hK)
+		{	
+			thread = th;
+			//threadHashCode = hC;
+			hashedKey = hK;
+			socket = null;
+		}
+
+		public PendingLookUpRequest(/*int hC*/Thread th, byte[] hK, Socket sock)
+		{
+			thread = th;
+			//threadHashCode = hC;
+			hashedKey = hK;
+			socket = sock;
+		}
+
 	}
 }

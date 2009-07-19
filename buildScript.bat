@@ -10,12 +10,22 @@ cd I:\ratul\code\tashjik\trunk
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikTier0.dll  /target:library TashjikDataStream.cs OverlayServerFactory.cs OverlayController.cs OverlayServer.cs StreamingOverlayServer.cs TashjikServer.cs Node.cs IProxyNodeController.cs RealNode.cs ProxyNode.cs ProxyNodeController.cs 
 
 cd I:\ratul\code\tashjik\trunk\Tier2
-C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Pastry.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikTier0.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikBase.dll /target:library IPastryNode.cs PastryDataStore.cs PastryRealNode.cs PastryProxyNode.cs PastryServer.cs
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Tier2Common.dll /target:library DataNotFoundInStoreException.cs
 
-cd I:\ratul\code\tashjik\trunk\Tier2\Streaming
-C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Narada.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikBase.dll /target:library INaradaNode.cs NaradaRealNode.cs NaradaProxyNode.cs NaradaServer.cs
 
-cd I:\ratul\code\tashjik\trunk
+cd I:\ratul\code\tashjik\trunk\Tier2
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Pastry.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikTier0.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\Tier2Common.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikBase.dll /target:library IPastryNode.cs PastryDataStore.cs PastryRealNode.cs PastryProxyNode.cs PastryServer.cs
+
+cd I:\ratul\code\tashjik\trunk\Tier2
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Chord.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikTier0.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\Tier2Common.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikBase.dll  /target:library IChordNode.cs ChordDataStore.cs ChordRealNode.cs ChordProxyNode.cs ChordServer.cs ChordCommon\IChordNode_Object.cs chordCommon\IChordNode_ObjectAsyncResult.cs chordCommon\ByteKey_IChordNode.cs
+
+
+ 
+
+rem cd I:\ratul\code\tashjik\trunk\Tier2\Streaming
+rem C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Narada.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikBase.dll /target:library INaradaNode.cs NaradaRealNode.cs NaradaProxyNode.cs NaradaServer.cs
+
+rem cd I:\ratul\code\tashjik\trunk
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\TashjikClient.exe /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /target:exe Client.cs 
 
 

@@ -62,8 +62,8 @@ namespace Tashjik
 	/// </summary>
 	public abstract class ProxyNode : Node
 	{
-		private Tashjik.Common.NodeBasic selfNodeBasic; 
-		private Tier0.TransportLayerCommunicator transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator();
+		protected Tashjik.Common.NodeBasic selfNodeBasic; 
+		protected Tier0.TransportLayerCommunicator transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator();
 
 		public ProxyNode(IPAddress ip)
 		{

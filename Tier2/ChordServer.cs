@@ -53,10 +53,11 @@ using System.Net.Sockets;
 
 namespace Tashjik.Tier2
 {
-	public class ChordServer : Tier2.Common.Server, IOverlay
+	public class ChordServer : OverlayServer
 	{
 		private readonly Guid guid;
-		internal readonly ChordNode thisNode;
+		internal readonly ChordRealNode thisNode;
+		internal readonly static ProxyNodeController chordproxyNodeController = new ProxyNodeController(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode));
 	
 		public override Guid getGuid()
 		{
@@ -67,14 +68,14 @@ namespace Tashjik.Tier2
 		{
 			
 		}
-		public ChordServer()
+		public ChordServer() : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode))
 		{
 			guid = System.Guid.NewGuid();
-			thisNode = new ChordNode();
+			thisNode = new ChordRealNode();
 			ChordProxyNode.thisNode = thisNode;
 		}
 		
-		public ChordServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		public ChordServer(IPAddress joinOtherIP, Guid joinOtherGuid, ProxyNodeController proxyController) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode))
 		{
 /*			guid = joinOtherGuid;
 			Node joinOtherNode = new ProxyNode(joinOtherIP, proxyController);
@@ -82,7 +83,15 @@ namespace Tashjik.Tier2
 */
 		}
 
-
+		private static ProxyNode createChordProxyNode(IPAddress IP)
+		{
+			return new ChordProxyNode(IP, chordproxyNodeController);
+		}
+		
+		internal IChordNode getChordProxyNode(IPAddress IP)
+		{      
+			return (IChordNode)(base.getProxyNode(IP));
+		}
 
 		/*
 		public Tashjik.Common.Data getData(String key)

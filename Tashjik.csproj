@@ -87,11 +87,11 @@
     <Compile Include="Tier2\ChordCommon\ByteKey_DataAsyncResult.cs" />
     <Compile Include="Tier2\ChordCommon\ByteKey_IChordNode.cs" />
     <Compile Include="Tier2\ChordCommon\ByteKey_IChordNodeAsyncResult.cs" />
-    <Compile Include="Tier2\ChordCommon\IChordAsyncResult.cs" />
+    <Compile Include="Tier2\ChordCommon\IChordNodeAsyncResult.cs" />
     <Compile Include="Tier2\ChordCommon\IChordNode_Object.cs" />
     <Compile Include="Tier2\ChordCommon\IChordNode_ObjectAsyncResult.cs" />
     <Compile Include="Tier2\ChordCommon\MessageCapsule.cs" />
-    <Compile Include="Tier2\ChordCommon\NodeBase.cs" />
+    <Compile Include="Tier2\ChordCommon\Node.cs" />
     <Compile Include="Tier2\ChordCommon\PendingLookUpRequest.cs" />
     <Compile Include="Tier2\ChordDataStore.cs" />
     <Compile Include="Tier2\ChordException\DataNotFoundInStoreException.cs" />
@@ -100,9 +100,10 @@
     <Compile Include="Tier2\ChordException\NotificationArrivedInterruptedException.cs" />
     <Compile Include="Tier2\ChordException\SearchPendingLookUpRequestListFailedException.cs" />
     <Compile Include="Tier2\ChordException\SuccessorNotDeterminedFromRoutingTableException.cs" />
-    <Compile Include="Tier2\ChordNode.cs" />
-    <Compile Include="Tier2\ChordNodeProxy.cs" />
+    <Compile Include="Tier2\ChordRealNode.cs" />
+    <Compile Include="Tier2\ChordProxyNode.cs" />
     <Compile Include="Tier2\ChordServer.cs" />
+    <Compile Include="Tier2\DataNotFoundInStoreException.cs" />
     <Compile Include="Tier2\IBATONNode.cs" />
     <Compile Include="Tier2\ICANNode.cs" />
     <Compile Include="Tier2\IChordNode.cs" />

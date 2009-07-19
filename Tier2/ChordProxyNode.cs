@@ -53,31 +53,32 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 
+
 namespace Tashjik.Tier2
 {
 	/*********************************************
 	* SEMANTICS: call methods on a remote machine
 	*********************************************/
-	internal class ChordProxyNode : Tier2.Common.ProxyNode, IChordNode, Tier2.Common.ProxyController.IProxy
+	internal class ChordProxyNode : ProxyNode, IChordNode, ProxyNodeController.IProxy
 	{
-		internal static ChordNode thisNode;
+		internal static ChordRealNode thisNode;
 	
-		private Tashjik.Common.NodeBasic selfNodeBasic;
-		private Base.LowLevelComm lowLevelComm;
+		//private Tashjik.Common.NodeBasic selfNodeBasic;
+		//private Base.LowLevelComm lowLevelComm;
 
 		private readonly int iPortNo = System.Convert.ToInt16 ("2334");
 		private readonly Socket sock = null;
 
 		//not necessary; ProxyNode will be added to the registry in ProxyController by ProxyController itself
 		//BUT TO SEND MSGS, U NEED THE INTERFACE
-		private Tier2.Common.ProxyController proxyController;
+		private ProxyNodeController proxyController;
 
 		//needs to be synchronized
-		private Dictionary<byte[], Tashjik.Common.AsyncCallback_Object > findSuccessorRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
+		private Dictionary <byte[], Tashjik.Common.AsyncCallback_Object > findSuccessorRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
 		private List<Tashjik.Common.AsyncCallback_Object> getPredecessorRegistry = new List<Tashjik.Common.AsyncCallback_Object>();
-		private Dictionary<byte[], Tashjik.Common.AsyncCallback_Object > getDataRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
+		private Dictionary <byte[], Tashjik.Common.AsyncCallback_Object > getDataRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
 
-		public override void setProxyController(Tier2.Common.ProxyController c)
+		public void setProxyController(ProxyNodeController c)
 		{
 			//need to handle synchronised calls here
 			if(proxyController!=null)
@@ -395,7 +396,7 @@ namespace Tashjik.Tier2
 
 
 
-
+/*
 		public override byte[] getHashedIP()
 		{
 			return selfNodeBasic.getHashedIP();
@@ -410,6 +411,7 @@ namespace Tashjik.Tier2
 		{
 			selfNodeBasic.setIP(ip);
 		}
+		*/
 		/*
 		public Node findSuccessor(Node queryNode, Node queryingNode)
 		{
@@ -485,10 +487,10 @@ namespace Tashjik.Tier2
 	
 		}	
 
-		public ChordProxyNode(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		public ChordProxyNode(IPAddress ip, ProxyNodeController proxyController) : base(ip)
 		{
-			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
-			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+		//	lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
+//			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
 			setProxyController(proxyController);
 		}
 

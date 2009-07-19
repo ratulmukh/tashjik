@@ -49,11 +49,12 @@
 
 using System;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.Chord.Exception
 {
-	public class Data_Object
-	{
-		public Data data;
-		public Object obj;
-	}
+
+public class SearchPendingLookUpRequestListFailedException : Exception
+{
+public SearchPendingLookUpRequestListFailedException() : base("Searching in the controller.getPendingLookUpRequestList() did not yield anything")
+{}
+}
 }

@@ -49,11 +49,14 @@
 
 using System;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.Chord.Exception
 {
-	public class Data_Object
-	{
-		public Data data;
-		public Object obj;
-	}
+public class SuccessorNotDeterminedFromRoutingTableException : Exception
+{
+public byte[] hashedKey;
+public SuccessorNotDeterminedFromRoutingTableException(byte[] hK): base ("Successor could not be determined from routing table")
+{
+hashedKey = hK;
+}
+}
 }

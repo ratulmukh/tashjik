@@ -49,11 +49,11 @@
 
 using System;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.ChordCommon
 {
-	public class Data_Object
+	internal class IChordNode_Object
 	{
-		public Data data;
+		public IChordNode node;
 		public Object obj;
 	}
 }

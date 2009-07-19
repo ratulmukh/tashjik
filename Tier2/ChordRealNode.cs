@@ -56,14 +56,14 @@ namespace Tashjik.Tier2
 	/*********************************************
 	* SEMANTICS: call methods on local machine
 	*********************************************/
-	internal class ChordNode : Tier2.Common.Node, IChordNode
+	internal class ChordRealNode : Tashjik.RealNode, IChordNode
 	{
 
 		//private readonly IController controller;
 		private readonly ChordDataStore dataStore = null;
 
 
-		public static bool operator==(ChordNode n1, IChordNode n2)
+		public static bool operator==(ChordRealNode n1, IChordNode n2)
 		{
 			String strHash1 = n1.getHashedIP().ToString();
 			String strHash2 = n2.getHashedIP().ToString();
@@ -75,7 +75,7 @@ namespace Tashjik.Tier2
 
 		}
 
-		public static bool operator!=(ChordNode n1, IChordNode n2)
+		public static bool operator!=(ChordRealNode n1, IChordNode n2)
 		{
 			String strHash1 = n1.getHashedIP().ToString();
 			String strHash2 = n2.getHashedIP().ToString();
@@ -87,7 +87,7 @@ namespace Tashjik.Tier2
 
 		}
 
-		public bool Equals(ChordNode n1, IChordNode n2)
+		public bool Equals(ChordRealNode n1, IChordNode n2)
 		{
 			String strHash1 = n1.getHashedIP().ToString();
 			String strHash2 = n2.getHashedIP().ToString();
@@ -114,7 +114,7 @@ namespace Tashjik.Tier2
 			{
 				// lock(nodeLock)
 				// {
-				if (engine.getIP().ToString() == ((ChordNode)obj).getIP().ToString())
+				if (engine.getIP().ToString() == ((ChordRealNode)obj).getIP().ToString())
 					return true;
 				else
 					return false;
@@ -131,7 +131,7 @@ namespace Tashjik.Tier2
 				return 1; // :O :O
 			}
 
-			public static bool operator<(ChordNode n1, IChordNode n2)
+			public static bool operator<(ChordRealNode n1, IChordNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -142,7 +142,7 @@ namespace Tashjik.Tier2
 					return false;
 			}	
 
-			public static bool operator>(ChordNode n1, IChordNode n2)
+			public static bool operator>(ChordRealNode n1, IChordNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -154,7 +154,7 @@ namespace Tashjik.Tier2
 			}
 
 
-			public static bool operator>(ChordNode n1, byte[] hash2)
+			public static bool operator>(ChordRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -164,7 +164,7 @@ namespace Tashjik.Tier2
 				else return false;
 			}
 
-			public static bool operator<(ChordNode n1, byte[] hash2)
+			public static bool operator<(ChordRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
 				String strHash2 = hash2.ToString();
@@ -175,7 +175,7 @@ namespace Tashjik.Tier2
 					return false;
 			}
 
-			public static bool operator<(byte[] hash1, ChordNode n2)
+			public static bool operator<(byte[] hash1, ChordRealNode n2)
 			{
 				String strHash1 = hash1.ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -186,7 +186,7 @@ namespace Tashjik.Tier2
 					return false;
 			}
 
-			public static bool operator>(byte[] hash1, ChordNode n2)
+			public static bool operator>(byte[] hash1, ChordRealNode n2)
 			{
 				String strHash1 = hash1.ToString();
 				String strHash2 = n2.getHashedIP().ToString();
@@ -206,7 +206,7 @@ namespace Tashjik.Tier2
 				private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 		
 				//private readonly static Engine singleton = null;
-				private readonly ChordNode self;
+				private readonly ChordRealNode self;
 				private IChordNode predecessor;
 				private IChordNode successor;
 
@@ -228,7 +228,7 @@ namespace Tashjik.Tier2
 				//to be used only to pass application state while making async calls
 				class StabilizeAppState
 				{
-					public ChordNode self;
+					public ChordRealNode self;
 					public IChordNode successor;
 					public AsyncCallback callBack;
 					public Object appState;
@@ -262,10 +262,10 @@ namespace Tashjik.Tier2
 
 
 					IChordNode x = iNode_Object.node;
-					ChordNode self = ((StabilizeAppState)appState).self;
+					ChordRealNode self = ((StabilizeAppState)appState).self;
 					IChordNode successor = ((StabilizeAppState)appState).successor;
 
-					if((self<(ChordNode)x) && ((ChordNode)x<(successor)))
+					if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
 						successor = x;
 					successor.beginNotify(self, callBack, appState1);
 
@@ -446,7 +446,7 @@ namespace Tashjik.Tier2
 
 				public void notify(IChordNode possiblePred) //IPAddress possiblePredIP, byte[] possiblePredHashedIP)
 				{
-					if((predecessor==null) || (((ChordNode)possiblePred<self) && ((ChordNode)predecessor<possiblePred)))
+					if((predecessor==null) || (((ChordRealNode)possiblePred<self) && ((ChordRealNode)predecessor<possiblePred)))
 					predecessor = possiblePred;
 				}
 
@@ -470,7 +470,7 @@ namespace Tashjik.Tier2
 			public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 			{
 				ChordCommon.IChordNode_Object iNode_Object;
-				if((ChordNode)self<queryHashedKey && queryHashedKey<(ChordNode)successor)
+				if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)
 				{
 					if(!(findSuccessorCallBack==null))
 					{
@@ -506,7 +506,7 @@ namespace Tashjik.Tier2
 			private IChordNode findClosestPreceedingNode(byte[] hashedKey)
 			{
 				for(int i=159; i>=0 && finger[i]!=null; i--)
-					if((ChordNode)self<finger[i] && (ChordNode)(finger[i])<hashedKey)
+					if((ChordRealNode)self<finger[i] && (ChordRealNode)(finger[i])<hashedKey)
 						return finger[i];
 				return self;
 			}
@@ -521,7 +521,7 @@ namespace Tashjik.Tier2
 				return predecessor;
 			}
 
-			public Engine(ChordNode encapsulatingNode)
+			public Engine(ChordRealNode encapsulatingNode)
 			{
 				try
 				{
@@ -678,7 +678,7 @@ namespace Tashjik.Tier2
 		private readonly Engine engine;
 		private readonly EngineMgr engineMgr;
 	
-		public ChordNode()
+		public ChordRealNode()
 		{
 			engine = new Engine(this);
 			//engine = Engine.createEngine(this);

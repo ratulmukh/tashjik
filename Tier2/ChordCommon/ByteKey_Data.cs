@@ -49,11 +49,12 @@
 
 using System;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.ChordCommon
 {
-	public class Data_Object
+	public class ByteKey_Data
 	{
-		public Data data;
+		public byte[] byteArray;
+		public Tashjik.Common.Data data;
 		public Object obj;
 	}
 }

@@ -48,12 +48,84 @@
 
 
 using System;
+using System.Threading;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2.ChordCommon
 {
-	public class Data_Object
+	public class ByteKey_DataAsyncResult : IAsyncResult
 	{
-		public Data data;
-		public Object obj;
+		public ByteKey_DataAsyncResult(ByteKey_Data n, bool compSync, bool isComp)
+		{
+			AsyncState = (Object)n;
+			AsyncWaitHandle = null;
+			CompletedSynchronously = compSync;
+			IsCompleted = isComp;
+		}
+
+		/* public AsynResultGetTashjik.Common.Data()
+		{
+			AsyncState = null;
+			AsyncWaitHandle = null;
+			CompletedSynchronously = false;
+			IsCompleted = false;
+		}
+		*/
+		private ByteKey_Data byteKey_Data = null;
+		public Object AsyncState
+		{
+			get
+			{
+				//copy stuff from AsyncState to state
+				//if casting dosen't work, then separate
+				//private variable maintaining Tashjik.Common.Data may be
+				//required
+				return byteKey_Data;
+			}
+			set
+			{
+				//copy stuff from value to AsyncState
+				//AyncState = (Common.Tashjik.Common.Data)value;
+				byteKey_Data = (ByteKey_Data)value;
+			}
+		}
+
+		public WaitHandle AsyncWaitHandle
+		{
+		
+			get
+			{
+				WaitHandle handle = new ManualResetEvent(false);
+				//copy stuff from AsyncWaitHandle to handle
+				return handle;
+			}
+			set
+			{
+				//copy stuff from value to AsyncState
+				//AyncWaitHandle = value;
+			}
+		}
+		public bool CompletedSynchronously
+		{
+			get
+			{
+				return CompletedSynchronously;
+			}
+			set
+			{
+				CompletedSynchronously = value;
+			}
+		}
+		public bool IsCompleted
+		{
+			get
+			{
+				return IsCompleted;
+			}
+			set
+			{
+				IsCompleted = value;
+			}
+		}
+
 	}
 }

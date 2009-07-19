@@ -48,12 +48,75 @@
 
 
 using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
+using Tashjik;
 
-namespace Tashjik.Common
+namespace Tashjik.Tier2
 {
-	public class Data_Object
+	internal class PastryProxyNode : ProxyNode, IPastryNode, ProxyNodeController.IProxy
 	{
-		public Data data;
-		public Object obj;
+		
+		internal static PastryRealNode thisNode;
+	
+		//private Tashjik.Common.NodeBasic selfNodeBasic;
+		//private Tier0.TransportLayerCommunicator transportLayerCommunicator;		
+		
+		//private ProxyController proxyController;
+		
+		public PastryProxyNode(IPAddress ip/*, ProxyController proxyController*/) : base(ip)
+		{
+			//transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefLowLevelComm();
+			//selfNodeBasic = new Tashjik.Common.NodeBasic(ip);
+			//setProxyController(proxyController);
+		}
+		/*
+		public override void setProxyController(ProxyController c)
+		{
+			//need to handle synchronised calls here
+			if(proxyController!=null)
+			proxyController = c;
+		}
+		*/
+		/*
+		public override byte[] getHashedIP()
+		{
+			return selfNodeBasic.getHashedIP();
+		}
+
+		public override IPAddress getIP()
+		{
+			return selfNodeBasic.getIP();
+		}
+
+		public override void setIP(IPAddress ip)
+		{
+			selfNodeBasic.setIP(ip);
+		}
+		*/
+		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		{
+			
+		}
+		
+		public void join(IPastryNode newNode)
+		{
+			
+		}
+		
+		public void leave()
+		{
+			
+		}
+		
+		public void route(Object msg, byte[] key)
+		{
+			
+		}
+		
+						
 	}
+
 }

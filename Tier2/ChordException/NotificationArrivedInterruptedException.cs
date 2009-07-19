@@ -48,12 +48,22 @@
 
 
 using System;
-
-namespace Tashjik.Common
+using System.Threading;
+using System.Net;
+using System.Net.Sockets;
+	
+namespace Tashjik.Tier2.Chord.Exception
 {
-	public class Data_Object
-	{
-		public Data data;
-		public Object obj;
-	}
+
+public class NotificationArrivedInterruptedException : ThreadInterruptedException
+{
+public IPAddress IP;
+public Socket sock;
+public NotificationArrivedInterruptedException(IPAddress ipp, Socket s) : base("Notification has arrived from the desired node")
+{
+IP = ipp;
+sock = s;
+}
+
+}
 }

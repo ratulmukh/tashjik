@@ -52,7 +52,7 @@ using System.Threading;
 
 namespace Tashjik.Common
 {
-	internal class Data_ObjectAsyncResult : IAsyncResult
+	public class Data_ObjectAsyncResult : IAsyncResult
 	{
 		public Data_ObjectAsyncResult(Data_Object b, bool compSync, bool isComp)
 		{

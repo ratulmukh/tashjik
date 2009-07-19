@@ -51,7 +51,7 @@ using System;
 
 namespace Tashjik.Common
 {
-	internal class AsyncCallback_Object
+	public class AsyncCallback_Object
 	{
 		public AsyncCallback callBack;
 		public Object obj;
