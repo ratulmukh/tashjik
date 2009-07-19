@@ -61,11 +61,11 @@ namespace Tashjik
 {
 	internal class OverlayController : Tier0.TransportLayerCommunicator.ISink
 	{
-		internal interface ISink
+/*		internal interface ISink
 		{
 			void notifyMsgRec(IPAddress fromIP, Object data);
 		}
-
+*/
 
 
 		protected class OverlayInstanceMsg
@@ -86,7 +86,7 @@ namespace Tashjik
 			{
 				OverlayInstanceInfo overlayInstanceInfo;
 				if(overlayInstanceRegistry.TryGetValue(overlayInstanceMsg.guid, out overlayInstanceInfo))
-					overlayInstanceInfo.sink.notifyMsgRec(fromIP, overlayInstanceMsg.data);
+					overlayInstanceInfo.sink.notifyMsg(fromIP, overlayInstanceMsg.data);
 				else
 					throw new System.Exception();
 			}
@@ -95,8 +95,8 @@ namespace Tashjik
 		internal class OverlayInstanceInfo
 		{
 			public OverlayServer overlayServer;
-			public ISink sink;
-			public OverlayInstanceInfo(OverlayServer ov, ISink si)
+			public Tier0.TransportLayerCommunicator.ISink sink;
+			public OverlayInstanceInfo(OverlayServer ov, Tier0.TransportLayerCommunicator.ISink si)
 			{
 				overlayServer = ov;
 				sink = si;
@@ -141,7 +141,7 @@ namespace Tashjik
 		public  OverlayServer createNew()
 		{
 			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType);
-			ISink sink = overlayServer.getProxyNodeController();
+			Tier0.TransportLayerCommunicator.ISink sink = overlayServer.getProxyNodeController();
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
 			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);
 			return overlayServer;
@@ -150,7 +150,7 @@ namespace Tashjik
 		public  OverlayServer joinExisting(IPAddress IP, Guid guid)
 		{
 			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType, IP, guid);
-			ISink sink = overlayServer.getProxyNodeController();
+			Tier0.TransportLayerCommunicator.ISink sink = overlayServer.getProxyNodeController();
 			//Server overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
 			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);

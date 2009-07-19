@@ -55,7 +55,7 @@ using System.Net;
 namespace Tashjik
 {
 	
-	public class ProxyNodeController : IProxyNodeController , OverlayController.ISink
+	public class ProxyNodeController : IProxyNodeController , Tier0.TransportLayerCommunicator.ISink
 	{
 	
 		private readonly ProxyNodeRegistry proxyNodeRegistry = new ProxyNodeRegistry();
@@ -141,13 +141,13 @@ namespace Tashjik
 			}
 		}
 
-		public interface IProxy
+/*		public interface IProxy
 		{
 			//void notifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
 				void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
 		}
-
-		public void notifyMsgRec(IPAddress fromIP, Object data)
+*/
+		public void notifyMsg(IPAddress fromIP, Object data)
 		{
 			try
 			{

@@ -59,7 +59,7 @@ namespace Tashjik.Tier2
 	/*********************************************
 	* SEMANTICS: call methods on a remote machine
 	*********************************************/
-	internal class ChordProxyNode : ProxyNode, IChordNode, ProxyNodeController.IProxy
+	internal class ChordProxyNode : ProxyNode, IChordNode
 	{
 		internal static ChordRealNode thisNode;
 	

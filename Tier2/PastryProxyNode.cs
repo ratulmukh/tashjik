@@ -56,7 +56,7 @@ using Tashjik;
 
 namespace Tashjik.Tier2
 {
-	internal class PastryProxyNode : ProxyNode, IPastryNode, ProxyNodeController.IProxy
+	internal class PastryProxyNode : ProxyNode, IPastryNode//, Tier0.TransportLayerCommunicator.ISink
 	{
 		
 		internal static PastryRealNode thisNode;
@@ -97,6 +97,11 @@ namespace Tashjik.Tier2
 		}
 		*/
 		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		{
+			
+		}
+	
+		public void notifyMsg(IPAddress fromIP, Object data)
 		{
 			
 		}
