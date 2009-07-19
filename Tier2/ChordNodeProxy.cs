@@ -58,7 +58,7 @@ namespace Tashjik.Tier2
 	/*********************************************
 	* SEMANTICS: call methods on a remote machine
 	*********************************************/
-	internal class ChordNodeProxy : Tier2.Common.NodeProxy, IChordNode, Tier2.Common.ProxyController.IProxy
+	internal class ChordProxyNode : Tier2.Common.ProxyNode, IChordNode, Tier2.Common.ProxyController.IProxy
 	{
 		internal static ChordNode thisNode;
 	
@@ -68,7 +68,7 @@ namespace Tashjik.Tier2
 		private readonly int iPortNo = System.Convert.ToInt16 ("2334");
 		private readonly Socket sock = null;
 
-		//not necessary; NodeProxy will be added to the registry in ProxyController by ProxyController itself
+		//not necessary; ProxyNode will be added to the registry in ProxyController by ProxyController itself
 		//BUT TO SEND MSGS, U NEED THE INTERFACE
 		private Tier2.Common.ProxyController proxyController;
 
@@ -157,7 +157,7 @@ namespace Tashjik.Tier2
 			}
 		}
 
-		class IChordNode_INode_Msg
+		class IChordNode_Node_Msg
 		{
 			public IChordNode node1;
 			public IChordNode node2;
@@ -169,8 +169,8 @@ namespace Tashjik.Tier2
 			Tashjik.Common.Data_Object data_Object = (Tashjik.Common.Data_Object)(result.AsyncState);
 			Tashjik.Common.Data data = data_Object.data;
 
-			IChordNode_INode_Msg thisAppState = (IChordNode_INode_Msg)(data_Object.obj);
-			ChordNodeProxy iNode = (ChordNodeProxy)(thisAppState.node2);
+			IChordNode_Node_Msg thisAppState = (IChordNode_Node_Msg)(data_Object.obj);
+			ChordProxyNode iNode = (ChordProxyNode)(thisAppState.node2);
 
 			Msg msg = thisAppState.msg;
 			msg.setReturnValue((Object)data);
@@ -181,19 +181,19 @@ namespace Tashjik.Tier2
 
 		void processGetPredecessorForNotifyMsgRec(IAsyncResult result)
 		{
-			ChordCommon.ByteKey_IChordNode byteKey_INode = (ChordCommon.ByteKey_IChordNode) (result.AsyncState);
-			IChordNode predecessor = byteKey_INode.node;
-			IChordNode_INode_Msg thisAppState = (IChordNode_INode_Msg)(byteKey_INode.obj);
+			ChordCommon.ByteKey_IChordNode byteKey_Node = (ChordCommon.ByteKey_IChordNode) (result.AsyncState);
+			IChordNode predecessor = byteKey_Node.node;
+			IChordNode_Node_Msg thisAppState = (IChordNode_Node_Msg)(byteKey_Node.obj);
 			IChordNode thisNode = thisAppState.node1;
-			ChordNodeProxy iNode = (ChordNodeProxy)(thisAppState.node2);
+			ChordProxyNode iNode = (ChordProxyNode)(thisAppState.node2);
 			if(predecessor==thisNode)
 			{
 				//no need to add successorProxyForm to registry
 				//since it is actually the 'thisNode'
-				//we are creating a NodeProxy of thisNode
+				//we are creating a ProxyNode of thisNode
 				//because it needs to be transferred back
 				IPAddress predecessorIP = predecessor.getIP();
-				predecessor = new ChordNodeProxy(predecessorIP, proxyController);
+				predecessor = new ChordProxyNode(predecessorIP, proxyController);
 			}
 			Msg msg = thisAppState.msg;
 			msg.setReturnValue((Object)predecessor);
@@ -206,19 +206,19 @@ namespace Tashjik.Tier2
 		{
 			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object) (result.AsyncState);
 			IChordNode successor = iNode_Object.node;
-			IChordNode_INode_Msg thisAppState = (IChordNode_INode_Msg)(iNode_Object.obj);
+			IChordNode_Node_Msg thisAppState = (IChordNode_Node_Msg)(iNode_Object.obj);
 		
 			IChordNode thisNode = thisAppState.node1;
-			ChordNodeProxy iNode = (ChordNodeProxy)(thisAppState.node2);
+			ChordProxyNode iNode = (ChordProxyNode)(thisAppState.node2);
 
 			if(successor==thisNode)
 			{
 				//no need to add successorProxyForm to registry
 				//since it is actually the 'thisNode'
-				//we are creating a NodeProxy of thisNode
+				//we are creating a ProxyNode of thisNode
 				//because it needs to be transferred back
 				IPAddress successorIP = successor.getIP();
-				successor = new ChordNodeProxy(successorIP, proxyController);
+				successor = new ChordProxyNode(successorIP, proxyController);
 			}
 
 			Msg msg = thisAppState.msg;
@@ -243,9 +243,9 @@ namespace Tashjik.Tier2
 					{
 						byte[] queryHashedKey = System.Text.Encoding.ASCII.GetBytes((String)msg.getParameter1());
 						IChordNode queryingNode = (IChordNode)msg.getParameter2();
-						//INode successor = thisNode.findSuccessor(queryHashedKey, queryingNode);
+						//Node successor = thisNode.findSuccessor(queryHashedKey, queryingNode);
 
-						IChordNode_INode_Msg iNode_Msg = new IChordNode_INode_Msg();
+						IChordNode_Node_Msg iNode_Msg = new IChordNode_Node_Msg();
 						iNode_Msg.node1 = thisNode;
 						iNode_Msg.node2 = this;
 						iNode_Msg.msg = msg;
@@ -256,10 +256,10 @@ namespace Tashjik.Tier2
 						{
 							//no need to add successorProxyForm to registry
 							//since it is actually the 'thisNode'
-							//we are creating a NodeProxy of thisNode
+							//we are creating a ProxyNode of thisNode
 							//because it needs to be transferred back
 							IPAddress successorIP = successor.getIP();
-							successor = new NodeProxy(successorIP);
+							successor = new ProxyNode(successorIP);
 						}
 						msg.setReturnValue((Object)successor);
 						returnMsgList.Add(msg);
@@ -267,34 +267,34 @@ namespace Tashjik.Tier2
 					}
 					else if(msg.getType()==Msg.TypeEnum.GET_PREDECESSOR)
 					{
-						IChordNode_INode_Msg iNode_Msg = new IChordNode_INode_Msg();
+						IChordNode_Node_Msg iNode_Msg = new IChordNode_Node_Msg();
 						iNode_Msg.node1 = thisNode;
 						iNode_Msg.node2 = this;
 						iNode_Msg.msg = msg;
 
 						AsyncCallback getPredecessorCallBack = new AsyncCallback(processGetPredecessorForNotifyMsgRec);
 						thisNode.beginGetPredecessor(getPredecessorCallBack, iNode_Msg);
-						//INode predecessor = thisNode.getPredecessor();
+						//Node predecessor = thisNode.getPredecessor();
 		
 						/*if(predecessor==thisNode)
 						{
 							//no need to add successorProxyForm to registry
 							//since it is actually the 'thisNode'
-							//we are creating a NodeProxy of thisNode
+							//we are creating a ProxyNode of thisNode
 							//because it needs to be transferred back
 							IPAddress predecessorIP = predecessor.getIP();
-							predecessor = new NodeProxy(predecessorIP);
+							predecessor = new ProxyNode(predecessorIP);
 						}
 						msg.setReturnValue((Object)predecessor);
 						returnMsgList.Add(msg);
 						*/
 					}
 					else if(msg.getType()==Msg.TypeEnum.NOTIFY)
-						//thisNode.notify((INode)msg.getParameter1());
+						//thisNode.notify((Node)msg.getParameter1());
 						thisNode.beginNotify((IChordNode)msg.getParameter1(), null, null);
 					else if(msg.getType()==Msg.TypeEnum.GET_DATA)
 					{
-						IChordNode_INode_Msg iNode_Msg = new IChordNode_INode_Msg();
+						IChordNode_Node_Msg iNode_Msg = new IChordNode_Node_Msg();
 						iNode_Msg.node1 = null;
 						iNode_Msg.node2 = this;
 						iNode_Msg.msg = msg;
@@ -339,8 +339,8 @@ namespace Tashjik.Tier2
 					}
 					else if(msg.getType()==Msg.TypeEnum.GET_PREDECESSOR)
 					{
-						/*INode predecessor = (INode)msg.getParameter1();
-						IAsyncResult getPredecessorResult = new Chord.Common.INodeAsyncResult(predecessor, false, true);
+						/*Node predecessor = (Node)msg.getParameter1();
+						IAsyncResult getPredecessorResult = new Chord.Common.NodeAsyncResult(predecessor, false, true);
 						foreach(AsyncCallback getPredecessorCallBack in getPredecessorRegistry)
 						getPredecessorCallBack(getPredecessorResult);
 						*/
@@ -411,12 +411,12 @@ namespace Tashjik.Tier2
 			selfNodeBasic.setIP(ip);
 		}
 		/*
-		public INode findSuccessor(INode queryNode, INode queryingNode)
+		public Node findSuccessor(Node queryNode, Node queryingNode)
 		{
 			return findSuccessor(queryNode.getHashedIP(), queryingNode);
 		}
 
-		public INode findSuccessor(byte[] queryHashedKey, INode queryingNode)
+		public Node findSuccessor(byte[] queryHashedKey, Node queryingNode)
 		{
 			Msg msg = new Msg(Msg.TypeEnum.FIND_SUCCESSOR, (Object)queryHashedKey, (Object)queryingNode);
 			List<Msg> msgList = new List<Msg>();
@@ -448,7 +448,7 @@ namespace Tashjik.Tier2
 		}
 
 
-		/* public INode getPredecessor()
+		/* public Node getPredecessor()
 		{
 			return new Node();
 			//relay this call to the actual node via forwarder
@@ -485,7 +485,7 @@ namespace Tashjik.Tier2
 	
 		}	
 
-		public ChordNodeProxy(IPAddress ip, Tier2.Common.ProxyController proxyController)
+		public ChordProxyNode(IPAddress ip, Tier2.Common.ProxyController proxyController)
 		{
 			lowLevelComm = Base.LowLevelComm.getRefLowLevelComm();
 			selfNodeBasic = new Tashjik.Common.NodeBasic(ip);

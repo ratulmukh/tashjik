@@ -54,7 +54,7 @@ namespace Tashjik.Tier2
 	/// <summary>
 	/// Description of DataStore.
 	/// </summary>
-	public class BATONDataStore
+	internal class BATONDataStore
 	{
 		public BATONDataStore()
 		{

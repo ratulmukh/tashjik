@@ -50,34 +50,43 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+//using System.Runtime.CompilerServices;
+
+//[assembly:InternalsVisibleTo("TashjikServer")]
 
 namespace Tashjik.Tier2
 {
 
-	internal class PastryServer : Tier2.Common.Server, IOverlay
+	public class PastryServer : OverlayServer
 	{
 		private  readonly Guid guid;
-		internal readonly PastryNode thisNode;
+		private readonly PastryRealNode thisNode;
 		
-		public PastryServer()
+		internal PastryServer() : base(new  ProxyNodeController.CreateProxyNodeDelegate(createPastryProxyNode))
 		{
 			guid = System.Guid.NewGuid();
-			thisNode = new PastryNode();
-			//NodeProxy.thisNode = thisNode;
+			thisNode = new PastryRealNode();
+			//ProxyNode.thisNode = thisNode;
+			//CreateProxyNodeDelegate createProxyNodeDelegate = new  CreateProxyNodeDelegate(createPastryProxyNode);
+			//base.setCreateProxyNodeDelegate(createProxyNodeDelegate);
 		}
 		
-		public PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
+		internal PastryServer(IPAddress joinOtherIP, Guid joinOtherGuid) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createPastryProxyNode))
 		{
 			guid = joinOtherGuid;
-			IPastryNode joinOtherINode = new PastryNodeProxy(joinOtherIP, proxyController);
-			thisNode = new PastryNode(joinOtherINode);
+			//CreateProxyNodeDelegate createProxyNodeDelegate = new  CreateProxyNodeDelegate(createPastryProxyNode);
+			//base.setCreateProxyNodeDelegate(createProxyNodeDelegate);
+			IPastryNode joinOtherNode = (IPastryNode)(base.getProxyNode(joinOtherIP));
+			thisNode = new PastryRealNode(joinOtherNode);
+			
+			
 		}
 		
 		
-			
+		
 		public override Guid getGuid()
 		{
-			return new Guid();
+			return new Guid(guid.ToByteArray());
 		}
 
 		//Common.Data getData(String key);
@@ -98,5 +107,25 @@ namespace Tashjik.Tier2
 		}
 		
 		
+		
+		
+			
+			
+		private static ProxyNode createPastryProxyNode(IPAddress IP)
+		{
+			return new PastryProxyNode(IP);
+		}
+		
+		internal IPastryNode getPastryProxyNode(IPAddress IP)
+		{      
+			return (IPastryNode)(base.getProxyNode(IP));
+		}
+		
+		/*
+		protected class PastryNode : Tashjik.Node//, IPastryNode
+		{
+			
+		}
+	*/
 	}
 }

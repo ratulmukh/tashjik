@@ -9,15 +9,14 @@
 
 using System;
 using Tashjik.Tier2.Streaming;
+//using MbUnit.Framework;
 
-namespace Tashjik.Test.Tier2Test.StreamingTest.NaradaTest
+namespace TashjikTest.Tier2Test.StreamingTest.NaradaTest
 {
-	/// <summary>
-	/// Description of NaradaBootStrapper.
-	/// </summary>
-	public class NaradaBootStrapper
+
+	public class NaradaBootStrapperTest
 	{
-		public NaradaBootStrapper()
+		public NaradaBootStrapperTest()
 		{
 		}
 		

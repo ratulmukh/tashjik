@@ -54,7 +54,7 @@ using System.Net.Sockets;
 namespace Tashjik.Tier2
 {
 
-	internal class BATONServer : Tier2.Common.Server, IOverlay
+	public class BATONServer : Tier2.Common.Server, IOverlay
 	{
 		private  readonly Guid guid;
 		internal readonly BATONNode thisNode;
@@ -63,19 +63,19 @@ namespace Tashjik.Tier2
 		{
 			guid = System.Guid.NewGuid();
 			thisNode = new BATONNode();
-			//NodeProxy.thisNode = thisNode;
+			//ProxyNode.thisNode = thisNode;
 		}
 		
 		public BATONServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
 			guid = joinOtherGuid;
-			IBATONNode joinOtherINode = new BATONNodeProxy(joinOtherIP, proxyController);
-			thisNode = new BATONNode(joinOtherINode);
+			IBATONNode joinOtherNode = new BATONProxyNode(joinOtherIP, proxyController);
+			thisNode = new BATONNode(joinOtherNode);
 		}
 			
 		public override Guid getGuid()
 		{
-			return new Guid();
+			return new Guid(guid.ToByteArray());
 		}
 
 		//Common.Data getData(String key);

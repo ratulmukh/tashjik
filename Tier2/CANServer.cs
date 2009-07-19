@@ -64,8 +64,8 @@ namespace Tashjik.Tier2
 		public CANServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
 /*			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
-			thisNode = new Node(joinOtherINode);
+			Node joinOtherNode = new ProxyNode(joinOtherIP, proxyController);
+			thisNode = new Node(joinOtherNode);
 */
 		}
 	}

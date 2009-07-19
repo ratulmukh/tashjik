@@ -52,15 +52,15 @@ using System.Net;
 
 namespace Tashjik.Tier2
 {
-	internal interface IChordNode : Tier2.Common.INode
+	internal interface IChordNode : Tier2.Common.Node
 	{
-		//INode findSuccessor(INode queryNode, INode queryingNode);
-		//INode findSuccessor(byte[] queryHashedKey, INode queryingNode);
+		//Node findSuccessor(Node queryNode, Node queryingNode);
+		//Node findSuccessor(byte[] queryHashedKey, Node queryingNode);
 		void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
 		void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
-		//INode getPredecessor();
+		//Node getPredecessor();
 		void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState);
-		//void notify(INode possiblePred);
+		//void notify(Node possiblePred);
 		void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState);
 		//bool ping();
 		void beginPing(AsyncCallback pingCallBack, Object appState);

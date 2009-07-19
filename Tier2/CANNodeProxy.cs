@@ -52,11 +52,11 @@ using System;
 namespace Tashjik.Tier2
 {
 	/// <summary>
-	/// Description of NodeProxy.
+	/// Description of ProxyNode.
 	/// </summary>
-	internal class CANNodeProxy
+	internal class CANProxyNode
 	{
-		public CANNodeProxy()
+		public CANProxyNode()
 		{
 		}
 	}

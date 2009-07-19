@@ -9,7 +9,7 @@
 
 using System;
 
-namespace Tashjik.Test.Tier2Test.StreamingTest.NaradaTest
+namespace TashjikTest.Tier2Test.StreamingTest.NaradaTest
 {
 	/// <summary>
 	/// Description of NaradaNode.

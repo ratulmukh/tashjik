@@ -60,7 +60,7 @@ namespace Tashjik.Tier2
 	
 		public override Guid getGuid()
 		{
-			return guid;
+			return new Guid(guid.ToByteArray());
 		}
 
 		public override void shutdown()
@@ -71,14 +71,14 @@ namespace Tashjik.Tier2
 		{
 			guid = System.Guid.NewGuid();
 			thisNode = new ChordNode();
-			ChordNodeProxy.thisNode = thisNode;
+			ChordProxyNode.thisNode = thisNode;
 		}
 		
 		public ChordServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
 /*			guid = joinOtherGuid;
-			INode joinOtherINode = new NodeProxy(joinOtherIP, proxyController);
-			thisNode = new Node(joinOtherINode);
+			Node joinOtherNode = new ProxyNode(joinOtherIP, proxyController);
+			thisNode = new Node(joinOtherNode);
 */
 		}
 
@@ -88,7 +88,7 @@ namespace Tashjik.Tier2
 		public Tashjik.Common.Data getData(String key)
 		{
 			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
-			INode successor = thisNode.findSuccessor(byteKey, thisNode);
+			Node successor = thisNode.findSuccessor(byteKey, thisNode);
 			return successor.getData(byteKey);
 		}
 
@@ -97,7 +97,7 @@ namespace Tashjik.Tier2
 		public void putData(String key, Tashjik.Common.Data data)
 		{
 			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
-			INode successor = thisNode.findSuccessor(byteKey, thisNode);
+			Node successor = thisNode.findSuccessor(byteKey, thisNode);
 			successor.putData(byteKey, data);
 		}
 		*/

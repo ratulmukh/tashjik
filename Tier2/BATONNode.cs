@@ -55,7 +55,7 @@ using System.Collections.Generic;
 
 namespace Tashjik.Tier2
 {
-	public class BATONNode : IBATONNode
+	internal class BATONNode : IBATONNode
 	{
 		//RULES OF THE THUMB
 		//notify calls are made to BATONNodes to notify them of something withot being asked
