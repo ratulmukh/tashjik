@@ -46,8 +46,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Base\ILowLevelComm.cs" />
-    <Compile Include="Base\LowLevelComm.cs" />
+    <Compile Include="Tier0\ITransportLayerCommunicator.cs" />
+    <Compile Include="Tier0\TransportLayerCommunicator.cs" />
     <Compile Include="Common\AsyncCallback_Object.cs" />
     <Compile Include="Common\Bool_Object.cs" />
     <Compile Include="Common\Bool_ObjectAsyncResult.cs" />
@@ -63,9 +63,17 @@
     <Compile Include="Common\NodeBasic.cs" />
     <Compile Include="Common\ObjectAsyncResult.cs" />
     <Compile Include="Common\UtilityMethod.cs" />
-    <Compile Include="Controller.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="OverlayController.cs" />
+    <Compile Include="IProxyNodeController.cs" />
+    <Compile Include="RealNode.cs" />
+    <Compile Include="ProxyNode.cs" />
+    <Compile Include="ProxyNodeController.cs" />
+    <Compile Include="OverlayServer.cs" />
+    <Compile Include="StreamingOverlayServer.cs" />
+    <Compile Include="TashjikDataStream.cs" />
+    <Compile Include="OverlayServerFactory.cs" />
     <Compile Include="TashjikServer.cs" />
-    <Compile Include="IOverlay.cs" />
     <Compile Include="Tier1\STUN\Server.cs" />
     <Compile Include="Tier2\BATONDataStore.cs" />
     <Compile Include="Tier2\BATONNode.cs" />
@@ -95,29 +103,23 @@
     <Compile Include="Tier2\ChordNode.cs" />
     <Compile Include="Tier2\ChordNodeProxy.cs" />
     <Compile Include="Tier2\ChordServer.cs" />
-    <Compile Include="Tier2\Common\INode.cs" />
-    <Compile Include="Tier2\Common\IProxyController.cs" />
-    <Compile Include="Tier2\Common\Node.cs" />
-    <Compile Include="Tier2\Common\NodeProxy.cs" />
-    <Compile Include="Tier2\Common\ProxyController.cs" />
-    <Compile Include="Tier2\Common\Server.cs" />
     <Compile Include="Tier2\IBATONNode.cs" />
     <Compile Include="Tier2\ICANNode.cs" />
     <Compile Include="Tier2\IChordNode.cs" />
     <Compile Include="Tier2\IPastryNode.cs" />
     <Compile Include="Tier2\PastryDataStore.cs" />
-    <Compile Include="Tier2\PastryNode.cs" />
-    <Compile Include="Tier2\PastryNodeProxy.cs" />
+    <Compile Include="Tier2\PastryRealNode.cs" />
+    <Compile Include="Tier2\PastryProxyNode.cs" />
     <Compile Include="Tier2\PastryServer.cs" />
     <Compile Include="Tier2\PrevBATONNodeNotMatching.cs" />
     <Compile Include="Tier2\Streaming\INaradaNode.cs" />
     <Compile Include="Tier2\Streaming\NaradaBootstrapper.cs" />
-    <Compile Include="Tier2\Streaming\NaradaNode.cs" />
-    <Compile Include="Tier2\Streaming\NaradaNodeProxy.cs" />
+    <Compile Include="Tier2\Streaming\NaradaRealNode.cs" />
+    <Compile Include="Tier2\Streaming\NaradaProxyNode.cs" />
     <Compile Include="Tier2\Streaming\NaradaServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Base" />
+    <Folder Include="Tier0" />
     <Folder Include="Common" />
     <Folder Include="Common\Exception" />
     <Folder Include="Tier1\STUN" />

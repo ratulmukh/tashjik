@@ -52,10 +52,14 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
+//using System.Runtime.CompilerServices;
+
+
+//[assembly:InternalsVisibleTo("Tier2Common")]
 
 namespace Tashjik
 {
-	internal class Controller : Base.LowLevelComm.ISink
+	internal class OverlayController : Tier0.TransportLayerCommunicator.ISink
 	{
 		internal interface ISink
 		{
@@ -90,26 +94,28 @@ namespace Tashjik
 
 		internal class OverlayInstanceInfo
 		{
-			public IOverlay overlay;
+			public OverlayServer overlayServer;
 			public ISink sink;
-			public OverlayInstanceInfo(IOverlay ov, ISink si)
+			public OverlayInstanceInfo(OverlayServer ov, ISink si)
 			{
-				overlay = ov;
+				overlayServer = ov;
 				sink = si;
 			}
 		}
-
+		
+		private OverlayServerFactory overlayServerFactory;
 		private readonly Guid guid;
 		private readonly Dictionary<Guid, OverlayInstanceInfo> overlayInstanceRegistry =
 			new Dictionary<Guid, OverlayInstanceInfo>();
-		private readonly OverlayTypeEnum overlayType;
+		private readonly String strOverlayType;
 
 
-		public  Controller(Guid g, OverlayTypeEnum ovType)
+		public  OverlayController(OverlayServerFactory overlayServerFactory, Guid g, String strOverlayType)
 		{
+			this.overlayServerFactory = overlayServerFactory ;
 			guid = g;
-			Base.LowLevelComm.getRefLowLevelComm().register(guid, this);
-			overlayType = ovType;
+			Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator().register(guid, this);
+			this.strOverlayType = strOverlayType;
 		}
 
 		public  ArrayList getList()
@@ -122,34 +128,35 @@ namespace Tashjik
 			return guids;
 		}
 
-		public  IOverlay retrieve(Guid guid)
+		public  OverlayServer retrieve(Guid guid)
 		{
 			OverlayInstanceInfo overlayInstanceInfo;
 			if(overlayInstanceRegistry.TryGetValue(guid, out overlayInstanceInfo))
-				return overlayInstanceInfo.overlay;
+				return overlayInstanceInfo.overlayServer;
 			else
 				//need to change this exception
 				throw new Tashjik.Common.Exception.LocalHostIPNotFoundException();
 		}		
 
-		public  IOverlay createNew()
+		public  OverlayServer createNew()
 		{
-			IOverlay overlay = createServer();
-			ISink sink = new Tier2.Common.ProxyController(overlayType);
-			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
-			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
-			return overlay;
+			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType);
+			ISink sink = overlayServer.getProxyNodeController();
+			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
+			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);
+			return overlayServer;
 		}
 
-		public  IOverlay joinExisting(IPAddress IP, Guid guid)
+		public  OverlayServer joinExisting(IPAddress IP, Guid guid)
 		{
-			ISink sink = new Tier2.Common.ProxyController(overlayType);
-			IOverlay overlay = createServer(IP, guid, (Tier2.Common.ProxyController)(sink));
-			//IOverlay overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
-			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlay, sink);
-			overlayInstanceRegistry.Add(overlay.getGuid(), overlayInstanceInfo);
-			return overlay;
+			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType, IP, guid);
+			ISink sink = overlayServer.getProxyNodeController();
+			//Server overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
+			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
+			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);
+			return overlayServer;
 		}
+/*
 		
 		private Tier2.Common.Server createServer(IPAddress joinOtherIP, Guid joinOtherGuid, Tier2.Common.ProxyController proxyController)
 		{
@@ -179,5 +186,6 @@ namespace Tashjik
 				return null;
 		   
 		}
+*/
 	}
 }

@@ -53,82 +53,96 @@ using System.Net;
 
 namespace Tashjik
 {
-	public enum OverlayTypeEnum
+/*	public enum String
 	{
 		Chord,
 		BATON,
-		Pastry
+		Pastry, 
+		CAN,
+		Narada
 	}
-	
+*/	
 	public static class TashjikServer 
 	{
+		
+		private static OverlayServerFactory overlayServerFactory = new OverlayServerFactory();
+		
+	/*	public TashjikServer()
+		{
+			init();
+		}
+		
+		private static void init()
+		{
+			overlayServerFactory = new OverlayServerFactory();
+		}
+	*/	
 		public static ArrayList getList(Guid overlayGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.getList();
 			
 		}
-		
-		public static ArrayList getList(OverlayTypeEnum overlayType)
+		public static ArrayList getList(String strOverlayType)
 		{
-			Controller overlayController = getController(overlayType);
+			OverlayController overlayController = getController(strOverlayType);
 			return overlayController.getList();
 			
 		}
 		
 		//get access to an overlay to which this node is already part of 
-		public static IOverlay retrieve(Guid overlayGuid, Guid overlayInstanceGuid)
+		public static OverlayServer retrieve(Guid overlayGuid, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.retrieve(overlayInstanceGuid);
 		}
 		
 		//create a completely new overlay
-		public static IOverlay createNew(Guid overlayGuid)
+		public static OverlayServer createNew(Guid overlayGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.createNew();
 			
 		}
-		public static IOverlay createNew(OverlayTypeEnum overlayType)
+		public static OverlayServer createNew(String strOverlayType)
 		{
-			Controller overlayController = getController(overlayType);
+			OverlayController overlayController = getController(strOverlayType);
 			return overlayController.createNew();
 			
 		}
 		
 		//join an existing overlay to which this node is not yet a part of 
-		public static IOverlay joinExisting(IPAddress IP, Guid overlayGuid, Guid overlayInstanceGuid)
+		public static OverlayServer joinExisting(IPAddress IP, Guid overlayGuid, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(overlayGuid);
+			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
-		public static IOverlay joinExisting(IPAddress IP, OverlayTypeEnum overlayType, Guid overlayInstanceGuid)
+		public static OverlayServer joinExisting(IPAddress IP, String strOverlayType, Guid overlayInstanceGuid)
 		{
-			Controller overlayController = getController(overlayType);
+			OverlayController overlayController = getController(strOverlayType);
 			return overlayController.joinExisting(IP, overlayInstanceGuid);
 		}
 		
-		private static Controller getController(OverlayTypeEnum overlayType)
+		private static OverlayController getController(String strOverlayType)
 		{
-			if(overlayType==OverlayTypeEnum.Chord)
-				return getRefChordController(overlayType);
-			else if(overlayType==OverlayTypeEnum.BATON)
-				return getRefBATONController(overlayType);
-			else if(overlayType==OverlayTypeEnum.Pastry)
-				return getRefBATONController(overlayType);
+			if(strOverlayType=="Chord")
+				return getRefChordController(strOverlayType);
+			else if(strOverlayType=="BATON")
+				return getRefBATONController(strOverlayType);
+			else if(strOverlayType=="Pastry")
+				return getRefBATONController(strOverlayType);
 			else
 				throw new Exception();
 		}
 
-		private static Controller getController(Guid overlayGuid)
+		private static OverlayController getController(Guid overlayGuid)
 		{
 			if(overlayGuid==new Guid(chordGUID))
-				return getRefChordController(OverlayTypeEnum.Chord);
+				return getRefChordController("Chord");
 			else if(overlayGuid==new Guid(BATONGUID))
-				return getRefBATONController(OverlayTypeEnum.BATON);
+				return getRefBATONController("BATON");
 			else if(overlayGuid==new Guid(pastryGUID))
-				return getRefBATONController(OverlayTypeEnum.Pastry);
+				return getRefBATONController("Pastry");
 			else
 				throw new Exception();
 		}
@@ -137,40 +151,40 @@ namespace Tashjik
 		private const string BATONGUID  = "59a86e1b-27d1-45bb-bbfe-b9cbfbb4fdd9";
 		private const string pastryGUID = "73dc00d1-40e9-4111-91a5-fa55881f0e35";
 		
-		private static Controller chordController = null;
-		private static Controller BATONController = null;
-		private static Controller pastryController = null;
+		private static OverlayController chordController = null;
+		private static OverlayController BATONController = null;
+		private static OverlayController pastryController = null;
 		
-		private static Controller getRefChordController(OverlayTypeEnum overlayType)
+		private static OverlayController getRefChordController(String strOverlayType)
 		{
 			if(chordController != null)
 				return chordController;
 			else
 			{
-				chordController = new Controller(new Guid(chordGUID), overlayType);
+				chordController = new OverlayController(overlayServerFactory, new Guid(chordGUID), strOverlayType);
 				return chordController;
 			}
 		}
 		
-		private static Controller getRefBATONController(OverlayTypeEnum overlayType)
+		private static OverlayController getRefBATONController(String strOverlayType)
 		{
 			if(BATONController != null)
 				return BATONController;
 			else
 			{
-				BATONController = new Controller(new Guid(BATONGUID), overlayType);
+				BATONController = new OverlayController(overlayServerFactory, new Guid(BATONGUID), strOverlayType);
 				return BATONController;
 			}
 		}
 		
-		private static Controller getRefPastrydController(OverlayTypeEnum overlayType)
+		private static OverlayController getRefPastrydController(String strOverlayType)
 		{
 			if(pastryController != null)
 				return pastryController;
 			else
 			{
 				//new guid to be added here
-				pastryController = new Controller(new Guid(pastryGUID), overlayType);
+				pastryController = new OverlayController(overlayServerFactory, new Guid(pastryGUID), strOverlayType);
 				return pastryController;
 			}
 		}

@@ -1,16 +1,8 @@
-﻿/*
- * Created by SharpDevelop.
- * User: ratul
- * Date: 11/23/2008
- * Time: 10:49 AM
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-
-using System;
-using Tashjik;
-using Tashjik.Tier2;
+﻿using System;
+//using Tashjik;
+//using Tashjik.Tier2;
 using System.Collections;
+using TashjikTest.Tier2Test.StreamingTest.NaradaTest;
 
 namespace TashjikTest
 {
@@ -21,11 +13,17 @@ namespace TashjikTest
 	{
 		public TashjikServerTest()
 		{
+			
+		}
+		
+		public void exerciseTests()
+		{
+			NaradaTestExerciser naradaTestExerciser = new NaradaTestExerciser();
 		}
 		
 		public static void Main()
 		{
-			Guid g = Guid.NewGuid();
+		/*	Guid g = Guid.NewGuid();
 			Console.Write(g.ToString());
 			
 			//ChordServer chord = (ChordServer)(TashjikServer.createNew(OverlayTypeEnum.Chord));
@@ -36,7 +34,9 @@ namespace TashjikTest
 			Tashjik.Common.Data data = new Tashjik.Common.Data();
 			AsyncCallback putDataCallBack = new AsyncCallback(processPutDataCallBack);
 			//chord.beginGetData(key, data, putDataCallBack, null);
-			
+		*/	
+		TashjikServerTest tashjikServerTest = new TashjikServerTest();
+		tashjikServerTest.exerciseTests();
 			
 		}
 		

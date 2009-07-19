@@ -34,6 +34,7 @@
     <Compile Include="Tier2Test\PastryTest\NodeTests.cs" />
     <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaBootStrapperTest.cs" />
     <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaNodeTest.cs" />
+    <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaTestExerciser.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="BaseTest" />
