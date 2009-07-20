@@ -48,6 +48,7 @@
 
 
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -67,17 +68,17 @@ namespace Tashjik.Tier2
 
 		}	
 
-		private Dictionary<byte[], Tashjik.Common.Data> dataHolder =
-			new Dictionary<byte[], Tashjik.Common.Data>();
+		private Dictionary<byte[], Stream> dataHolder =
+			new Dictionary<byte[], Stream>();
 
-		public void putData(byte[] hashedKey, Tashjik.Common.Data data)
+		public void putData(byte[] hashedKey, Stream data, int dataLength)
 		{
 			dataHolder.Add(hashedKey, data);
 		}
 
-		public Tashjik.Common.Data getData(byte[] hashedKey)
+		public Stream getData(byte[] hashedKey)
 		{
-			Tashjik.Common.Data data = new Tashjik.Common.Data();
+			Stream data;
 			if(dataHolder.TryGetValue(hashedKey, out data))
 				return data;
 			else

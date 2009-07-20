@@ -50,6 +50,7 @@
 using System;
 using System.Net;
 using System.Threading;
+using System.IO;
 
 namespace Tashjik.Tier2
 {
@@ -817,10 +818,10 @@ namespace Tashjik.Tier2
 			getDataCallBack(getDataResult);
 		}
 
-		public void beginPutData(byte[] byteKey, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] byteKey, Stream data, int dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			//once DataStore gets complex, this operation should not complete on the same synchronous thread
-			dataStore.putData(byteKey, data);
+			dataStore.putData(byteKey, data, dataLength);
 			IAsyncResult putDataResult = new Tashjik.Common.ObjectAsyncResult(appState, true, true);
 			putDataCallBack(putDataResult);
 

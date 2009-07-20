@@ -50,6 +50,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.IO;
 
 namespace Tashjik.Tier2
 {
@@ -140,15 +141,16 @@ namespace Tashjik.Tier2
 	
 
 
-		public override void beginPutData(String key, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		public override void beginPutData(String key, Stream data, int dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
 		
-			Tashjik.Common.ByteArray_Data_AsyncCallback_Object thisAppState = new Tashjik.Common.ByteArray_Data_AsyncCallback_Object();
+			Tashjik.Common.ByteArray_Stream_AsyncCallback_Object thisAppState = new Tashjik.Common.ByteArray_Stream_AsyncCallback_Object();
 
 			thisAppState.byteArray = byteKey;
 			thisAppState.callBack = putDataCallBack;
 			thisAppState.data = data;
+			thisAppState.dataLength = dataLength;
 			thisAppState.obj = appState;
 
 			AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForPutData);
@@ -159,14 +161,15 @@ namespace Tashjik.Tier2
 		{
 			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 			IChordNode successor = iNode_Object.node;
-			Tashjik.Common.ByteArray_Data_AsyncCallback_Object recAppState = (Tashjik.Common.ByteArray_Data_AsyncCallback_Object)(iNode_Object.obj);
+			Tashjik.Common.ByteArray_Stream_AsyncCallback_Object recAppState = (Tashjik.Common.ByteArray_Stream_AsyncCallback_Object)(iNode_Object.obj);
 
 			byte[] queryByteKey = recAppState.byteArray;
 			Object origAppState = recAppState.obj;
 			AsyncCallback callBack = recAppState.callBack;
-			Tashjik.Common.Data data = recAppState.data;
+			Stream data = recAppState.data;
+			int dataLength = recAppState.dataLength;
 	
-			successor.beginPutData(queryByteKey, data, callBack, origAppState);
+			successor.beginPutData(queryByteKey, data, dataLength, callBack, origAppState);
 		
 
 		}

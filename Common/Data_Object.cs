@@ -48,12 +48,14 @@
 
 
 using System;
+using System.IO;
 
 namespace Tashjik.Common
 {
 	public class Data_Object
 	{
-		public Data data;
+		public Stream data;
+		public int dataLength;
 		public Object obj;
 	}
 }

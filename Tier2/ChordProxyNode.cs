@@ -52,7 +52,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
-
+using System.IO;
 
 namespace Tashjik.Tier2
 {
@@ -168,7 +168,7 @@ namespace Tashjik.Tier2
 		void processGetDataForNotifyMsgRec(IAsyncResult result)
 		{
 			Tashjik.Common.Data_Object data_Object = (Tashjik.Common.Data_Object)(result.AsyncState);
-			Tashjik.Common.Data data = data_Object.data;
+			Stream data = data_Object.data;
 
 			IChordNode_Node_Msg thisAppState = (IChordNode_Node_Msg)(data_Object.obj);
 			ChordProxyNode iNode = (ChordProxyNode)(thisAppState.node2);
@@ -309,8 +309,9 @@ namespace Tashjik.Tier2
 					else if(msg.getType()==Msg.TypeEnum.PUT_DATA)
 					{
 						byte[] byteKey = System.Text.Encoding.ASCII.GetBytes((String)msg.getParameter1());
-						Tashjik.Common.Data data1 = (Tashjik.Common.Data)msg.getParameter1();
-						thisNode.beginPutData(byteKey, data1, null, null);
+						Stream data1 = (Stream)msg.getParameter1();
+						int data1Length = (int)msg.getParameter2();
+						thisNode.beginPutData(byteKey, data1, data1Length, null, null);
 					}
 					//COMMENTING THIS CALL, SINCE IT ISMADE IN AsyncCallBacks
 					//need to forward returnMsgList back to fromIP
@@ -360,7 +361,7 @@ namespace Tashjik.Tier2
 					else if(msg.getType()==Msg.TypeEnum.GET_DATA)
 					{
 						byte[] byteKey = (byte[])msg.getParameter1();
-						Tashjik.Common.Data data1 = (Tashjik.Common.Data)msg.getReturnValue();
+						Stream data1 = (Stream)msg.getReturnValue();
 						Tashjik.Common.AsyncCallback_Object asyncCallback_Object;
 						if(getDataRegistry.TryGetValue(byteKey, out asyncCallback_Object))
 						{
@@ -571,7 +572,7 @@ namespace Tashjik.Tier2
 		}
 		*/
 
-		public void beginPutData(byte[] byteKey, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] byteKey, Stream data, int dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			Msg msg = new Msg(Msg.TypeEnum.PUT_DATA, (Object)byteKey, (Object)data);
 			List<Msg> msgList = new List<Msg>();

@@ -49,6 +49,7 @@
 
 using System;
 using System.Net;
+using System.IO;
 
 namespace Tashjik.Tier2
 {
@@ -69,7 +70,7 @@ namespace Tashjik.Tier2
 		void setIP(IPAddress ip);
 		//Tashjik.Common.Data getData(byte[] byteKey);
 		void beginGetData(byte[] byteKey, AsyncCallback getDataCallBack, Object appState);
-		void beginPutData(byte[] byteKey, Tashjik.Common.Data data, AsyncCallback putDataCallBack, Object appState);
+		void beginPutData(byte[] byteKey, Stream data, int dataLength, AsyncCallback putDataCallBack, Object appState);
 		//void putData(byte[] byteKey, Tashjik.Common.Data data);
 
 	}

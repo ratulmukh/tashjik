@@ -52,7 +52,7 @@
     <Compile Include="Common\Bool_Object.cs" />
     <Compile Include="Common\Bool_ObjectAsyncResult.cs" />
     <Compile Include="Common\ByteArray_AsyncCallback_Object.cs" />
-    <Compile Include="Common\ByteArray_Data_AsyncCallback_Object.cs" />
+    <Compile Include="Common\ByteArray_Stream_AsyncCallback_Object.cs" />
     <Compile Include="Common\Data.cs" />
     <Compile Include="Common\DataAsyncResult.cs" />
     <Compile Include="Common\Data_AsyncCallback_Object.cs" />

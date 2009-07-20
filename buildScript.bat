@@ -4,7 +4,7 @@ cd I:\ratul\code\tashjik\trunk\Tier0
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\TashjikTier0.dll /target:library ITransportLayerCommunicator.cs TransportLayerCommunicator.cs
 
 cd I:\ratul\code\tashjik\trunk\Common
-C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /target:library AsyncCallback_Object.cs Bool_Object.cs Bool_ObjectAsyncResult.cs ByteArray_AsyncCallback_Object.cs ByteArray_Data_AsyncCallback_Object.cs Data.cs Data_AsyncCallback_Object.cs Data_Object.cs Data_ObjectAsyncResult.cs DataAsyncResult.cs NodeBasic.cs ObjectAsyncResult.cs UtilityMethod.cs Exception\BytesLengthsNotMatchingException.cs Exception\LocalHostIPNotFoundException.cs
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /target:library AsyncCallback_Object.cs Bool_Object.cs Bool_ObjectAsyncResult.cs ByteArray_AsyncCallback_Object.cs ByteArray_Stream_AsyncCallback_Object.cs Data.cs Data_AsyncCallback_Object.cs Data_Object.cs Data_ObjectAsyncResult.cs DataAsyncResult.cs NodeBasic.cs ObjectAsyncResult.cs UtilityMethod.cs Exception\BytesLengthsNotMatchingException.cs Exception\LocalHostIPNotFoundException.cs
 
 cd I:\ratul\code\tashjik\trunk
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\trunk\bin\debug\TashjikServer.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikCommon.dll /r:I:\ratul\code\tashjik\trunk\bin\debug\TashjikTier0.dll  /target:library TashjikDataStream.cs OverlayServerFactory.cs OverlayController.cs OverlayServer.cs StreamingOverlayServer.cs TashjikServer.cs Node.cs IProxyNodeController.cs RealNode.cs ProxyNode.cs ProxyNodeController.cs 

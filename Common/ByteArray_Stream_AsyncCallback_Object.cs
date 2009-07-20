@@ -48,13 +48,14 @@
 
 
 using System;
-
+using System.IO;
 namespace Tashjik.Common
 {
-	public class ByteArray_Data_AsyncCallback_Object
+	public class ByteArray_Stream_AsyncCallback_Object
 	{
 		public byte[] byteArray;
-		public Data data;
+		public Stream data;
+		public int dataLength;
 		public AsyncCallback callBack;
 		public Object obj;
 	}
