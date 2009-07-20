@@ -818,7 +818,7 @@ namespace Tashjik.Tier2
 			getDataCallBack(getDataResult);
 		}
 
-		public void beginPutData(byte[] byteKey, Stream data, int dataLength, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] byteKey, Stream data, UInt32 dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			//once DataStore gets complex, this operation should not complete on the same synchronous thread
 			dataStore.putData(byteKey, data, dataLength);

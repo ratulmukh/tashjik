@@ -310,7 +310,7 @@ namespace Tashjik.Tier2
 					{
 						byte[] byteKey = System.Text.Encoding.ASCII.GetBytes((String)msg.getParameter1());
 						Stream data1 = (Stream)msg.getParameter1();
-						int data1Length = (int)msg.getParameter2();
+						UInt32 data1Length = (UInt32)msg.getParameter2();
 						thisNode.beginPutData(byteKey, data1, data1Length, null, null);
 					}
 					//COMMENTING THIS CALL, SINCE IT ISMADE IN AsyncCallBacks
@@ -572,7 +572,7 @@ namespace Tashjik.Tier2
 		}
 		*/
 
-		public void beginPutData(byte[] byteKey, Stream data, int dataLength, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] byteKey, Stream data, UInt32 dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			Msg msg = new Msg(Msg.TypeEnum.PUT_DATA, (Object)byteKey, (Object)data);
 			List<Msg> msgList = new List<Msg>();
