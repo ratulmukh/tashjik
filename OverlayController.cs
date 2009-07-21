@@ -140,10 +140,14 @@ namespace Tashjik
 
 		public  OverlayServer createNew()
 		{
+			Console.WriteLine("OverlayController::createNew ENTER");
 			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType);
+			Console.WriteLine("OverlayController::createNew overlayServer created");
 			Tier0.TransportLayerCommunicator.ISink sink = overlayServer.getProxyNodeController();
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
 			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);
+			Console.WriteLine("OverlayController::createNew overlayServer added to registry");
+			Console.WriteLine("OverlayController::createNew EXIT");
 			return overlayServer;
 		}
 

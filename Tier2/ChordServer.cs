@@ -142,7 +142,7 @@ namespace Tashjik.Tier2
 	
 
 
-		public override void beginPutData(String key, Stream data, UInt32 dataLength, AsyncCallback putDataCallBack, Object appState)
+		public override void beginPutData(String key, Stream data, System.UInt64 dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
 		
@@ -164,7 +164,7 @@ namespace Tashjik.Tier2
 			Stack<Object> recAppState = (Stack<Object>)(iNode_Object.obj);
 			
 			Object origAppState = recAppState.Pop();
-			UInt32 dataLength = (UInt32)(recAppState.Pop());
+			UInt64 dataLength = (UInt64)(recAppState.Pop());
 			Stream data = (Stream)(recAppState.Pop());
 			AsyncCallback putDataCallBack = (AsyncCallback)(recAppState.Pop());
 			byte[] queryByteKey = (byte[])(recAppState.Pop());

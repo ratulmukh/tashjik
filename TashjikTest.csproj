@@ -25,12 +25,23 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\..\..\..\Program Files\log4net\log4net-1.2.10\bin\net\2.0\release\log4net.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>C:\Program Files\NUnit2.5\bin\net-2.0\framework\nunit.framework.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="TashjikServerTest.cs" />
+    <Compile Include="Tier0Test\DataReceiver.cs" />
+    <Compile Include="Tier0Test\DataSender.cs" />
+    <Compile Include="Tier0Test\TransportLayerCommunicatorTest.cs" />
     <Compile Include="Tier2Test\PastryTest\NodeTests.cs" />
     <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaBootStrapperTest.cs" />
     <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaNodeTest.cs" />
@@ -39,6 +50,7 @@
   <ItemGroup>
     <Folder Include="BaseTest" />
     <Folder Include="CommonTest" />
+    <Folder Include="Tier0Test" />
     <Folder Include="Tier2Test" />
     <Folder Include="Tier1Test" />
     <Folder Include="Tier2Test\ChordTest" />

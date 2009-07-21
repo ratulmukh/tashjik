@@ -32,30 +32,45 @@ namespace Tashjik
 		
 		internal OverlayServer createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
-			
-			Type overlayServerType; 
+			Console.WriteLine("OverlayServer::createServer ENTER");
+			Type overlayServerType = null; 
 			if(overlayServerTypeRegistry.TryGetValue(strOverlayType, out overlayServerType))
 			{
+				Console.WriteLine("OverlayServer::createServer overlayServerTypeRegistry.TryGetValue SUCCEEDED");
+				Console.WriteLine("OverlayServer::createServer EXIT ");
 				return (OverlayServer)(Activator.CreateInstance(overlayServerType));
 			}
 			else
 			{
+				Console.WriteLine("OverlayServer::createServer overlayServerTypeRegistry.TryGetValue FAILED");
 				Assembly overlayAssembly = Assembly.Load(strOverlayType);
+				Console.WriteLine("OverlayServer::createServer assembly loaded");
 				String strOverlayServerType = strOverlayType + "Server";
 				overlayServerType = overlayAssembly.GetType(strOverlayServerType);
+				if(overlayServerType == null)
+					Console.WriteLine("OverlayServer::createServer type retrieve FAILED");
+				else
+					Console.WriteLine("OverlayServer::createServer type retrieved");
 				overlayServerTypeRegistry.Add(strOverlayType, overlayServerType );
-						
+				Console.WriteLine("OverlayServer::createServer type added to registry");		
 				
 				//Activator.CreateInstance is very slow and should be optimized 
 				if(joinOtherIP==null || joinOtherGuid==null)
-					return (OverlayServer)(Activator.CreateInstance(overlayServerType));
-				else
 				{
+					Console.WriteLine("OverlayServer::createServer joinOtherIP==null || joinOtherGuid==null");
+					Console.WriteLine("OverlayServer::createServer EXIT ");
+					return (OverlayServer)(Activator.CreateInstance((overlayServerType));
+				}
+				else
+				{   
+					Console.WriteLine("OverlayServer::createServer NOT [joinOtherIP==null || joinOtherGuid==null]");
 					Object[] constructorArgs = new Object[2]{joinOtherIP, joinOtherGuid};
+					Console.WriteLine("OverlayServer::createServer EXIT ");
 					return (OverlayServer)(Activator.CreateInstance(overlayServerType, constructorArgs));
 				}
 
 			}
+			
 		
 		}
 /*		

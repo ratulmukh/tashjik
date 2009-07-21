@@ -58,8 +58,9 @@ using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Text;
+using System.Runtime.CompilerServices;
 
-
+[assembly:InternalsVisibleTo("TransportLayerCommunicatorTest")]
 namespace Tashjik.Tier0
 {
 
@@ -158,7 +159,7 @@ namespace Tashjik.Tier0
 			}
 			public void dispatchMsg()
 			{
-				if(connectionState == ConnectionState.NOT_CONNECTED)
+		/*		if(connectionState == ConnectionState.NOT_CONNECTED)
 				{
 					establishRemoteConnection();
 					return;
@@ -200,7 +201,7 @@ namespace Tashjik.Tier0
     			    Console.WriteLine("Failed to serialize. Reason: " + e.Message);
         		    throw;
 			    }
-        
+        */
 			}
 
 			static private void beginSendCallBackFor_DispatchMsg(IAsyncResult result)
@@ -268,6 +269,7 @@ namespace Tashjik.Tier0
 
 		public void forwardMsgToRemoteHost(IPAddress IP, Msg msg)
 		{
+			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost ENTER");
 			SockMsgQueue sockMsgQueue;
 											
 			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
@@ -276,8 +278,22 @@ namespace Tashjik.Tier0
 			{
 				sockMsgQueue = new SockMsgQueue(IP, this);
 				sockMsgQueue.enqueue(msg);
-				commRegistry.Add(IP, sockMsgQueue);
+				try
+				{
+					commRegistry.Add(IP, sockMsgQueue);
+			
+				}
+				catch(System.ArgumentException)
+				{
+					//this will take care of the situation where multiple
+					//threads try to add a new enrty to the registry with
+					//the same IP address
+					if(commRegistry.TryGetValue(IP, out sockMsgQueue))
+						sockMsgQueue.enqueue(msg);
+					else forwardMsgToRemoteHost(IP, msg);
+				}
 			}
+			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost EXIT");
 		}
 		
 		
@@ -433,14 +449,32 @@ namespace Tashjik.Tier0
 		
 		private void messageDispatch()
 		{
-			Dictionary<IPAddress, SockMsgQueue>.Enumerator enumerator = commRegistry.GetEnumerator();
+			Console.WriteLine("TransportLayerCommunicator::messageDispatch ENTER");
+			
+			//Dictionary<IPAddress, SockMsgQueue>.Enumerator enumerator = commRegistry.GetEnumerator();
+			IEnumerator enumerator; 
 			while(true)
 			{
-				SockMsgQueue sockMsgQueue = enumerator.Current.Value;
-				sockMsgQueue.dispatchMsg();
-				enumerator.MoveNext();
-				//if enumerator reaches the end, does it circle around??
-			}
+				enumerator = commRegistry.GetEnumerator();
+				try {
+			  		Console.WriteLine("TransportLayerCommunicator::messageDispatch inside while loop");								
+					enumerator.Reset();
+					for(int count=0; count<commRegistry.Count; count++)
+					{
+						Console.WriteLine("TransportLayerCommunicator::messageDispatch inside for loop");								
+						enumerator.MoveNext();
+						SockMsgQueue sockMsgQueue = ((Dictionary<IPAddress, SockMsgQueue>.Enumerator)(enumerator)).Current.Value;
+						sockMsgQueue.dispatchMsg();
+						
+					}
+				}
+				catch(InvalidOperationException)
+				{
+							
+				}
+			  
+		     }
+	
 		}
 
 		//singleton

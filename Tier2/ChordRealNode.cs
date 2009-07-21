@@ -528,7 +528,7 @@ namespace Tashjik.Tier2
 				{
 					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
 				}
-				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException)
 				{
 					//local ip could not be found :O :O
 					//crash the system
@@ -818,7 +818,7 @@ namespace Tashjik.Tier2
 			getDataCallBack(getDataResult);
 		}
 
-		public void beginPutData(byte[] byteKey, Stream data, UInt32 dataLength, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] byteKey, Stream data, UInt64 dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			//once DataStore gets complex, this operation should not complete on the same synchronous thread
 			dataStore.putData(byteKey, data, dataLength);

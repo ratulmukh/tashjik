@@ -71,7 +71,7 @@ namespace Tashjik.Tier2
 		private Dictionary<byte[], Stream> dataHolder =
 			new Dictionary<byte[], Stream>();
 
-		public void putData(byte[] hashedKey, Stream data, UInt32 dataLength)
+		public void putData(byte[] hashedKey, Stream data, UInt64 dataLength)
 		{
 			dataHolder.Add(hashedKey, data);
 		}

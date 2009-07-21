@@ -155,7 +155,7 @@ namespace Tashjik
 				proxyFound.beginNotifyMsgRec(fromIP, data, null, null);
 			}
 			//RELAX: yes i know this is wrong; have to change it
-			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException)
 			{
 				ProxyNode n = createProxyNodeDelegate(fromIP);
 				proxyNodeRegistry.AddNewEntry(n);
@@ -172,7 +172,7 @@ namespace Tashjik
 				return proxyFound;
 			}
 			//RELAX: yes i know this is wrong; have to change it
-			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException e)
+			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException)
 			{
 				ProxyNode n = createProxyNodeDelegate(IP);
 				proxyNodeRegistry.AddNewEntry(n);

@@ -512,7 +512,7 @@ namespace Tashjik.Tier2
 					pingCallBack(res);
 				}
 			}
-			catch(SocketException se)
+			catch(SocketException)
 			{
 	
 				bool_object.b = false;
@@ -572,7 +572,7 @@ namespace Tashjik.Tier2
 		}
 		*/
 
-		public void beginPutData(byte[] byteKey, Stream data, UInt32 dataLength, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] byteKey, Stream data, UInt64 dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			Msg msg = new Msg(Msg.TypeEnum.PUT_DATA, (Object)byteKey, (Object)data);
 			List<Msg> msgList = new List<Msg>();

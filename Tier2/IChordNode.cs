@@ -70,7 +70,7 @@ namespace Tashjik.Tier2
 		void setIP(IPAddress ip);
 		//Tashjik.Common.Data getData(byte[] byteKey);
 		void beginGetData(byte[] byteKey, AsyncCallback getDataCallBack, Object appState);
-		void beginPutData(byte[] byteKey, Stream data, UInt32 dataLength, AsyncCallback putDataCallBack, Object appState);
+		void beginPutData(byte[] byteKey, Stream data, UInt64 dataLength, AsyncCallback putDataCallBack, Object appState);
 		//void putData(byte[] byteKey, Tashjik.Common.Data data);
 
 	}
