@@ -52,7 +52,8 @@ namespace Tashjik.Test.Tier0Test
 			MemoryStream data = new MemoryStream(Marshal.SizeOf(Tier0TestGuid));
 			msg.setData(data);
 			
-			sendSameDataToSameIP_MultipleTimes(IP, msg);
+			transportLayerCommunicator.forwardMsgToRemoteHost(IP, msg);
+			//sendSameDataToSameIP_MultipleTimes(IP, msg);
 			Console.WriteLine("DataSender::SendData EXIT");
 		}
 		

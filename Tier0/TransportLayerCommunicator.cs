@@ -68,7 +68,28 @@ namespace Tashjik.Tier0
 	public class TransportLayerCommunicator
 	{
 
-		[Serializable]
+		
+		public class MsgNew
+		{
+			public readonly byte[] buffer;
+			public readonly int offset;
+			public readonly int size;
+			public readonly Guid overlayGuid;
+			public readonly AsyncCallback callBack;
+			public readonly Object appState;
+			
+			public MsgNew(byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
+			{
+				this.buffer = buffer;
+				this.offset = offset;
+				this.size = size;
+				this.overlayGuid = overlayGuid;
+				this.callBack = callBack;
+				this.appState = appState;
+			}
+		}
+		
+/*		[Serializable]
 		public class Msg
 		{
 			private readonly Guid overlayGuid;
@@ -94,7 +115,8 @@ namespace Tashjik.Tier0
 				return data;
 			}
 		}
-		
+*/
+
 		private class SockMsgQueue
 		{
 			private enum ConnectionState
@@ -104,9 +126,10 @@ namespace Tashjik.Tier0
 				CONNECTED
 			}
 			
+			private readonly Object msgQueueLock;
 			private IPAddress IP;
 			private readonly Socket sock;
-			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
+			private readonly Queue<MsgNew> msgQueue = new Queue<MsgNew>();
 			private ConnectionState connectionState;
 			private TransportLayerCommunicator transportLayerCommunicator;
 			
@@ -132,15 +155,25 @@ namespace Tashjik.Tier0
 			
 			static private void beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
 			{
-				SocketState socketState  = ((SocketState)(result.AsyncState));
-				socketState.sock.EndConnect(result);
-				
-				socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+				try
+				{
+					SocketState socketState  = ((SocketState)(result.AsyncState));
+					socketState.sock.EndConnect(result);
+					//wtf is this beginReceive for?? :@ :@
+					//socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+				}
+				catch(SocketException e)
+				{
+					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException");
+					throw e;
+				}
+			
 			}
 			
 			
 			private void establishRemoteConnection()
 			{
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection ENTER");
 				connectionState = ConnectionState.WAITING_TO_CONNECT;
 				int iPortNo = System.Convert.ToInt16 ("2334");
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
@@ -149,17 +182,34 @@ namespace Tashjik.Tier0
 				socketState.sock = sock;
 				socketState.transportLayerCommunicator = transportLayerCommunicator;
 				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
+				try {
 				sock.BeginConnect(ipEnd, beginConnectCallBack, socketState);
-				
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection EXIT");
+				}
+				catch(SocketException )
+				{
+					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException");
+					//throw e;
+				}
 			}
 			
-			public void enqueue(Msg msg)
+			public void enqueue(MsgNew msg)
 			{
-				msgQueue.Enqueue(msg);
+				//for now, lets lock enque, deque and lock
+				//need to explore if locking can be decreased
+				//without compromising safety and increasing perf
+							
+				lock(msgQueueLock)
+				{
+					msgQueue.Enqueue(msg);
+				}
 			}
+			
 			public void dispatchMsg()
 			{
-		/*		if(connectionState == ConnectionState.NOT_CONNECTED)
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg ENTER");
+				
+				if(connectionState == ConnectionState.NOT_CONNECTED)
 				{
 					establishRemoteConnection();
 					return;
@@ -171,37 +221,43 @@ namespace Tashjik.Tier0
 					else
 					    return;
 				}
-				
-				if(msgQueue.Count ==0)
+				//I don't think it is required to lock 'count'
+				//even if count turns out to be false, it shouldn't matter
+				//the next loop will handle data if it is inside
+				if(msgQueue.Count == 0)
 					return;
 				
-				BinaryFormatter formatter = new BinaryFormatter();
+				int msgQueueCount = msgQueue.Count;
+				MsgNew tempMsg;
+				StringBuilder concatenatedMsg = new StringBuilder();
 				
-				byte[] byteArray;
-											
-				MemoryStream memStream = new MemoryStream(Marshal.SizeOf(msgQueue));
-				try 
-	    	    {
-					formatter.Serialize(memStream, msgQueue);
+				for(int i=0; i<msgQueueCount;i++)
+				{
+					lock(msgQueueLock)
+					{
+						//not sure if it required to apply a lock for this deque
+						//thr is only 1 thread tht deques, while multiple 1s enque
+						tempMsg = msgQueue.Dequeue();
+					}
 					
-			        SocketFlags f = new SocketFlags();  // :O
-			        SocketState so2 = new SocketState();
-			        so2.sock = sock;
-			        byteArray = new byte[memStream.Length+1];
-    				memStream.Read(byteArray, 0, (int)(memStream.Length));
-    				byteArray[memStream.Length] = (byte)('\n');
-    			    msgQueue.Clear();
-    			    sock.BeginSend(byteArray, 0, (int)(memStream.Length), f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), so2);
-			    	    
-					memStream.Close();
+					concatenatedMsg.Append(tempMsg.overlayGuid.ToString());
+					concatenatedMsg.Append('\n', 0);
+					concatenatedMsg.Append(Encoding.ASCII.GetString(tempMsg.buffer, tempMsg.offset, tempMsg.size));
+					concatenatedMsg.Append('\n', 0);
 					
 				}
-		        catch (SerializationException e) 
-			    {
-    			    Console.WriteLine("Failed to serialize. Reason: " + e.Message);
-        		    throw;
-			    }
-        */
+
+				String strCompositeMsg = concatenatedMsg.ToString();
+				int compositeMsgLen    = strCompositeMsg.Length;
+				byte[] compositeMsg      = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+				
+				SocketFlags f = new SocketFlags();  // :O
+			    SocketState so2 = new SocketState();
+			    so2.sock = sock;
+			    sock.BeginSend(compositeMsg, 0, compositeMsgLen, f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), so2);
+			    	    
+					
+        		Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg EEXIT");
 			}
 
 			static private void beginSendCallBackFor_DispatchMsg(IAsyncResult result)
@@ -210,42 +266,14 @@ namespace Tashjik.Tier0
 				sock.EndSend(result);
 			}
 			
-			static private void beginConnectCallBackForDispatchMsg(IAsyncResult result)
-			{
-				Msg msg     = ((Sock_Msg)(result.AsyncState)).msg;
-				Socket sock = ((Sock_Msg)(result.AsyncState)).sock;
-		            
-				MemoryStream memStream = new MemoryStream(Marshal.SizeOf(msg));
 			
-				BinaryFormatter formatter = new BinaryFormatter();
-				try 
-	        	{
-	    	        formatter.Serialize(memStream, msg);
-    		    }
-	        	catch (SerializationException e) 
-		        {
-    		        Console.WriteLine("Failed to serialize. Reason: " + e.Message);
-        		    throw;
-		        }
-    		    /*finally 
-        		{
-	        	    memStream.Close();
-	    	    }*/
-    	    
-    		    byte[] byteArray = new byte[memStream.Length];
-    		    int count = memStream.Read(byteArray, 0, (int)(memStream.Length));
-				memStream.Close();
-
-				//sock.BeginSend(
-		                                                  	
-			}
 		}
 		
 		[Serializable]
 		class Sock_Msg
 		{
 			public Socket sock;
-			public Msg msg;
+			public MsgNew msg;
 		}
 		
 		//dictionary containing IPs and their corresponding queues
@@ -267,9 +295,47 @@ namespace Tashjik.Tier0
 
 		}
 
-		public void forwardMsgToRemoteHost(IPAddress IP, Msg msg)
+		public void endTransportLayerSend(IAsyncResult asyncResult
+)
 		{
-			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost ENTER");
+			
+		}
+		
+		public void beginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
+		{
+			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
+	
+			MsgNew msg = new MsgNew(buffer, offset, size, overlayGuid, callBack, appState);
+			
+			SockMsgQueue sockMsgQueue;
+			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
+				sockMsgQueue.enqueue(msg);
+			else
+			{
+				sockMsgQueue = new SockMsgQueue(IP, this);
+				sockMsgQueue.enqueue(msg);
+				try
+				{
+					commRegistry.Add(IP, sockMsgQueue);
+			
+				}
+				catch(System.ArgumentException)
+				{
+					//this will take care of the situation where multiple
+					//threads try to add a new enrty to the registry with
+					//the same IP address
+					if(commRegistry.TryGetValue(IP, out sockMsgQueue))
+						sockMsgQueue.enqueue(msg);
+					else 
+						beginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
+				}
+			}
+			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost EXIT");
+		}
+		
+		public void forwardMsgToRemoteHost(IPAddress IP, MsgNew msg)
+		{
+/*			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost ENTER");
 			SockMsgQueue sockMsgQueue;
 											
 			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
@@ -294,16 +360,16 @@ namespace Tashjik.Tier0
 				}
 			}
 			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost EXIT");
-		}
+*/		}
 		
 		
 		
 
 		                                                  
-		internal void receive(IPAddress fromIP, Msg msg)
+		internal void receive(IPAddress fromIP, MsgNew msg)
 		{
 			ISink sink;
-			if(overlayRegistry.TryGetValue(msg.getGuid(), out sink))
+			if(overlayRegistry.TryGetValue(msg.overlayGuid, out sink))
 				sink.notifyMsg(fromIP, msg.getData());
 			else
 				throw new Exception();
@@ -439,7 +505,7 @@ namespace Tashjik.Tier0
 
 		}
 		
-					internal class SocketState
+			internal class SocketState
 			{
 				public Socket sock;
 				public byte[] buffer = new byte[1024];
