@@ -89,33 +89,6 @@ namespace Tashjik.Tier0
 			}
 		}
 		
-/*		[Serializable]
-		public class Msg
-		{
-			private readonly Guid overlayGuid;
-			private Object data;
-
-			public Msg(Guid overlayGuid)
-			{
-				this.overlayGuid = overlayGuid;
-			}
-	
-			public Guid getGuid()
-			{
-				return new Guid(overlayGuid.ToByteArray());
-			}
-
-			public void setData(Object obj)
-			{
-				data = obj;
-			}	
-		
-			public Object getData()
-			{
-				return data;
-			}
-		}
-*/
 
 		private class SockMsgQueue
 		{
@@ -126,7 +99,7 @@ namespace Tashjik.Tier0
 				CONNECTED
 			}
 			
-			private readonly Object msgQueueLock;
+			private readonly Object msgQueueLock = new Object();
 			private IPAddress IP;
 			private readonly Socket sock;
 			private readonly Queue<MsgNew> msgQueue = new Queue<MsgNew>();
@@ -241,11 +214,12 @@ namespace Tashjik.Tier0
 					}
 					
 					concatenatedMsg.Append(tempMsg.overlayGuid.ToString());
-					concatenatedMsg.Append('\n', 0);
+					concatenatedMsg.Append('\0', 0);
 					concatenatedMsg.Append(Encoding.ASCII.GetString(tempMsg.buffer, tempMsg.offset, tempMsg.size));
-					concatenatedMsg.Append('\n', 0);
+					concatenatedMsg.Append('\0', 0);
 					
 				}
+				concatenatedMsg.Append('\n', 0);
 
 				String strCompositeMsg = concatenatedMsg.ToString();
 				int compositeMsgLen    = strCompositeMsg.Length;
@@ -268,14 +242,7 @@ namespace Tashjik.Tier0
 			
 			
 		}
-		
-		[Serializable]
-		class Sock_Msg
-		{
-			public Socket sock;
-			public MsgNew msg;
-		}
-		
+
 		//dictionary containing IPs and their corresponding queues
 		//for every IP to whom we would like to maintain a connection,
 		//there exists a queue of objects tht need to be dispatched
@@ -286,8 +253,9 @@ namespace Tashjik.Tier0
 
 		public interface ISink
 		{
-			void notifyMsg(IPAddress fromIP, Object data);
+			void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
 		}
+		
 
 		public void register(Guid guid, ISink sink)
 		{
@@ -332,45 +300,16 @@ namespace Tashjik.Tier0
 			}
 			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost EXIT");
 		}
-		
-		public void forwardMsgToRemoteHost(IPAddress IP, MsgNew msg)
-		{
-/*			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost ENTER");
-			SockMsgQueue sockMsgQueue;
-											
-			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
-				sockMsgQueue.enqueue(msg);
-			else
-			{
-				sockMsgQueue = new SockMsgQueue(IP, this);
-				sockMsgQueue.enqueue(msg);
-				try
-				{
-					commRegistry.Add(IP, sockMsgQueue);
-			
-				}
-				catch(System.ArgumentException)
-				{
-					//this will take care of the situation where multiple
-					//threads try to add a new enrty to the registry with
-					//the same IP address
-					if(commRegistry.TryGetValue(IP, out sockMsgQueue))
-						sockMsgQueue.enqueue(msg);
-					else forwardMsgToRemoteHost(IP, msg);
-				}
-			}
-			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost EXIT");
-*/		}
-		
+				
 		
 		
 
 		                                                  
-		internal void receive(IPAddress fromIP, MsgNew msg)
+		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
 			ISink sink;
-			if(overlayRegistry.TryGetValue(msg.overlayGuid, out sink))
-				sink.notifyMsg(fromIP, msg.getData());
+			if(overlayRegistry.TryGetValue(overlayGuid, out sink))
+				sink.notifyMsg(fromIP, buffer, offset, size);
 			else
 				throw new Exception();
 
@@ -492,16 +431,34 @@ namespace Tashjik.Tier0
 		
 		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
 		{
-			String serialisedObjectStr = content.Substring(0, content.Length - 1);
-			MemoryStream memStream = new MemoryStream(serialisedObjectStr.Length);
-			byte[] serialisedObjectByteArray = System.Text.Encoding.ASCII.GetBytes(serialisedObjectStr.ToString());
-			memStream.Write(serialisedObjectByteArray, 0, serialisedObjectByteArray.Length);
-			BinaryFormatter formatter = new BinaryFormatter();
-			Queue<Msg> msgQueue = (Queue<Msg>)((formatter.Deserialize(memStream)));
-				
-			IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
-			foreach( Msg msg in msgQueue )
-			transportLayerCommunicator.receive(fromIP, msg);
+			String[] split = content.Split(new char[] {'\0'});
+			String strOverlayGuid;
+			byte[] byteOverlayGuid; 
+			Guid overlayGuid = new Guid();;
+			String strBuffer;
+			byte[] byteBuffer;
+			bool readytoNotify = false;  
+			foreach (String s in split)
+			{
+				if(readytoNotify == false)
+				{
+					strOverlayGuid = s;
+					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
+					overlayGuid = new Guid(byteOverlayGuid);
+					readytoNotify = true;
+				}
+				else if(readytoNotify == true)
+				{
+					strBuffer = s;
+					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
+					
+					IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
+					transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, strBuffer.Length);
+					readytoNotify = false;
+				}
+			}
+			
+			
 
 		}
 		
