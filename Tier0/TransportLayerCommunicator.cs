@@ -218,9 +218,9 @@ namespace Tashjik.Tier0
 					}
 					
 					concatenatedMsg.Append(tempMsg.overlayGuid.ToString());
-					concatenatedMsg.Append('\0', 0);
+					concatenatedMsg.Append('\0', 1);
 					concatenatedMsg.Append(Encoding.ASCII.GetString(tempMsg.buffer, tempMsg.offset, tempMsg.size));
-					concatenatedMsg.Append('\0', 0);
+					concatenatedMsg.Append('\0', 1);
 					
 				}
 				concatenatedMsg.Append('\n', 0);
@@ -314,7 +314,8 @@ namespace Tashjik.Tier0
 		                                                  
 		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
-			Console.WriteLine(buffer);
+			String s = new String(buffer, offset, size);
+			Console.WriteLine(s);
 			
 			ISink sink;
 			if(overlayRegistry.TryGetValue(overlayGuid, out sink))
@@ -458,6 +459,7 @@ namespace Tashjik.Tier0
 		
 		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
 		{
+			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
 			String[] split = content.Split(new char[] {'\0'});
 			String strOverlayGuid;
 			byte[] byteOverlayGuid; 
@@ -469,18 +471,26 @@ namespace Tashjik.Tier0
 			{
 				if(readytoNotify == false)
 				{
+					if(s.Length == 0)
+						break;
 					strOverlayGuid = s;
+					Console.WriteLine("haha 1");
+					Console.WriteLine(s);
+					Console.WriteLine(s.Length);
 					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
-					overlayGuid = new Guid(byteOverlayGuid);
+					overlayGuid = new Guid(s );
 					readytoNotify = true;
 				}
 				else if(readytoNotify == true)
 				{
 					strBuffer = s;
+					Console.WriteLine("haha 2");
+					Console.WriteLine(s);
+					Console.WriteLine(s.Length);
 					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
 					
 					IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
-					transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, strBuffer.Length);
+					transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
 					readytoNotify = false;
 				}
 			}
