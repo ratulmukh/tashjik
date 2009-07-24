@@ -146,16 +146,20 @@ namespace Tashjik.Tier0
 			
 			private void establishRemoteConnection()
 			{
+				Thread.Sleep(1000);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection ENTER");
 				connectionState = ConnectionState.WAITING_TO_CONNECT;
 				int iPortNo = System.Convert.ToInt16 ("2334");
+				//IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection endPoint created");
 				
 				SocketState socketState = new SocketState();
 				socketState.sock = sock;
 				socketState.transportLayerCommunicator = transportLayerCommunicator;
 				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
 				try {
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection before calling beginConnect");					
 				sock.BeginConnect(ipEnd, beginConnectCallBack, socketState);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection EXIT");
 				}
@@ -180,7 +184,7 @@ namespace Tashjik.Tier0
 			
 			public void dispatchMsg()
 			{
-				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg ENTER");
+//				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg ENTER");
 				
 				if(connectionState == ConnectionState.NOT_CONNECTED)
 				{
@@ -236,8 +240,11 @@ namespace Tashjik.Tier0
 
 			static private void beginSendCallBackFor_DispatchMsg(IAsyncResult result)
 			{
-				Socket sock   = ((Socket)(result.AsyncState));
-				sock.EndSend(result);
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::beginSendCallBackFor_DispatchMsg ENTER");
+				
+				SocketState so2   = ((SocketState)(result.AsyncState));
+				so2.sock.EndSend(result);
+				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::beginSendCallBackFor_DispatchMsg EXIT");
 			}
 			
 			
@@ -298,7 +305,7 @@ namespace Tashjik.Tier0
 						beginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
 				}
 			}
-			Console.WriteLine("TransportLayerCommunicator::forwardMsgToRemoteHost EXIT");
+			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend EXIT");
 		}
 				
 		
@@ -307,6 +314,8 @@ namespace Tashjik.Tier0
 		                                                  
 		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
+			Console.WriteLine(buffer);
+			
 			ISink sink;
 			if(overlayRegistry.TryGetValue(overlayGuid, out sink))
 				sink.notifyMsg(fromIP, buffer, offset, size);
@@ -348,9 +357,13 @@ namespace Tashjik.Tier0
 		
 		private void StartListening()
 		{
-			IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
-        	IPAddress ipAddress = ipHostInfo.AddressList[0];
-        	IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11000);
+			//IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
+        	//	IPAddress ipAddress = ipHostInfo.AddressList[0];
+        	byte[] byteIP = {127, 0, 0, 1};
+			IPAddress ipAddress = new IPAddress(byteIP);
+
+        	int iPortNo = System.Convert.ToInt16 ("2334");
+        	IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
         	
         	Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
         	try 
@@ -388,6 +401,7 @@ namespace Tashjik.Tier0
 		
 		static private void beginAcceptCallback_forStartListening(IAsyncResult result)
 		{
+			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
 			// Signal the main thread to continue.
         	allDone.Set();
 
@@ -399,17 +413,26 @@ namespace Tashjik.Tier0
 			
         	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler, transportLayerCommunicator);
         	IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
-			transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
-        	
-			
-			socketState.sock = handler;
+        	try
+			{
+				transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
+				socketState.sock = handler;
+		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
+				Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+        	}
+			catch(System.ArgumentException)
+			{
+				socketState.sock = handler;
+		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
+		        Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+			}
+			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
 	
-	        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
-
 		}
 		
 		static private void beginReceiveCallBack(IAsyncResult result)
 		{
+			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack ENTER");
 			String content = String.Empty;
 			SocketState socketState = ((SocketState)(result.AsyncState));
 			Socket sock = socketState.sock;
@@ -427,6 +450,10 @@ namespace Tashjik.Tier0
 				else 
 					sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
 			}
+			content = socketState.concatenatedString.ToString();
+			Console.WriteLine(content);
+			notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
 		}
 		
 		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
@@ -480,11 +507,11 @@ namespace Tashjik.Tier0
 			{
 				enumerator = commRegistry.GetEnumerator();
 				try {
-			  		Console.WriteLine("TransportLayerCommunicator::messageDispatch inside while loop");								
+	//		  		Console.WriteLine("TransportLayerCommunicator::messageDispatch inside while loop");								
 					enumerator.Reset();
 					for(int count=0; count<commRegistry.Count; count++)
 					{
-						Console.WriteLine("TransportLayerCommunicator::messageDispatch inside for loop");								
+	//					Console.WriteLine("TransportLayerCommunicator::messageDispatch inside for loop");								
 						enumerator.MoveNext();
 						SockMsgQueue sockMsgQueue = ((Dictionary<IPAddress, SockMsgQueue>.Enumerator)(enumerator)).Current.Value;
 						sockMsgQueue.dispatchMsg();

@@ -40,32 +40,36 @@ namespace Tashjik.Test.Tier0Test
 			Guid Tier0TestGuid = new Guid("e04ffdc1-637d-4640-bfe6-55fa5a38a178");
 			
 			transportLayerCommunicator.register(Tier0TestGuid, this);
-			String strIP = "127.0.0.1";
-			byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(strIP);
-			//IPAddress IP = new IPAddress(byteIP);
+			//String strIP = "127.0.0.1";
+			//byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(strIP);
+			String strMsg = "Hi da";
+			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
+			byte[] byteIP = {127, 0, 0, 1};
+			IPAddress IP = new IPAddress(byteIP);
 			
-			IPAddress IP = Tashjik.Common.UtilityMethod.GetLocalHostIP();
+			//IPAddress IP = Tashjik.Common.UtilityMethod.GetLocalHostIP();
 				
 			
-			TransportLayerCommunicator.Msg msg = new TransportLayerCommunicator.Msg(Tier0TestGuid);
+			//TransportLayerCommunicator.Msg msg = new TransportLayerCommunicator.Msg(Tier0TestGuid);
 						
-			MemoryStream data = new MemoryStream(Marshal.SizeOf(Tier0TestGuid));
-			msg.setData(data);
+			//MemoryStream data = new MemoryStream(Marshal.SizeOf(Tier0TestGuid));
+			//msg.setData(data);
 			
-			transportLayerCommunicator.forwardMsgToRemoteHost(IP, msg);
+			transportLayerCommunicator.beginTransportLayerSend(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
+			
 			//sendSameDataToSameIP_MultipleTimes(IP, msg);
 			Console.WriteLine("DataSender::SendData EXIT");
 		}
 		
-		private void sendSameDataToSameIP_MultipleTimes(IPAddress IP, TransportLayerCommunicator.Msg msg)
+/*		private void sendSameDataToSameIP_MultipleTimes(IPAddress IP, TransportLayerCommunicator.Msg msg)
 		{
 			while(true)
 			{
 				transportLayerCommunicator.forwardMsgToRemoteHost(IP, msg);
 			}
 		}
-		
-		public void notifyMsg(IPAddress fromIP, Object data)
+*/		
+ 		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			
 		}

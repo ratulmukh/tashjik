@@ -8,6 +8,7 @@
  */
 
 using System;
+using Tashjik.Tier0;
 
 namespace Tashjik.Test.Tier0Test
 {
@@ -20,7 +21,11 @@ namespace Tashjik.Test.Tier0Test
 		
 		public static void Main()
 		{
-			
+			TransportLayerCommunicator transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
+			while (true)
+			{
+				
+			}
 		}
 	}
 }
