@@ -71,7 +71,7 @@ namespace Tashjik.Tier0
 	{
 
 		
-		public class MsgNew
+		private class Msg
 		{
 			public readonly byte[] buffer;
 			public readonly int offset;
@@ -80,7 +80,7 @@ namespace Tashjik.Tier0
 			public readonly AsyncCallback callBack;
 			public readonly Object appState;
 			
-			public MsgNew(byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
+			public Msg(byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 			{
 				this.buffer = buffer;
 				this.offset = offset;
@@ -103,23 +103,21 @@ namespace Tashjik.Tier0
 			}
 			
 			private readonly Object msgQueueLock = new Object();
-			private IPAddress IP;
+			private readonly IPAddress IP;
 			private readonly Socket sock;
-			private readonly Queue<MsgNew> msgQueue = new Queue<MsgNew>();
+			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
 			private ConnectionState connectionState;
-			private TransportLayerCommunicator transportLayerCommunicator;
+			private static readonly TransportLayerCommunicator transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
 			
-			public SockMsgQueue(IPAddress IP, TransportLayerCommunicator transportLayerCommunicator)
+			public SockMsgQueue(IPAddress IP)
 			{
-				this.transportLayerCommunicator = transportLayerCommunicator;
 				this.IP = IP;
-				sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+				sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 				connectionState = ConnectionState.NOT_CONNECTED;
 			}
 			
-			public SockMsgQueue(Socket sock, TransportLayerCommunicator transportLayerCommunicator)
+			public SockMsgQueue(Socket sock)
 			{
-				this.transportLayerCommunicator = transportLayerCommunicator;
 				this.sock = sock;
 				this.IP = ((IPEndPoint)(sock.RemoteEndPoint)).Address;
 				if(sock.Connected)
@@ -141,8 +139,6 @@ namespace Tashjik.Tier0
 				try
 				{
 					sockMsgQueue.sock.EndConnect(result);
-					//wtf is this beginReceive for?? :@ :@
-					//socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
 				}
 				catch(SocketException e)
 				{
@@ -150,7 +146,7 @@ namespace Tashjik.Tier0
 					lock(sockMsgQueue.msgQueueLock)
 					{
 						sockMsgQueue.connectionState = ConnectionState.CONNECTION_FAILED;
-						MsgNew msg;
+						Msg msg;
 						Tashjik.Common.TashjikAsyncResult asyncResult;
 						Console.WriteLine(" inside connectionState = ConnectionState.CONNECTION_FAILED");
 						Console.WriteLine(sockMsgQueue.msgQueue.Count);
@@ -203,7 +199,7 @@ namespace Tashjik.Tier0
 				
 			}
 			
-			public void enqueue(MsgNew msg)
+			public void enqueue(Msg msg)
 			{
 				//for now, lets lock enque, deque and lock
 				//need to explore if locking can be decreased
@@ -242,7 +238,7 @@ namespace Tashjik.Tier0
 					return;
 				
 				int msgQueueCount = msgQueue.Count;
-				MsgNew tempMsg;
+				Msg tempMsg;
 				StringBuilder concatenatedMsg = new StringBuilder();
 				
 				for(int i=0; i<msgQueueCount;i++)
@@ -319,14 +315,14 @@ namespace Tashjik.Tier0
 		{
 			//Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
 	
-			MsgNew msg = new MsgNew(buffer, offset, size, overlayGuid, callBack, appState);
+			Msg msg = new Msg(buffer, offset, size, overlayGuid, callBack, appState);
 			
 			SockMsgQueue sockMsgQueue;
 			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
 				sockMsgQueue.enqueue(msg);
 			else
 			{
-				sockMsgQueue = new SockMsgQueue(IP, this);
+				sockMsgQueue = new SockMsgQueue(IP);
 				sockMsgQueue.enqueue(msg);
 				try
 				{
@@ -451,7 +447,7 @@ namespace Tashjik.Tier0
         	Socket handler = listener.EndAccept(result);
 			TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
 			
-        	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler, transportLayerCommunicator);
+        	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler);
         	IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
         	try
 			{
@@ -580,14 +576,19 @@ namespace Tashjik.Tier0
 		private static TransportLayerCommunicator transportLayerCommunicator = null;
 		
 		//need to take care of threading issues
+		private static readonly Object transportLayerCommunicatorLock = new Object();
+		
 		public static TransportLayerCommunicator getRefTransportLayerCommunicator()
 		{
-			if(transportLayerCommunicator!=null)
-				return transportLayerCommunicator;
-			else
+			lock(transportLayerCommunicatorLock)
 			{
-				transportLayerCommunicator = new TransportLayerCommunicator();
-				return transportLayerCommunicator;
+				if(transportLayerCommunicator!=null)
+					return transportLayerCommunicator;
+				else
+				{
+					transportLayerCommunicator = new TransportLayerCommunicator();
+					return transportLayerCommunicator;
+				}
 			}
 		}
 
