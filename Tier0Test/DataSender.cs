@@ -13,6 +13,7 @@ using Tashjik.Tier0;
 using System.IO;
 using System.Runtime.InteropServices;
 using Tashjik;
+using System.Threading;
 
 namespace Tashjik.Test.Tier0Test
 {
@@ -44,7 +45,8 @@ namespace Tashjik.Test.Tier0Test
 			//byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(strIP);
 			String strMsg = "Hi da";
 			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
-			byte[] byteIP = {127, 0, 0, 1};
+			//byte[] byteIP = {127, 0, 0, 1};
+			byte[] byteIP = {10, 200, 76, 45};
 			IPAddress IP = new IPAddress(byteIP);
 			
 			//IPAddress IP = Tashjik.Common.UtilityMethod.GetLocalHostIP();
@@ -55,20 +57,24 @@ namespace Tashjik.Test.Tier0Test
 			//MemoryStream data = new MemoryStream(Marshal.SizeOf(Tier0TestGuid));
 			//msg.setData(data);
 			
-			transportLayerCommunicator.beginTransportLayerSend(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
+			Thread.Sleep(1000);
 			
-			//sendSameDataToSameIP_MultipleTimes(IP, msg);
+			transportLayerCommunicator.BeginTransportLayerSend(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
+			
+			//sendSameDataToSameIP_MultipleTimes(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
+			
+			
 			Console.WriteLine("DataSender::SendData EXIT");
 		}
 		
-/*		private void sendSameDataToSameIP_MultipleTimes(IPAddress IP, TransportLayerCommunicator.Msg msg)
+		private void sendSameDataToSameIP_MultipleTimes(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 		{
 			while(true)
 			{
-				transportLayerCommunicator.forwardMsgToRemoteHost(IP, msg);
+				transportLayerCommunicator.BeginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
 			}
 		}
-*/		
+		
  		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			

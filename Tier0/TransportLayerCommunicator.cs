@@ -59,7 +59,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Text;
 using System.Runtime.CompilerServices;
-
+using System.Runtime.Remoting.Messaging;
+using Tashjik;
+	
 [assembly:InternalsVisibleTo("TransportLayerCommunicatorTest")]
 namespace Tashjik.Tier0
 {
@@ -92,11 +94,12 @@ namespace Tashjik.Tier0
 
 		private class SockMsgQueue
 		{
-			private enum ConnectionState
+			public enum ConnectionState
 			{
 				NOT_CONNECTED,
 				WAITING_TO_CONNECT,
-				CONNECTED
+				CONNECTED,
+				CONNECTION_FAILED
 			}
 			
 			private readonly Object msgQueueLock = new Object();
@@ -126,19 +129,46 @@ namespace Tashjik.Tier0
 					
 			}
 			
+			public ConnectionState getConnectionState()
+			{
+				return connectionState;
+			}
+			
 			static private void beginConnectCallBackFor_establishRemoteConnection(IAsyncResult result)
 			{
+				SockMsgQueue sockMsgQueue = ((SockMsgQueue)(result.AsyncState));
+				
 				try
 				{
-					SocketState socketState  = ((SocketState)(result.AsyncState));
-					socketState.sock.EndConnect(result);
+					sockMsgQueue.sock.EndConnect(result);
 					//wtf is this beginReceive for?? :@ :@
 					//socketState.sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
 				}
 				catch(SocketException e)
 				{
 					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException");
-					throw e;
+					lock(sockMsgQueue.msgQueueLock)
+					{
+						sockMsgQueue.connectionState = ConnectionState.CONNECTION_FAILED;
+						MsgNew msg;
+						Tashjik.Common.TashjikAsyncResult asyncResult;
+						Console.WriteLine(" inside connectionState = ConnectionState.CONNECTION_FAILED");
+						Console.WriteLine(sockMsgQueue.msgQueue.Count);
+						for(int i=0; i<sockMsgQueue.msgQueue.Count; i++)
+						{
+							msg = sockMsgQueue.msgQueue.Dequeue();
+							Console.WriteLine("msg.deque");
+							asyncResult = new Tashjik.Common.TashjikAsyncResult(msg.appState, false, false);
+							if(msg.callBack != null)
+							{
+								Console.WriteLine("msg.callBack");
+								msg.callBack(asyncResult);
+							}
+							
+						}
+					}
+					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException END of catch");
+					
 				}
 			
 			}
@@ -146,28 +176,29 @@ namespace Tashjik.Tier0
 			
 			private void establishRemoteConnection()
 			{
-				Thread.Sleep(1000);
+				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection ENTER");
 				connectionState = ConnectionState.WAITING_TO_CONNECT;
 				int iPortNo = System.Convert.ToInt16 ("2334");
 				//IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection endPoint created");
-				
+				/*
 				SocketState socketState = new SocketState();
 				socketState.sock = sock;
+				
+				Stack<Object> thisAppState = new Stack<Object>();
+				thisAppState.Push(this);
+				thisAppState.Push();
+				thisAppState.Push(appState);
+				
 				socketState.transportLayerCommunicator = transportLayerCommunicator;
-				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
-				try {
+			*/	AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
+				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection before calling beginConnect");					
-				sock.BeginConnect(ipEnd, beginConnectCallBack, socketState);
+				sock.BeginConnect(ipEnd, beginConnectCallBack, this);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection EXIT");
-				}
-				catch(SocketException )
-				{
-					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException");
-					//throw e;
-				}
+				
 			}
 			
 			public void enqueue(MsgNew msg)
@@ -197,6 +228,10 @@ namespace Tashjik.Tier0
 						connectionState = ConnectionState.CONNECTED;
 					else
 					    return;
+				}
+				else if(connectionState == ConnectionState.CONNECTION_FAILED)
+				{
+					return;
 				}
 				//I don't think it is required to lock 'count'
 				//even if count turns out to be false, it shouldn't matter
@@ -270,15 +305,17 @@ namespace Tashjik.Tier0
 
 		}
 
-		public void endTransportLayerSend(IAsyncResult asyncResult
-)
+		public void EndTransportLayerSend(IPAddress IP)
 		{
-			
-		}
+/*			SockMsgQueue sockMsgQueue;
+			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
+				if(sockMsgQueue.getConnectionState() == SockMsgQueue.ConnectionState.CONNECTION_FAILED)
+					throw new SocketException();
+*/		}
 		
-		public void beginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
+		public void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 		{
-			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
+			//Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
 	
 			MsgNew msg = new MsgNew(buffer, offset, size, overlayGuid, callBack, appState);
 			
@@ -302,7 +339,7 @@ namespace Tashjik.Tier0
 					if(commRegistry.TryGetValue(IP, out sockMsgQueue))
 						sockMsgQueue.enqueue(msg);
 					else 
-						beginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
+						BeginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
 				}
 			}
 			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend EXIT");
@@ -314,7 +351,7 @@ namespace Tashjik.Tier0
 		                                                  
 		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
-			String s = new String(buffer, offset, size);
+			String s = Encoding.ASCII.GetString(buffer);
 			Console.WriteLine(s);
 			
 			ISink sink;
@@ -478,7 +515,7 @@ namespace Tashjik.Tier0
 					Console.WriteLine(s);
 					Console.WriteLine(s.Length);
 					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
-					overlayGuid = new Guid(s );
+					overlayGuid = new Guid(s);
 					readytoNotify = true;
 				}
 				else if(readytoNotify == true)
