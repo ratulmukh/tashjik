@@ -76,7 +76,7 @@ namespace Tashjik.Common
 		}
 		*/
 		
-		private Bool_Object res;
+		private Object res;
 		public Object AsyncState
 		{
 			get
@@ -91,7 +91,7 @@ namespace Tashjik.Common
 			{
 				//copy stuff from value to AsyncState
 				//AyncState = (Common.Tashjik.Common.Data)value;
-				res = (Bool_Object)value;
+				res = value;
 
 			}	
 		}

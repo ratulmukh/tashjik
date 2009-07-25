@@ -164,6 +164,8 @@ namespace Tashjik.Tier0
 								Console.WriteLine("msg.callBack");
 								msg.callBack(asyncResult);
 							}
+							else
+								throw e;
 							
 						}
 					}
@@ -307,11 +309,11 @@ namespace Tashjik.Tier0
 
 		public void EndTransportLayerSend(IPAddress IP)
 		{
-/*			SockMsgQueue sockMsgQueue;
+			SockMsgQueue sockMsgQueue;
 			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
 				if(sockMsgQueue.getConnectionState() == SockMsgQueue.ConnectionState.CONNECTION_FAILED)
 					throw new SocketException();
-*/		}
+		}
 		
 		public void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 		{

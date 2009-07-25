@@ -9,6 +9,7 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using Tashjik.Tier0;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -59,7 +60,7 @@ namespace Tashjik.Test.Tier0Test
 			
 			Thread.Sleep(1000);
 			
-			transportLayerCommunicator.BeginTransportLayerSend(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
+			transportLayerCommunicator.BeginTransportLayerSend(IP, msg, 0, strMsg.Length, Tier0TestGuid, new AsyncCallback(sendDataCallBack), IP);
 			
 			//sendSameDataToSameIP_MultipleTimes(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
 			
@@ -72,6 +73,19 @@ namespace Tashjik.Test.Tier0Test
 			while(true)
 			{
 				transportLayerCommunicator.BeginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
+			}
+		}
+		
+		private void sendDataCallBack(IAsyncResult result)
+		{
+			IPAddress IP = (IPAddress)(result.AsyncState);
+			try
+			{
+				transportLayerCommunicator.EndTransportLayerSend(IP);
+			}
+			catch(SocketException)
+			{
+				Console.WriteLine("DataSender caught SocketException");
 			}
 		}
 		
