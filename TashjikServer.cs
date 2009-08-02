@@ -81,8 +81,8 @@ namespace Tashjik
 		{
 			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.getList();
-			
 		}
+		
 		public static ArrayList getList(String strOverlayType)
 		{
 			OverlayController overlayController = getController(strOverlayType);
