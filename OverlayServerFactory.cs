@@ -44,8 +44,12 @@ namespace Tashjik
 			{
 				Console.WriteLine("OverlayServer::createServer overlayServerTypeRegistry.TryGetValue FAILED");
 				Assembly overlayAssembly = Assembly.Load(strOverlayType);
-				Console.WriteLine("OverlayServer::createServer assembly loaded");
-				String strOverlayServerType = strOverlayType + "Server";
+				if(overlayAssembly == null)
+					Console.WriteLine("OverlayServer::createServer assembly load FAILED");
+				else
+					Console.WriteLine("OverlayServer::createServer assembly loaded");
+				String strOverlayServerType = "Tashjik.Tier2." + strOverlayType + "Server";
+				Console.WriteLine(strOverlayServerType);
 				overlayServerType = overlayAssembly.GetType(strOverlayServerType);
 				if(overlayServerType == null)
 					Console.WriteLine("OverlayServer::createServer type retrieve FAILED");
@@ -59,7 +63,7 @@ namespace Tashjik
 				{
 					Console.WriteLine("OverlayServer::createServer joinOtherIP==null || joinOtherGuid==null");
 					Console.WriteLine("OverlayServer::createServer EXIT ");
-					return (OverlayServer)(Activator.CreateInstance((overlayServerType));
+					return (OverlayServer)(Activator.CreateInstance(overlayServerType));
 				}
 				else
 				{   

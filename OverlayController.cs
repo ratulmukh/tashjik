@@ -78,18 +78,22 @@ namespace Tashjik
 				data = o;
 			}
 		}
-
+		
+		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			
+		}
 		public void notifyMsg(IPAddress fromIP, Object LowLevelData)
 		{
 			List<OverlayInstanceMsg> overlayInstanceMsgList = (List<OverlayInstanceMsg>)LowLevelData;
 			foreach(OverlayInstanceMsg overlayInstanceMsg in overlayInstanceMsgList)
 			{
-				OverlayInstanceInfo overlayInstanceInfo;
+/*				OverlayInstanceInfo overlayInstanceInfo;
 				if(overlayInstanceRegistry.TryGetValue(overlayInstanceMsg.guid, out overlayInstanceInfo))
 					overlayInstanceInfo.sink.notifyMsg(fromIP, overlayInstanceMsg.data);
 				else
 					throw new System.Exception();
-			}
+*/			}
 		}
 
 		internal class OverlayInstanceInfo

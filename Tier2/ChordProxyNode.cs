@@ -168,7 +168,7 @@ namespace Tashjik.Tier2
 		void processGetDataForNotifyMsgRec(IAsyncResult result)
 		{
 			Tashjik.Common.Data_Object data_Object = (Tashjik.Common.Data_Object)(result.AsyncState);
-			Stream data = data_Object.data;
+			byte[] data = data_Object.data;
 
 			IChordNode_Node_Msg thisAppState = (IChordNode_Node_Msg)(data_Object.obj);
 			ChordProxyNode iNode = (ChordProxyNode)(thisAppState.node2);
@@ -311,7 +311,7 @@ namespace Tashjik.Tier2
 						byte[] byteKey = System.Text.Encoding.ASCII.GetBytes((String)msg.getParameter1());
 						Stream data1 = (Stream)msg.getParameter1();
 						UInt32 data1Length = (UInt32)msg.getParameter2();
-						thisNode.beginPutData(byteKey, data1, data1Length, null, null);
+			//			thisNode.beginPutData(byteKey, data1, data1Length, null, null);
 					}
 					//COMMENTING THIS CALL, SINCE IT ISMADE IN AsyncCallBacks
 					//need to forward returnMsgList back to fromIP
@@ -361,7 +361,7 @@ namespace Tashjik.Tier2
 					else if(msg.getType()==Msg.TypeEnum.GET_DATA)
 					{
 						byte[] byteKey = (byte[])msg.getParameter1();
-						Stream data1 = (Stream)msg.getReturnValue();
+						byte[] data1 = (byte[])msg.getReturnValue();
 						Tashjik.Common.AsyncCallback_Object asyncCallback_Object;
 						if(getDataRegistry.TryGetValue(byteKey, out asyncCallback_Object))
 						{
@@ -572,6 +572,11 @@ namespace Tashjik.Tier2
 		}
 		*/
 
+		public void beginPutData(byte[] key, byte[] data, int offset, int size, AsyncCallback putDataCallBack, Object appState)
+		{
+			
+		}
+		
 		public void beginPutData(byte[] byteKey, Stream data, UInt64 dataLength, AsyncCallback putDataCallBack, Object appState)
 		{
 			Msg msg = new Msg(Msg.TypeEnum.PUT_DATA, (Object)byteKey, (Object)data);

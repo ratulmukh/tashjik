@@ -58,8 +58,8 @@ namespace Tashjik.Common
 		{
 			AsyncState = d;
 			AsyncWaitHandle = null;
-			CompletedSynchronously = compSync;
-			IsCompleted = isComp;
+//			CompletedSynchronously = compSync;
+//			IsCompleted = isComp;
 		}
 
 		/* public AsynResultGetTashjik.Common.Data()

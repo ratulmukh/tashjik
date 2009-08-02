@@ -54,7 +54,7 @@ namespace Tashjik.Common
 {
 	public class Data_Object
 	{
-		public Stream data;
+		public byte[] data;
 		public int dataLength;
 		public Object obj;
 	}

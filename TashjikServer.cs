@@ -100,13 +100,16 @@ namespace Tashjik
 		//create a completely new overlay
 		public static OverlayServer createNew(Guid overlayGuid)
 		{
+			Console.WriteLine("TashjikServer::createNew ENTER");
 			OverlayController overlayController = getController(overlayGuid);
 			return overlayController.createNew();
 			
 		}
 		public static OverlayServer createNew(String strOverlayType)
 		{
+			Console.WriteLine("TashjikServer::createNew ENTER");
 			OverlayController overlayController = getController(strOverlayType);
+			Console.WriteLine("TashjikServer::createNew after getting overlayController");
 			return overlayController.createNew();
 			
 		}

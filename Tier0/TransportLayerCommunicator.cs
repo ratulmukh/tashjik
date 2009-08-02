@@ -260,7 +260,7 @@ namespace Tashjik.Tier0
 
 				String strCompositeMsg = concatenatedMsg.ToString();
 				int compositeMsgLen    = strCompositeMsg.Length;
-				byte[] compositeMsg      = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+				byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
 				
 				SocketFlags f = new SocketFlags();  // :O
 			    SocketState so2 = new SocketState();

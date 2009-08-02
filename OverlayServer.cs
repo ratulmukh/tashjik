@@ -67,8 +67,8 @@ namespace Tashjik
 		//Common.Data getData(String key);
 		//void putData(String key, Common.Data data);
 
-		public abstract void beginGetData(String key, AsyncCallback getDataCallBack, Object appState);
-		public abstract void beginPutData(String key, Stream data, UInt64 dataLength, AsyncCallback putDataCallBack, Object appState);
+		public abstract void beginGetData(byte[] key, AsyncCallback getDataCallBack, Object appState);
+		public abstract void beginPutData(byte[] key, byte[] data, int offset, int size, AsyncCallback putDataCallBack, Object appState);
 		
 		public abstract void shutdown();
 		

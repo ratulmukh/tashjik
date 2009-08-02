@@ -61,7 +61,7 @@ namespace Tashjik.Tier2
 	{
 
 		//private readonly IController controller;
-		private readonly ChordDataStore dataStore = null;
+		private readonly ChordDataStore dataStore = new ChordDataStore();
 
 
 		public static bool operator==(ChordRealNode n1, IChordNode n2)
@@ -470,9 +470,11 @@ namespace Tashjik.Tier2
 			*/
 			public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 			{
+				Console.WriteLine("Chord::engine::beginFindSuccessor ENTER");
 				ChordCommon.IChordNode_Object iNode_Object;
 				if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)
 				{
+					Console.WriteLine("Chord::engine::beginFindSuccessor if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)");
 					if(!(findSuccessorCallBack==null))
 					{
 						iNode_Object = new ChordCommon.IChordNode_Object();
@@ -485,23 +487,32 @@ namespace Tashjik.Tier2
 				}
 				else
 				{
+					Console.WriteLine("Chord::engine::beginFindSuccessor NOT if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)");
 					IChordNode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
 					if (closestPrecNode==self)
 					{
+						Console.WriteLine("Chord::engine::beginFindSuccessor if (closestPrecNode==self)");
 						if(!(findSuccessorCallBack==null))
 						{
+							Console.WriteLine("Chord::engine::beginFindSuccessor if(!(findSuccessorCallBack==null))");
 							iNode_Object = new ChordCommon.IChordNode_Object();
 							iNode_Object.node = successor;
 							iNode_Object.obj = appState;
-
+						
+							Console.WriteLine("Chord::engine::beginFindSuccessor before new IChordNode_ObjectAsyncResult");
 							IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
+							Console.WriteLine("Chord::engine::beginFindSuccessor before calling findSuccessorCallBack");
 							findSuccessorCallBack(res);
 						}
 					}		
 					else
+					{
+						Console.WriteLine("Chord::engine::beginFindSuccessor NOT if (closestPrecNode==self)");
 						closestPrecNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState);
+					}
 
 				}
+				Console.WriteLine("Chord::engine::beginFindSuccessor EXIT");
 			}
 
 			private IChordNode findClosestPreceedingNode(byte[] hashedKey)
@@ -537,7 +548,7 @@ namespace Tashjik.Tier2
 
 				self = encapsulatingNode;
 				predecessor = null;
-				successor = null;
+				successor = self;
 
 				for(int i=159; i>=0; i--)
 					finger[0] = null;
@@ -818,10 +829,11 @@ namespace Tashjik.Tier2
 			getDataCallBack(getDataResult);
 		}
 
-		public void beginPutData(byte[] byteKey, Stream data, UInt64 dataLength, AsyncCallback putDataCallBack, Object appState)
+		public void beginPutData(byte[] key, byte[] data, int offset, int size, AsyncCallback putDataCallBack, Object appState)
 		{
+			Console.WriteLine("ChordRealNode::beginPutData ENTER");
 			//once DataStore gets complex, this operation should not complete on the same synchronous thread
-			dataStore.putData(byteKey, data, dataLength);
+			dataStore.putData(key, data, offset, size);
 			IAsyncResult putDataResult = new Tashjik.Common.ObjectAsyncResult(appState, true, true);
 			putDataCallBack(putDataResult);
 

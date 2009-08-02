@@ -147,6 +147,13 @@ namespace Tashjik
 				void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
 		}
 */
+			
+			
+		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			
+		}
+	
 		public void notifyMsg(IPAddress fromIP, Object data)
 		{
 			try

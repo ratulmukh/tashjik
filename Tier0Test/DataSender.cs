@@ -47,10 +47,12 @@ namespace Tashjik.Test.Tier0Test
 			String strMsg = "Hi da";
 			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
 			//byte[] byteIP = {127, 0, 0, 1};
-			byte[] byteIP = {10, 200, 76, 45};
+			//byte[] byteIP = {10, 200, 76, 45};
+			byte[] byteIP = {192, 168, 1, 100};
 			IPAddress IP = new IPAddress(byteIP);
 			
-			//IPAddress IP = Tashjik.Common.UtilityMethod.GetLocalHostIP();
+			IPAddress IP1 = Tashjik.Common.UtilityMethod.GetLocalHostIP();
+			Console.WriteLine(IP1.ToString());
 				
 			
 			//TransportLayerCommunicator.Msg msg = new TransportLayerCommunicator.Msg(Tier0TestGuid);

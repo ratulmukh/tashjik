@@ -58,8 +58,8 @@ namespace Tashjik.Tier2.ChordCommon
 		{	
 			AsyncState = (Object)n;
 			AsyncWaitHandle = null;
-			CompletedSynchronously = compSync;
-			IsCompleted = isComp;
+//			CompletedSynchronously = compSync;
+//			IsCompleted = isComp;
 		}
 
 		/* public AsynResultGetTashjik.Common.Data()

@@ -49,6 +49,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -68,18 +69,50 @@ namespace Tashjik.Tier2
 
 		}	
 
-		private Dictionary<byte[], Stream> dataHolder =
-			new Dictionary<byte[], Stream>();
+		private Dictionary<String, byte[]> dataHolder =
+			new Dictionary<String, byte[]>();
 
-		public void putData(byte[] hashedKey, Stream data, UInt64 dataLength)
+		public void putData(byte[] key, byte[] data, int offset, int size)
 		{
-			dataHolder.Add(hashedKey, data);
+			Console.WriteLine("ChordDataStore::putData ENTER");
+			String strData = Encoding.ASCII.GetString(data);
+			String strExtractedData = strData.Substring(offset, size);
+			byte[] extractedData = System.Text.Encoding.ASCII.GetBytes(strExtractedData);
+
+			Console.Write("ChordDataStore::putData key = ");
+			Console.WriteLine(Encoding.ASCII.GetString(key));
+			Console.Write("ChordDataStore::putData extractedData = ");
+			Console.WriteLine(Encoding.ASCII.GetString(data));
+			dataHolder.Add(Encoding.ASCII.GetString(key), extractedData);
+					
+			Console.WriteLine("ChordDataStore::putData EXIT");
 		}
 
-		public Stream getData(byte[] hashedKey)
+		public byte[] getData(byte[] key)
 		{
-			Stream data;
-			if(dataHolder.TryGetValue(hashedKey, out data))
+			Console.WriteLine("ChordDataStore::getData ENTER");
+			Console.Write("ChordDataStore::getData hashedKey = ");			                 
+			Console.WriteLine(Encoding.ASCII.GetString(key));
+			
+			Dictionary<String, byte[]>.Enumerator enumerator = dataHolder.GetEnumerator();
+			for(int i=0; i<dataHolder.Count;i++)
+			{
+				enumerator.MoveNext();
+				Console.Write(enumerator.Current.Key);
+				Console.WriteLine(Encoding.ASCII.GetString(enumerator.Current.Value));
+				if(enumerator.Current.Key.Equals(Encoding.ASCII.GetString(key)))
+	            	Console.WriteLine("both strings match");
+				else
+					Console.WriteLine("both strings DON'T match");
+			}
+			
+						
+			byte[] data;
+			if(dataHolder.ContainsKey(Encoding.ASCII.GetString(key)))
+				Console.WriteLine("ChordDataStore::getData key found");
+			else
+				Console.WriteLine("ChordDataStore::getData key NOT found");
+			if(dataHolder.TryGetValue(Encoding.ASCII.GetString(key), out data))
 				return data;
 			else
 				throw new DataNotFoundInStoreException();

@@ -112,66 +112,73 @@ namespace Tashjik.Tier2
 			successor.putData(byteKey, data);
 		}
 		*/
-		public override void beginGetData(String key, AsyncCallback getDataCallBack, Object appState)
+		public override void beginGetData(byte[] key, AsyncCallback getDataCallBack, Object appState)
 		{
-			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
-
+			Console.WriteLine("ChordServer::beginGetData ENTER");
+			
 			Stack<Object> thisAppState = new Stack<Object>();
-			thisAppState.Push(byteKey);
+			thisAppState.Push(key);
 			thisAppState.Push(getDataCallBack);
 			thisAppState.Push(appState);
 			
 			AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForGetData);
-			thisNode.beginFindSuccessor(byteKey, thisNode, findSuccessorCallBack, thisAppState);
+			thisNode.beginFindSuccessor(key, thisNode, findSuccessorCallBack, thisAppState);
 
 		}
 
 		static void processFindSuccessorForGetData(IAsyncResult result)
 		{
+			Console.WriteLine("ChordServer::processFindSuccessorForGetData ENTER");
 			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 			IChordNode successor = iNode_Object.node;
 			Stack<Object> recAppState = (Stack<Object>)(iNode_Object.obj);	
 			
 			Object origAppState = recAppState.Pop();
 			AsyncCallback getDataCallBack = (AsyncCallback)(recAppState.Pop());
-			byte[] queryByteKey = (byte[])(recAppState.Pop());
+			byte[] queryKey = (byte[])(recAppState.Pop());
 			
-			successor.beginGetData(queryByteKey, getDataCallBack, origAppState);
-	
+			successor.beginGetData(queryKey, getDataCallBack, origAppState);
+			
+			Console.WriteLine("ChordServer::processFindSuccessorForGetData EXIT");
 		}
 	
 
 
-		public override void beginPutData(String key, Stream data, System.UInt64 dataLength, AsyncCallback putDataCallBack, Object appState)
+		public override void beginPutData(byte[] key, byte[] data, int offset, int size, AsyncCallback putDataCallBack, Object appState)
 		{
-			byte[] byteKey = System.Text.Encoding.ASCII.GetBytes(key);
-		
+			Console.WriteLine("Chord::BeginPutData ENTER");
 			Stack<Object> thisAppState = new Stack<Object>();
-			thisAppState.Push(byteKey);
-			thisAppState.Push(putDataCallBack);
+			thisAppState.Push(key);
 			thisAppState.Push(data);
-			thisAppState.Push(dataLength);
+			thisAppState.Push(offset);
+			thisAppState.Push(size);
+			thisAppState.Push(putDataCallBack);
 			thisAppState.Push(appState);
 			
-			AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForPutData);
-			thisNode.beginFindSuccessor(byteKey, thisNode, findSuccessorCallBack, thisAppState);
+			
+			thisNode.beginFindSuccessor(key, thisNode, new AsyncCallback(processFindSuccessorForPutData), thisAppState);
+            Console.WriteLine("Chord::BeginPutData aync EXIT");
 		}
-	
+		
+
 		static void processFindSuccessorForPutData(IAsyncResult result)
 		{
+			Console.WriteLine("ChordServer::processFindSuccessorForPutData ENTER");
 			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 			IChordNode successor = iNode_Object.node;
 			Stack<Object> recAppState = (Stack<Object>)(iNode_Object.obj);
 			
 			Object origAppState = recAppState.Pop();
-			UInt64 dataLength = (UInt64)(recAppState.Pop());
-			Stream data = (Stream)(recAppState.Pop());
 			AsyncCallback putDataCallBack = (AsyncCallback)(recAppState.Pop());
-			byte[] queryByteKey = (byte[])(recAppState.Pop());
+			int size = (int)(recAppState.Pop());
+			int offset = (int)(recAppState.Pop());
+			byte[] data = (byte[])(recAppState.Pop());
+			byte[] key = (byte[])(recAppState.Pop());
 			
-			successor.beginPutData(queryByteKey, data, dataLength, putDataCallBack, origAppState);
-		
-
+			Console.WriteLine("ChordServer::processFindSuccessorForPutData calling beginPutData");
+			successor.beginPutData(key, data, offset, size, putDataCallBack, origAppState);
+			
+			Console.WriteLine("ChordServer::processFindSuccessorForPutData EXIT");
 		}
 
 		public void joinOther(IPAddress IP, Guid giud)
