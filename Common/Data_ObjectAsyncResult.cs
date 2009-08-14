@@ -65,7 +65,7 @@ namespace Tashjik.Common
 
 		/* public AsynResultGetTashjik.Common.Data()
 		{
-			AsyncState = null;
+			0AsyncState = null;
 			AsyncWaitHandle = null;
 			CompletedSynchronously = false;
 			IsCompleted = false;

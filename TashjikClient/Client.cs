@@ -1,10 +1,15 @@
-﻿using System;
+#define SIM
+
+using System;
+using System.Net;
 using Tashjik;
 using Tashjik.Tier2;
+using Tashjik.Common;
 using System.Collections;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+
 //using log4net;
 //using log4net.Config;
 
@@ -18,15 +23,40 @@ namespace TashjikClient
 		{
 			
 		}
+
+#if SIM		
+		public static void Main(string[] args)
+		{
+			Console.WriteLine(args.Length);
+		
+			if(args.Length >= 1)
+			{
+				byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(args[0]);
 				
+				Console.WriteLine("Hi there");
+				Console.Write((int)byteIP[0]);
+				Console.Write((int)byteIP[1]);
+				Console.Write((int)byteIP[2]);
+				Console.WriteLine((int)byteIP[3]);
+				
+				IPAddress ipAddress = new IPAddress(byteIP);
+
+				UtilityMethod.SetLocalHostIP(ipAddress);
+				UtilityMethod.SetPort(args[1]);
+				
+			}
+
+#else
 		public static void Main()
 		{
+#endif
+		
 			Guid g = Guid.NewGuid();
 			Console.Write(g.ToString());
 			
 			Console.WriteLine("Creating new Chord overlay");
 			ChordServer chord = (ChordServer)(TashjikServer.createNew("Chord")); //new Guid("0c400880-0722-420e-a792-0a764d6539ee")));
-			String strKey = "key";
+/*			String strKey = "key";
 			String strData = "data";
 			Console.WriteLine(strKey);
 			Console.WriteLine(strData);
@@ -45,6 +75,18 @@ namespace TashjikClient
 			Console.WriteLine("Putting data to new Chord ");
 			chord.beginPutData(key, data, 0, strData.Length, new AsyncCallback(processPutDataCallBack), chord);
 			Console.WriteLine("After Putting data to new Chord ");
+*/		
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
 			/*			//ChordServer chord = (ChordServer)(TashjikServer.createNew(String.Chord));
 			ArrayList arr = TashjikServer.getList(String.Chord);
 			ChordServer chord = (ChordServer)(arr[0]);
@@ -72,7 +114,9 @@ namespace TashjikClient
 			byte[] data = data_Object.data;
 			Console.Write("DATA FOUND: IT IS ");
 			Console.WriteLine(Encoding.ASCII.GetString(data));
-			
+			//#if DINKUM
+		//	Console.WriteLine("tada");
+		//	#endif			                  
 		//	log.Info(data);
 							
 		}

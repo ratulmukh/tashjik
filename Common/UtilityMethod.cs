@@ -1,4 +1,4 @@
-﻿/************************************************************
+/************************************************************
 * File Name: 
 *
 * Author: Ratul Mukhopadhyay
@@ -46,6 +46,7 @@
 *
 ************************************************************/
 
+#define SIM  
 
 using System;
 using System.Security.Cryptography;
@@ -57,9 +58,31 @@ namespace Tashjik.Common
 	public static class UtilityMethod
 	{
 		public static SHA1 sha = new SHA1CryptoServiceProvider();
-	
+
+#if SIM
+		private static IPAddress localIP;
+		private static String port;
+
+		public static void SetLocalHostIP(IPAddress IP)
+		{
+			localIP = IP;
+		}
+		public static void SetPort(string po)
+		{
+			port = po;
+		}
+		
+		public static String GetPort()
+		{
+			return port;
+		}
+#endif	
 		public static IPAddress GetLocalHostIP()
 		{
+
+#if SIM
+			return localIP ;
+#endif
 			String strHostName = Dns.GetHostName();
 
 			// Find host by name

@@ -1,4 +1,4 @@
-﻿/************************************************************
+/************************************************************
 * File Name: 
 *
 * Author: Ratul Mukhopadhyay
@@ -46,7 +46,7 @@
 *
 ************************************************************/
 
-
+#define SIM
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -61,6 +61,7 @@ using System.Text;
 using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using Tashjik;
+using Tashjik.Common;
 	
 [assembly:InternalsVisibleTo("TransportLayerCommunicatorTest")]
 namespace Tashjik.Tier0
@@ -177,9 +178,17 @@ namespace Tashjik.Tier0
 				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection ENTER");
 				connectionState = ConnectionState.WAITING_TO_CONNECT;
-				int iPortNo = System.Convert.ToInt16 ("2334");
-				//IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+#if SIM
+				int iPortNo = System.Convert.ToInt16("2335"); //Boxit port
+				byte[] byteIP = {127, 0, 0, 1};
+				IPAddress ipAddress = new IPAddress(byteIP);
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+#else				
+				int iPortNo = System.Convert.ToInt16 ("2334");
+				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+#endif
+				
+				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection endPoint created");
 				/*
 				SocketState socketState = new SocketState();
@@ -249,7 +258,12 @@ namespace Tashjik.Tier0
 						//thr is only 1 thread tht deques, while multiple 1s enque
 						tempMsg = msgQueue.Dequeue();
 					}
-					
+#if SIM
+					concatenatedMsg.Append(UtilityMethod.GetLocalHostIP().ToString());
+					concatenatedMsg.Append('\0', 1);
+					concatenatedMsg.Append(IP.ToString());
+					concatenatedMsg.Append('\0', 1);
+#endif					
 					concatenatedMsg.Append(tempMsg.overlayGuid.ToString());
 					concatenatedMsg.Append('\0', 1);
 					concatenatedMsg.Append(Encoding.ASCII.GetString(tempMsg.buffer, tempMsg.offset, tempMsg.size));
@@ -395,10 +409,14 @@ namespace Tashjik.Tier0
 		{
 			//IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
         	//	IPAddress ipAddress = ipHostInfo.AddressList[0];
+#if SIM
+			int iPortNo = System.Convert.ToInt16 (UtilityMethod.GetPort());
+#else        	
+        	int iPortNo = System.Convert.ToInt16 ("2334");
+#endif
         	byte[] byteIP = {127, 0, 0, 1};
 			IPAddress ipAddress = new IPAddress(byteIP);
 
-        	int iPortNo = System.Convert.ToInt16 ("2334");
         	IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
         	
         	Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
@@ -414,7 +432,7 @@ namespace Tashjik.Tier0
         	        allDone.Reset();
 	
     	            // Start an asynchronous socket to listen for connections.
-        	        Console.WriteLine("Waiting for a connection...");
+        	        Console.WriteLine("Waiting for a connection at port " + UtilityMethod.GetPort());
         	        
         	        SocketState socketState = new SocketState();
 					socketState.sock = listener;
@@ -492,31 +510,58 @@ namespace Tashjik.Tier0
 			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
 		}
 		
+#if SIM		
+		enum MsgExtractionStatus
+		{
+			NOTHING_EXTRACTED,
+			FROM_IP_EXTRACTED,
+			TO_IP_EXTRACTED,
+			OVERLAYGUID_EXTRACTED,
+			MESSAGE_EXTRACTED
+		}
 		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
 		{
 			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
 			String[] split = content.Split(new char[] {'\0'});
+			
+			String strFromIP = null;
+			String strToIP;
 			String strOverlayGuid;
 			byte[] byteOverlayGuid; 
 			Guid overlayGuid = new Guid();;
 			String strBuffer;
 			byte[] byteBuffer;
-			bool readytoNotify = false;  
+			MsgExtractionStatus msgExtractionStatus = MsgExtractionStatus.NOTHING_EXTRACTED;  
 			foreach (String s in split)
 			{
-				if(readytoNotify == false)
+				if(msgExtractionStatus == MsgExtractionStatus.NOTHING_EXTRACTED || msgExtractionStatus == MsgExtractionStatus.MESSAGE_EXTRACTED)
 				{
 					if(s.Length == 0)
 						break;
+					strFromIP = s;  	
+					Console.WriteLine("FromIP received: ", s);
+					msgExtractionStatus = MsgExtractionStatus.FROM_IP_EXTRACTED;
+					
+				}
+				else if(msgExtractionStatus == MsgExtractionStatus.FROM_IP_EXTRACTED)
+				{
+					strToIP = s;	
+					Console.WriteLine("ToIP received: ", s);
+					msgExtractionStatus = MsgExtractionStatus.TO_IP_EXTRACTED;
+						
+					
+				}
+				else if(msgExtractionStatus == MsgExtractionStatus.TO_IP_EXTRACTED)
+				{
 					strOverlayGuid = s;
 					Console.WriteLine("haha 1");
 					Console.WriteLine(s);
 					Console.WriteLine(s.Length);
 					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
 					overlayGuid = new Guid(s);
-					readytoNotify = true;
+					msgExtractionStatus = MsgExtractionStatus.OVERLAYGUID_EXTRACTED;
 				}
-				else if(readytoNotify == true)
+				else if(msgExtractionStatus == MsgExtractionStatus.OVERLAYGUID_EXTRACTED)
 				{
 					strBuffer = s;
 					Console.WriteLine("haha 2");
@@ -524,16 +569,54 @@ namespace Tashjik.Tier0
 					Console.WriteLine(s.Length);
 					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
 					
-					IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
+					byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
+					IPAddress fromIP = new IPAddress(byteFromIP);
 					transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
-					readytoNotify = false;
+					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;
 				}
 			}
-			
-			
-
 		}
-		
+#else
+        static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
+        {
+	        Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
+            String[] split = content.Split(new char[] {'\0'});
+            String strOverlayGuid;
+            byte[] byteOverlayGuid;
+            Guid overlayGuid = new Guid();;
+            String strBuffer;
+            byte[] byteBuffer;
+          	bool readytoNotify = false;  
+            foreach (String s in split)
+            {
+            	if(readytoNotify == false)
+                {
+                	if(s.Length == 0)
+                    	break;
+                    strOverlayGuid = s;
+                    Console.WriteLine("haha 1");
+                    Console.WriteLine(s);
+                    Console.WriteLine(s.Length);
+                    byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
+                    overlayGuid = new Guid(s);
+                    readytoNotify = true;
+                }
+                else if(readytoNotify == true)
+                {
+                    strBuffer = s;
+                    Console.WriteLine("haha 2");
+                    Console.WriteLine(s);
+                    Console.WriteLine(s.Length);
+                    byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
+                      
+                    IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
+                    transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
+                    readytoNotify = false;
+                }
+           }
+       }
+#endif
+
 			internal class SocketState
 			{
 				public Socket sock;
