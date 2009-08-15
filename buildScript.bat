@@ -35,7 +35,7 @@ cd ..\TashjikClient
 C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:..\bin\debug\TashjikClient.exe  /r:..\bin\debug\TashjikCommon.dll /r:..\bin\debug\TashjikServer.dll /r:..\bin\debug\Chord.dll /target:exe Client.cs 
 
 cd ..\boxit
-C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:..\bin\debug\Boxit.exe /target:exe Boxit.cs 
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /r:..\bin\debug\TashjikCommon.dll /r:..\bin\debug\TashjikTier0.dll /out:..\bin\debug\Boxit.exe /target:exe Boxit.cs 
 
 echo off
 rem cd ..\Tier0Test
