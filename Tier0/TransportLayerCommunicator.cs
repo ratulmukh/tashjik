@@ -182,7 +182,7 @@ namespace Tashjik.Tier0
 				int iPortNo = System.Convert.ToInt16("2335"); //Boxit port
 				byte[] byteIP = {127, 0, 0, 1};
 				IPAddress ipAddress = new IPAddress(byteIP);
-				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
+				IPEndPoint ipEnd = new IPEndPoint (ipAddress,iPortNo);
 #else				
 				int iPortNo = System.Convert.ToInt16 ("2334");
 				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
@@ -432,7 +432,8 @@ namespace Tashjik.Tier0
         	        allDone.Reset();
 	
     	            // Start an asynchronous socket to listen for connections.
-        	        Console.WriteLine("Waiting for a connection at port " + UtilityMethod.GetPort());
+    	            Console.Write("Waiting for a connection at port ");
+    	            Console.WriteLine(iPortNo);
         	        
         	        SocketState socketState = new SocketState();
 					socketState.sock = listener;
@@ -663,6 +664,9 @@ namespace Tashjik.Tier0
 		
 		public static TransportLayerCommunicator getRefTransportLayerCommunicator()
 		{
+#if SIM
+			return new TransportLayerCommunicator();
+#else			
 			lock(transportLayerCommunicatorLock)
 			{
 				if(transportLayerCommunicator!=null)
@@ -673,6 +677,7 @@ namespace Tashjik.Tier0
 					return transportLayerCommunicator;
 				}
 			}
+#endif
 		}
 
 	}

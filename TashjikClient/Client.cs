@@ -2,8 +2,10 @@
 
 using System;
 using System.Net;
+using System.Net.Sockets;
 using Tashjik;
 using Tashjik.Tier2;
+using Tashjik.Tier0;
 using Tashjik.Common;
 using System.Collections;
 using System.IO;
@@ -15,7 +17,7 @@ using System.Text;
 
 namespace TashjikClient
 {
-	public class Client
+	public class Client : TransportLayerCommunicator.ISink
 	{
 		//private static readonly ILog log = LogManager.GetLogger(typeof(Client));
 		
@@ -23,22 +25,40 @@ namespace TashjikClient
 		{
 			
 		}
+		
+		static TransportLayerCommunicator transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
 
 #if SIM		
-		public static void Main(string[] args)
+		public static void Main(string[] args) 
 		{
 			Console.WriteLine(args.Length);
 		
 			if(args.Length >= 1)
 			{
-				byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(args[0]);
-				
+				//byte[] byteIP = System.Text.Encoding.ASCII.GetBytes(args[0]);
+				String[] IPsplit = args[0].Split(new char[] {'.'});
 				Console.WriteLine("Hi there");
-				Console.Write((int)byteIP[0]);
+
+				int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
+				int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
+				int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
+				int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
+				byte[] byteIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+				Console.Write(IP0);
+				Console.Write(".");
+				Console.Write(IP1);
+				Console.Write(".");
+				Console.Write(IP2);
+				Console.Write(".");
+				Console.WriteLine(IP3);
+/*				Console.Write((int)byteIP[0]);
+				Console.Write(" ");
 				Console.Write((int)byteIP[1]);
+				Console.Write(" ");
 				Console.Write((int)byteIP[2]);
+				Console.Write(" ");
 				Console.WriteLine((int)byteIP[3]);
-				
+*/				
 				IPAddress ipAddress = new IPAddress(byteIP);
 
 				UtilityMethod.SetLocalHostIP(ipAddress);
@@ -53,9 +73,12 @@ namespace TashjikClient
 		
 			Guid g = Guid.NewGuid();
 			Console.Write(g.ToString());
+
+			Client client = new Client();
+			client.chkTransPortLayerComm();
 			
-			Console.WriteLine("Creating new Chord overlay");
-			ChordServer chord = (ChordServer)(TashjikServer.createNew("Chord")); //new Guid("0c400880-0722-420e-a792-0a764d6539ee")));
+//			Console.WriteLine("Creating new Chord overlay");
+//			ChordServer chord = (ChordServer)(TashjikServer.createNew("Chord")); //new Guid("0c400880-0722-420e-a792-0a764d6539ee")));
 /*			String strKey = "key";
 			String strData = "data";
 			Console.WriteLine(strKey);
@@ -97,6 +120,52 @@ namespace TashjikClient
 			//chord.beginGetData(key, data, putDataCallBack, null);
 */
 //Tashjik.Server.Node node = new Tashjik.Server.Node();
+			
+		}
+		
+		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+		
+			Console.WriteLine("Msg received");
+		}
+
+		Guid ClientGuid = new Guid("2527df07-e8c5-4f0d-a46e-effa26cfcb0d");
+		
+		public void chkTransPortLayerComm()
+		{
+			transportLayerCommunicator.register(ClientGuid, this);
+			Console.WriteLine("Please enter IP address of node to send msg to");
+			String IP = Console.ReadLine();
+			String[] IPsplit = IP.Split(new char[] {'.'});
+			Console.WriteLine(IPsplit[0]);
+			Console.WriteLine(IPsplit[1]);
+			Console.WriteLine(IPsplit[2]);
+			Console.WriteLine(IPsplit[3]);
+			int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
+			int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
+			int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
+			int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
+			
+			byte[] byteIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+			IPAddress ipAddress = new IPAddress(byteIP);
+			
+			String strMsg = "Client sending msg ";
+			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
+
+			transportLayerCommunicator.BeginTransportLayerSend(ipAddress, msg, 0, strMsg.Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
+		}
+		
+		static void sendDataCallBack(IAsyncResult result)
+		{
+			IPAddress IP = (IPAddress)(result.AsyncState);
+			try
+			{
+				transportLayerCommunicator.EndTransportLayerSend(IP);
+			}
+			catch(SocketException)
+			{
+				Console.WriteLine("Client caught SocketException");
+			}
 			
 		}
 		

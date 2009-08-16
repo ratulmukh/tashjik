@@ -39,6 +39,10 @@
       <HintPath>..\bin\debug\TashjikServer.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="TashjikTier0">
+      <HintPath>..\bin\debug\TashjikTier0.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />

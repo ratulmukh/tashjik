@@ -44,9 +44,9 @@ public static class Boxit
 	struct Triplet
 	{
 		public Process process;
-		public String portNo;
+		public int portNo;
 		public Socket sock;
-		public Triplet(Process process, String portNo, Socket sock)
+		public Triplet(Process process, int portNo, Socket sock)
 		{
 			this.portNo = portNo;
 			this.process = process;
@@ -86,10 +86,10 @@ public static class Boxit
 			IPAddress IP = new IPAddress(byteIP);
 			String strIP = Encoding.ASCII.GetString(byteIP);
 			Console.WriteLine(strIP);
-			
-			process = Process.Start("TashjikClient.exe", strIP + " " + Convert.ToString(portNo));
-			registry.Add(strIP, new Triplet(process, Convert.ToString(portNo), null));
-
+			Console.WriteLine(IP.ToString());
+			process = Process.Start("TashjikClient.exe", IP.ToString() + " " + Convert.ToString(portNo));
+			registry.Add(IP.ToString(), new Triplet(process, Convert.ToInt16(Convert.ToString(portNo)), null));
+			//registry.Add(IP.ToString(), new Triplet(process, portNo, null));
 			portNo++;
 		}
 	}
@@ -128,8 +128,9 @@ public static class Boxit
         	        allDone.Reset();
 	
     	            // Start an asynchronous socket to listen for connections.
-        	        Console.WriteLine("Waiting for a connection at port " + UtilityMethod.GetPort());
-        	        
+        	        Console.Write("Waiting for a connection at port ");
+    	            Console.WriteLine(iPortNo);
+    	            
         	        SocketState socketState = new SocketState();
 					socketState.sock = listener;
 					socketState.transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
@@ -225,6 +226,7 @@ public static class Boxit
 		{
 			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
 			String[] split = content.Split(new char[] {'\0'});
+			byte[] byteContent = System.Text.Encoding.ASCII.GetBytes(content);
 			
 			String strFromIP = null;
 			String strToIP = null;
@@ -241,14 +243,16 @@ public static class Boxit
 					if(s.Length == 0)
 						break;
 					strFromIP = s;  	
-					Console.WriteLine("FromIP received: ", s);
+					Console.Write("FromIP received: ");
+					Console.WriteLine(s);
 					msgExtractionStatus = MsgExtractionStatus.FROM_IP_EXTRACTED;
 					
 				}
 				else if(msgExtractionStatus == MsgExtractionStatus.FROM_IP_EXTRACTED)
 				{
 					strToIP = s;	
-					Console.WriteLine("ToIP received: ", s);
+					Console.Write("ToIP received: ");
+					Console.WriteLine(s);
 					msgExtractionStatus = MsgExtractionStatus.TO_IP_EXTRACTED;
 						
 					
@@ -271,20 +275,52 @@ public static class Boxit
 					Console.WriteLine(s.Length);
 					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
 					
-					byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
-					IPAddress fromIP = new IPAddress(byteFromIP);
-					
-					Triplet triplet;
-					if(registry.TryGetValue(strToIP, out triplet))
-					{
-						SocketFlags f = new SocketFlags();
-						byte[] byteContent = System.Text.Encoding.ASCII.GetBytes(content);
-						triplet.sock.BeginSend(byteContent, 0, byteContent.Length, f, null, null);
-					}
+					//byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
+					//IPAddress fromIP = new IPAddress(byteFromIP);
+					sendMsg(strToIP, byteContent, 0, byteContent.Length);
 					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;
 				}
 			}
 		}
+		
+		static void sendMsg(String strToIP, byte[] msg, int offset, int size)
+		{
+			Triplet triplet;
+			if(registry.TryGetValue(strToIP, out triplet))
+			{
+				Console.WriteLine("strToIP found in registry");
+				SocketFlags f = new SocketFlags();
+				
+				if(triplet.sock != null)
+					triplet.sock.BeginSend(msg, 0, msg.Length, f, null, null);
+				else 
+					establishRemoteConnection(strToIP, triplet, msg, 0, msg.Length);
+					
+			}
+				
+		}
+		
+			private static void establishRemoteConnection(String strToIP, Triplet triplet, byte[] msg, int offset, int size)
+			{
+				
+				Console.WriteLine("Boxit::establishRemoteConnection ENTER");
+				
+				byte[] byteIP = {127, 0, 0, 1};
+				IPAddress ipAddress = new IPAddress(byteIP);
+				IPEndPoint ipEnd = new IPEndPoint (ipAddress, triplet.portNo);
+				
+				Console.WriteLine("Boxit::establishRemoteConnection endPoint created");
+				//AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
+				
+				Console.WriteLine("Boxit::establishRemoteConnection before calling Connect");					
+				triplet.sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+				triplet.sock.Connect(ipEnd);
+				
+				Console.WriteLine("Boxit::establishRemoteConnection connect DONE");
+				
+				SocketFlags f = new SocketFlags();
+				triplet.sock.BeginSend(msg, 0, msg.Length, f, null, null);
+			}
 
-
+				
 }
