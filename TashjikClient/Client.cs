@@ -26,7 +26,7 @@ namespace TashjikClient
 			
 		}
 		
-		static TransportLayerCommunicator transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
+		static TransportLayerCommunicator transportLayerCommunicator; // = TransportLayerCommunicator.getRefTransportLayerCommunicator();
 
 #if SIM		
 		public static void Main(string[] args) 
@@ -62,7 +62,11 @@ namespace TashjikClient
 				IPAddress ipAddress = new IPAddress(byteIP);
 
 				UtilityMethod.SetLocalHostIP(ipAddress);
+				Console.Write("received port=");
+				Console.WriteLine(args[1]);
 				UtilityMethod.SetPort(args[1]);
+				
+				transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
 				
 			}
 

@@ -378,11 +378,238 @@ namespace Tashjik.Tier0
 		{
 		}
 
+		/*
 		public class Receiver
 		{
+			
+			
+			public void startListening(int port)
+			{
+				//initialise connection acceptor thread, etc,. 
+		    	//ThreadStart listenJob = new ThreadStart(this.StartListening);
+				//Thread listener = new Thread(listenJob);
+				//listener.Start();
+				
+				Thread t = new Thread (new ParameterizedThreadStart(listen));
+				t.Start (port);
+
+
+			}
+			
+			private void listen(Object port)
+			{
+				int iPortNo = (int)port;
+
+        		byte[] byteIP = {127, 0, 0, 1};
+				IPAddress ipAddress = new IPAddress(byteIP);
+
+        		IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
+	        	
+    	    	Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+        		try 
+        		{
+            		listener.Bind(localEndPoint);
+            		listener.Listen(1000);
+            		//listener.Listen(SocketOptionName.MaxConnections );
+
+	            while (true) 
+	            {
+    	            // Set the event to nonsignaled state.
+        	        allDone.Reset();
+	
+    	            // Start an asynchronous socket to listen for connections.
+    	            Console.Write("Waiting for a connection at port ");
+    	            Console.WriteLine(iPortNo);
+        	        
+        	        SocketState socketState = new SocketState();
+					socketState.sock = listener;
+					//socketState.transportLayerCommunicator = this;
+            	    listener.BeginAccept( 
+                	    new AsyncCallback(beginAcceptCallback_forStartListening),
+                    	socketState );
+
+	                // Wait until a connection is made before continuing.
+    	            allDone.WaitOne();
+        	    }
+
+	        } 
+        	catch (Exception e) 
+        	{
+    	        Console.WriteLine(e.ToString());
+        	}	
 
 		}
+		 
+		static private void beginAcceptCallback_forStartListening(IAsyncResult result)
+		{
+			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+			// Signal the main thread to continue.
+        	allDone.Set();
 
+	        // Get the socket that handles the client request.
+    	    SocketState socketState = (SocketState) result.AsyncState;
+    	    Socket listener = socketState.sock;
+        	Socket handler = listener.EndAccept(result);
+			TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
+			
+        	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler);
+        	IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
+        	try
+			{
+				transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
+				socketState.sock = handler;
+		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
+				Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+        	}
+			catch(System.ArgumentException)
+			{
+				//if the Add fails, it means the IP is already in thr 
+				//so we directly BeginReceive after tht
+				socketState.sock = handler;
+		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
+		        Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+			}
+			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+	
+		}
+		
+		static private void beginReceiveCallBack(IAsyncResult result)
+		{
+			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack ENTER");
+			String content = String.Empty;
+			SocketState socketState = ((SocketState)(result.AsyncState));
+			Socket sock = socketState.sock;
+			
+			int bytesRead = sock.EndReceive(result);
+			if(bytesRead > 0)
+			{
+				socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
+				
+				if(content.IndexOf("\n") > -1)
+				{
+					content = socketState.concatenatedString.ToString();
+					notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+				}
+				else 
+					sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+			}
+			content = socketState.concatenatedString.ToString();
+			Console.WriteLine(content);
+			notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
+		}
+		
+#if SIM		
+		enum MsgExtractionStatus
+		{
+			NOTHING_EXTRACTED,
+			FROM_IP_EXTRACTED,
+			TO_IP_EXTRACTED,
+			OVERLAYGUID_EXTRACTED,
+			MESSAGE_EXTRACTED
+		}
+		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
+		{
+			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
+			String[] split = content.Split(new char[] {'\0'});
+			
+			String strFromIP = null;
+			String strToIP;
+			String strOverlayGuid;
+			byte[] byteOverlayGuid; 
+			Guid overlayGuid = new Guid();;
+			String strBuffer;
+			byte[] byteBuffer;
+			MsgExtractionStatus msgExtractionStatus = MsgExtractionStatus.NOTHING_EXTRACTED;  
+			foreach (String s in split)
+			{
+				if(msgExtractionStatus == MsgExtractionStatus.NOTHING_EXTRACTED || msgExtractionStatus == MsgExtractionStatus.MESSAGE_EXTRACTED)
+				{
+					if(s.Length == 0)
+						break;
+					strFromIP = s;  	
+					Console.WriteLine("FromIP received: ", s);
+					msgExtractionStatus = MsgExtractionStatus.FROM_IP_EXTRACTED;
+					
+				}
+				else if(msgExtractionStatus == MsgExtractionStatus.FROM_IP_EXTRACTED)
+				{
+					strToIP = s;	
+					Console.WriteLine("ToIP received: ", s);
+					msgExtractionStatus = MsgExtractionStatus.TO_IP_EXTRACTED;
+						
+					
+				}
+				else if(msgExtractionStatus == MsgExtractionStatus.TO_IP_EXTRACTED)
+				{
+					strOverlayGuid = s;
+					Console.WriteLine("haha 1");
+					Console.WriteLine(s);
+					Console.WriteLine(s.Length);
+					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
+					overlayGuid = new Guid(s);
+					msgExtractionStatus = MsgExtractionStatus.OVERLAYGUID_EXTRACTED;
+				}
+				else if(msgExtractionStatus == MsgExtractionStatus.OVERLAYGUID_EXTRACTED)
+				{
+					strBuffer = s;
+					Console.WriteLine("haha 2");
+					Console.WriteLine(s);
+					Console.WriteLine(s.Length);
+					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
+					
+					byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
+					IPAddress fromIP = new IPAddress(byteFromIP);
+					transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
+					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;
+				}
+			}
+		}
+#else
+        static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
+        {
+	        Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
+            String[] split = content.Split(new char[] {'\0'});
+            String strOverlayGuid;
+            byte[] byteOverlayGuid;
+            Guid overlayGuid = new Guid();;
+            String strBuffer;
+            byte[] byteBuffer;
+          	bool readytoNotify = false;  
+            foreach (String s in split)
+            {
+            	if(readytoNotify == false)
+                {
+                	if(s.Length == 0)
+                    	break;
+                    strOverlayGuid = s;
+                    Console.WriteLine("haha 1");
+                    Console.WriteLine(s);
+                    Console.WriteLine(s.Length);
+                    byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
+                    overlayGuid = new Guid(s);
+                    readytoNotify = true;
+                }
+                else if(readytoNotify == true)
+                {
+                    strBuffer = s;
+                    Console.WriteLine("haha 2");
+                    Console.WriteLine(s);
+                    Console.WriteLine(s.Length);
+                    byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
+                      
+                    IPAddress fromIP = ((IPEndPoint)(fromSock.RemoteEndPoint)).Address;
+                    transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
+                    readytoNotify = false;
+                }
+           }
+       }
+#endif
+
+
+
+		}
+*/
 		//never call this directly
 		public TransportLayerCommunicator()
 		{
@@ -432,7 +659,7 @@ namespace Tashjik.Tier0
         	        allDone.Reset();
 	
     	            // Start an asynchronous socket to listen for connections.
-    	            Console.Write("Waiting for a connection at port ");
+    	            Console.Write("TrnsportLayerComm::Waiting for a connection at port ");
     	            Console.WriteLine(iPortNo);
         	        
         	        SocketState socketState = new SocketState();
@@ -655,10 +882,11 @@ namespace Tashjik.Tier0
 		     }
 	
 		}
-
+#if SIM
+#else
 		//singleton
 		private static TransportLayerCommunicator transportLayerCommunicator = null;
-		
+#endif		
 		//need to take care of threading issues
 		private static readonly Object transportLayerCommunicatorLock = new Object();
 		
