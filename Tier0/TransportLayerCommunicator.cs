@@ -325,6 +325,11 @@ namespace Tashjik.Tier0
 					throw new SocketException();
 		}
 		
+		void TransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
+		{
+		
+		}
+		
 		public void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 		{
 			//Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");

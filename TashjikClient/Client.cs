@@ -79,10 +79,57 @@ namespace TashjikClient
 			Console.Write(g.ToString());
 
 			Client client = new Client();
-			client.chkTransPortLayerComm();
+	//		client.chkTransPortLayerComm();
+			client.chkChord();
 			
-//			Console.WriteLine("Creating new Chord overlay");
-//			ChordServer chord = (ChordServer)(TashjikServer.createNew("Chord")); //new Guid("0c400880-0722-420e-a792-0a764d6539ee")));
+		}
+		private void requestBootStrapNode()
+		{
+			
+#if SIM
+			
+			transportLayerCommunicator.register(ClientGuid, this);
+			byte[] byteIP = {127, 0, 0, 1};
+			IPAddress ipAddress = new IPAddress(byteIP);
+
+			String strMsg = "bootStrap request";
+			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
+			transportLayerCommunicator.BeginTransportLayerSend(ipAddress, msg, 0, strMsg.Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
+#else
+			chordInstanceGuid = new Guid("");
+			return null;
+#endif			
+		}
+		
+		private void receiveBootStrapNode()
+		{
+			
+		}
+			
+		private void initializeChord()
+		{
+			
+		}
+		
+		private void chkChord()
+		{
+			transportLayerCommunicator.register(ClientGuid, this);
+		
+			Console.WriteLine("Creating new Chord overlay");
+			Guid chordInstanceGuid;
+			//IPAddress bootStrapIP =
+			requestBootStrapNode();
+			ChordServer chord;
+			
+			if(bootStrapIP == null)
+			{
+				chord = (ChordServer)(TashjikServer.createNew("Chord")); //new Guid("0c400880-0722-420e-a792-0a764d6539ee")));
+				chordInstanceGuid = chord.getGuid();
+			}
+			else
+				chord = (ChordServer)(TashjikServer.joinExisting(bootStrapIP, new Guid("0c400880-0722-420e-a792-0a764d6539ee"), chordInstanceGuid));
+			
+
 /*			String strKey = "key";
 			String strData = "data";
 			Console.WriteLine(strKey);
@@ -131,6 +178,7 @@ namespace TashjikClient
 		{
 		
 			Console.WriteLine("Msg received");
+			receiveBootStrapNode();
 		}
 
 		Guid ClientGuid = new Guid("2527df07-e8c5-4f0d-a46e-effa26cfcb0d");

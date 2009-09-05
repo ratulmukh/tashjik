@@ -55,6 +55,7 @@ namespace Tashjik.Tier0
 {
 	public interface ITransportLayerCommunicator
 	{
+		void TransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
 		void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
 		void EndTransportLayerSend(IPAddress IP);
 		void register(Guid guid, TransportLayerCommunicator.ISink sink);
