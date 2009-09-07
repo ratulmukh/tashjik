@@ -313,6 +313,7 @@ namespace Tashjik.Tier0
 
 		public void register(Guid guid, ISink sink)
 		{
+			
 			overlayRegistry.Add(guid, sink);
 
 		}
@@ -332,7 +333,7 @@ namespace Tashjik.Tier0
 		
 		public void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 		{
-			//Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
+			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
 	
 			Msg msg = new Msg(buffer, offset, size, overlayGuid, callBack, appState);
 			
@@ -368,6 +369,7 @@ namespace Tashjik.Tier0
 		                                                  
 		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
+			Console.WriteLine("TransportLayerCommuicator::Receive ENTER");
 			String s = Encoding.ASCII.GetString(buffer);
 			Console.WriteLine(s);
 			
@@ -375,7 +377,10 @@ namespace Tashjik.Tier0
 			if(overlayRegistry.TryGetValue(overlayGuid, out sink))
 				sink.notifyMsg(fromIP, buffer, offset, size);
 			else
+			{
+				Console.WriteLine("TransportLayerCommuicator::Receive - could not find overlayGuid in overlayRegistry");
 				throw new Exception();
+			}
 
 		}
 
@@ -616,7 +621,7 @@ namespace Tashjik.Tier0
 		}
 */
 		//never call this directly
-		public TransportLayerCommunicator()
+		private TransportLayerCommunicator()
 		{
 			init();
 		}
@@ -647,6 +652,11 @@ namespace Tashjik.Tier0
         	int iPortNo = System.Convert.ToInt16 ("2334");
 #endif
         	byte[] byteIP = {127, 0, 0, 1};
+        	Console.Write("StartListening : IP=");
+        	Console.Write(byteIP);
+        	Console.Write(" Port=");
+        	Console.WriteLine(iPortNo);
+        	
 			IPAddress ipAddress = new IPAddress(byteIP);
 
         	IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
@@ -705,15 +715,15 @@ namespace Tashjik.Tier0
 				transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
 				socketState.sock = handler;
 		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
-				Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+				Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening EXIT");
         	}
 			catch(System.ArgumentException)
 			{
 				socketState.sock = handler;
 		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
-		        Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+		        Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening EXIT");
 			}
-			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening EXIT");
 	
 		}
 		
@@ -772,14 +782,16 @@ namespace Tashjik.Tier0
 					if(s.Length == 0)
 						break;
 					strFromIP = s;  	
-					Console.WriteLine("FromIP received: ", s);
+					Console.Write("FromIP received: ");
+					Console.WriteLine(s);
 					msgExtractionStatus = MsgExtractionStatus.FROM_IP_EXTRACTED;
 					
 				}
 				else if(msgExtractionStatus == MsgExtractionStatus.FROM_IP_EXTRACTED)
 				{
 					strToIP = s;	
-					Console.WriteLine("ToIP received: ", s);
+					Console.WriteLine("ToIP received: ");
+					Console.WriteLine(s);
 					msgExtractionStatus = MsgExtractionStatus.TO_IP_EXTRACTED;
 						
 					
@@ -802,7 +814,13 @@ namespace Tashjik.Tier0
 					Console.WriteLine(s.Length);
 					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
 					
-					byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
+					String[] IPsplit = strFromIP.Split(new char[] {'.'});
+					int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
+					int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
+					int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
+					int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
+					byte[] byteFromIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+				
 					IPAddress fromIP = new IPAddress(byteFromIP);
 					transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
 					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;

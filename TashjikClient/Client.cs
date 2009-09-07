@@ -85,7 +85,7 @@ namespace TashjikClient
 		}
 		private void requestBootStrapNode()
 		{
-			
+			Console.WriteLine("Entering requestBootStrapNode");
 #if SIM
 			
 			transportLayerCommunicator.register(ClientGuid, this);
@@ -113,13 +113,15 @@ namespace TashjikClient
 		
 		private void chkChord()
 		{
-			transportLayerCommunicator.register(ClientGuid, this);
+			Console.WriteLine("Entering chkChord");
+	
+			//transportLayerCommunicator.register(ClientGuid, this);
 		
 			Console.WriteLine("Creating new Chord overlay");
 			Guid chordInstanceGuid;
 			//IPAddress bootStrapIP =
 			requestBootStrapNode();
-			ChordServer chord;
+	/*		ChordServer chord;
 			
 			if(bootStrapIP == null)
 			{
@@ -128,7 +130,7 @@ namespace TashjikClient
 			}
 			else
 				chord = (ChordServer)(TashjikServer.joinExisting(bootStrapIP, new Guid("0c400880-0722-420e-a792-0a764d6539ee"), chordInstanceGuid));
-			
+	*/		
 
 /*			String strKey = "key";
 			String strData = "data";
@@ -171,13 +173,20 @@ namespace TashjikClient
 			//chord.beginGetData(key, data, putDataCallBack, null);
 */
 //Tashjik.Server.Node node = new Tashjik.Server.Node();
-			
+			Console.WriteLine("Please enter IP address of node to send msg to");
+			String IP = Console.ReadLine();
 		}
 		
 		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 		
 			Console.WriteLine("Msg received");
+			Console.WriteLine();
+			Console.WriteLine();
+			Console.WriteLine();
+			Console.WriteLine();
+			Console.WriteLine();
+			
 			receiveBootStrapNode();
 		}
 

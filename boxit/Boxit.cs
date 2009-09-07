@@ -96,7 +96,7 @@ public static class Boxit
 	
 			static ManualResetEvent allDone = new ManualResetEvent(false);
 		
-		internal class SocketState
+			internal class SocketState
 			{
 				public Socket sock;
 				public byte[] buffer = new byte[1024];
@@ -133,7 +133,7 @@ public static class Boxit
     	            
         	        SocketState socketState = new SocketState();
 					socketState.sock = listener;
-					socketState.transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
+					socketState.transportLayerCommunicator = null; //TransportLayerCommunicator.getRefTransportLayerCommunicator();
             	    listener.BeginAccept( 
                 	    new AsyncCallback(beginAcceptCallback_forStartListening),
                     	socketState );
@@ -230,7 +230,7 @@ public static class Boxit
 			
 			String strFromIP = null;
 			String strToIP = null;
-			String strOverlayGuid;
+			String strOverlayGuid = null;
 			byte[] byteOverlayGuid; 
 			Guid overlayGuid = new Guid();;
 			String strBuffer;
@@ -277,12 +277,56 @@ public static class Boxit
 					
 					//byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
 					//IPAddress fromIP = new IPAddress(byteFromIP);
-					sendMsg(strToIP, byteContent, 0, byteContent.Length);
+					processMsg(strFromIP, strToIP, strOverlayGuid, strBuffer, byteContent, 0, byteContent.Length);
 					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;
 				}
 			}
 		}
 		
+		static Guid overlayInstanceGuid;
+		static List<String> strBootstrapNodes = new List<String>();
+		
+		static void processMsg(String strFromIP, String strToIP, String strOverlayGuid, string extractedMsg, byte[] completeMsg, int offset, int size)
+		{
+			if(String.Compare(strToIP, "127.0.0.1") == 0)
+			{
+				Console.WriteLine("Msg for server!");
+				if(String.Compare(extractedMsg, "bootStrap request") == 0)
+				{
+					Console.WriteLine("Msg to server: bootStrap request");
+					if(strBootstrapNodes.Count == 0)
+					{
+						Console.WriteLine("Empty BootstrapNodes");
+						StringBuilder concatenatedMsg = new StringBuilder();
+						concatenatedMsg.Append(strToIP);
+						concatenatedMsg.Append('\0', 1);
+						concatenatedMsg.Append(strFromIP);
+						concatenatedMsg.Append('\0', 1);
+						concatenatedMsg.Append(strOverlayGuid);
+						concatenatedMsg.Append('\0', 1);
+						byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
+						concatenatedMsg.Append(Encoding.ASCII.GetString(msg));
+						concatenatedMsg.Append('\0', 1);
+						concatenatedMsg.Append('\n', 0);
+						
+						String strCompositeMsg = concatenatedMsg.ToString();
+						int compositeMsgLen    = strCompositeMsg.Length;
+						byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+				
+						sendMsg(strFromIP, compositeMsg, 0, compositeMsgLen);
+					}
+						
+				}
+			}
+			else
+			{
+				Console.WriteLine("Msg for some other client");
+				sendMsg(strToIP, completeMsg, offset, size);
+			}
+				
+				
+				
+		}
 		static void sendMsg(String strToIP, byte[] msg, int offset, int size)
 		{
 			Triplet triplet;
