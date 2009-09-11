@@ -108,17 +108,19 @@ namespace Tashjik.Tier0
 			private readonly Socket sock;
 			private readonly Queue<Msg> msgQueue = new Queue<Msg>();
 			private ConnectionState connectionState;
-			private static readonly TransportLayerCommunicator transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
+			private readonly TransportLayerCommunicator transportLayerCommunicator; // = TransportLayerCommunicator.getRefTransportLayerCommunicator();
 			
-			public SockMsgQueue(IPAddress IP)
+			public SockMsgQueue(IPAddress IP, TransportLayerCommunicator transportLayerCommunicator)
 			{
+				this.transportLayerCommunicator = transportLayerCommunicator;
 				this.IP = IP;
 				sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 				connectionState = ConnectionState.NOT_CONNECTED;
 			}
 			
-			public SockMsgQueue(Socket sock)
+			public SockMsgQueue(Socket sock, TransportLayerCommunicator transportLayerCommunicator)
 			{
+				this.transportLayerCommunicator = transportLayerCommunicator;
 				this.sock = sock;
 				this.IP = ((IPEndPoint)(sock.RemoteEndPoint)).Address;
 				if(sock.Connected)
@@ -177,6 +179,8 @@ namespace Tashjik.Tier0
 			{
 				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection ENTER");
+				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				connectionState = ConnectionState.WAITING_TO_CONNECT;
 #if SIM
 				int iPortNo = System.Convert.ToInt16("2335"); //Boxit port
@@ -190,6 +194,8 @@ namespace Tashjik.Tier0
 				
 				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection endPoint created");
+				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				/*
 				SocketState socketState = new SocketState();
 				socketState.sock = sock;
@@ -201,9 +207,12 @@ namespace Tashjik.Tier0
 				
 				socketState.transportLayerCommunicator = transportLayerCommunicator;
 			*/	AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
-				
+				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection before calling beginConnect");					
 				sock.BeginConnect(ipEnd, beginConnectCallBack, this);
+				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection EXIT");
 				
 			}
@@ -223,7 +232,7 @@ namespace Tashjik.Tier0
 			public void dispatchMsg()
 			{
 //				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg ENTER");
-				
+
 				if(connectionState == ConnectionState.NOT_CONNECTED)
 				{
 					establishRemoteConnection();
@@ -247,7 +256,8 @@ namespace Tashjik.Tier0
 					return;
 				Console.Write("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msgQueue.Count =");
 				Console.WriteLine(msgQueue.Count);
-				
+				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				int msgQueueCount = msgQueue.Count;
 				Msg tempMsg;
 				StringBuilder concatenatedMsg = new StringBuilder();
@@ -283,9 +293,12 @@ namespace Tashjik.Tier0
 			    so2.sock = sock;
 			    Console.Write("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msg to be sent = ");
 			    Console.WriteLine(strCompositeMsg);
+			    Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 			    Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg finally calling beginSend on the socket");
 			    sock.BeginSend(compositeMsg, 0, compositeMsgLen, f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), so2);
-			    	    
+			    Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);	    
 					
         		Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg EEXIT");
 			}
@@ -318,10 +331,13 @@ namespace Tashjik.Tier0
 
 		public void register(Guid guid, ISink sink)
 		{
-			
+			Console.WriteLine("TransportLayerCommunicator::register ADD to overlayRegistry");
 			overlayRegistry.Add(guid, sink);
-
+			Console.Write("TransportLayerCommunicator::register overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 		}
+			
+
 
 		public void EndTransportLayerSend(IPAddress IP)
 		{
@@ -339,7 +355,8 @@ namespace Tashjik.Tier0
 		public void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState)
 		{
 			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend ENTER");
-	
+			Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 			Msg msg = new Msg(buffer, offset, size, overlayGuid, callBack, appState);
 			
 			SockMsgQueue sockMsgQueue;
@@ -347,7 +364,7 @@ namespace Tashjik.Tier0
 				sockMsgQueue.enqueue(msg);
 			else
 			{
-				sockMsgQueue = new SockMsgQueue(IP);
+				sockMsgQueue = new SockMsgQueue(IP, this);
 				sockMsgQueue.enqueue(msg);
 				try
 				{
@@ -365,6 +382,8 @@ namespace Tashjik.Tier0
 						BeginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
 				}
 			}
+			Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 			Console.WriteLine("TransportLayerCommunicator::beginTransportLayerSend EXIT");
 		}
 				
@@ -376,8 +395,13 @@ namespace Tashjik.Tier0
 		{
 			Console.WriteLine("TransportLayerCommuicator::Receive ENTER");
 			String s = Encoding.ASCII.GetString(buffer);
+			Console.Write("TransportLayerCommuicator::Receive overlayGuid = ");
+			Console.WriteLine(overlayGuid.ToString());
+			Console.Write("TransportLayerCommuicator::Receive data received = ");
 			Console.WriteLine(s);
 			
+			Console.Write("TransportLayerCommuicator::Receive overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 			ISink sink;
 			if(overlayRegistry.TryGetValue(overlayGuid, out sink))
 				sink.notifyMsg(fromIP, buffer, offset, size);
@@ -649,6 +673,8 @@ namespace Tashjik.Tier0
 		
 		private void StartListening()
 		{
+			Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 			//IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
         	//	IPAddress ipAddress = ipHostInfo.AddressList[0];
 #if SIM
@@ -661,7 +687,8 @@ namespace Tashjik.Tier0
         	Console.Write(byteIP);
         	Console.Write(" Port=");
         	Console.WriteLine(iPortNo);
-        	
+        	Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 			IPAddress ipAddress = new IPAddress(byteIP);
 
         	IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
@@ -681,7 +708,8 @@ namespace Tashjik.Tier0
     	            // Start an asynchronous socket to listen for connections.
     	            Console.Write("TrnsportLayerComm::Waiting for a connection at port ");
     	            Console.WriteLine(iPortNo);
-        	        
+        	        Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
         	        SocketState socketState = new SocketState();
 					socketState.sock = listener;
 					socketState.transportLayerCommunicator = this;
@@ -713,7 +741,7 @@ namespace Tashjik.Tier0
         	Socket handler = listener.EndAccept(result);
 			TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
 			
-        	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler);
+        	SockMsgQueue sockMsgQueue = new SockMsgQueue(handler, transportLayerCommunicator );
         	IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
         	try
 			{
@@ -836,7 +864,9 @@ namespace Tashjik.Tier0
         static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
         {
 	        Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
-            String[] split = content.Split(new char[] {'\0'});
+            Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
+	        String[] split = content.Split(new char[] {'\0'});
             String strOverlayGuid;
             byte[] byteOverlayGuid;
             Guid overlayGuid = new Guid();;
@@ -884,7 +914,8 @@ namespace Tashjik.Tier0
 		private void messageDispatch()
 		{
 			Console.WriteLine("TransportLayerCommunicator::messageDispatch ENTER");
-			
+			Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
+			Console.WriteLine(overlayRegistry.Count);
 			//Dictionary<IPAddress, SockMsgQueue>.Enumerator enumerator = commRegistry.GetEnumerator();
 			IEnumerator enumerator; 
 			while(true)
@@ -911,6 +942,8 @@ namespace Tashjik.Tier0
 	
 		}
 #if SIM
+		private static Dictionary<String, TransportLayerCommunicator> transportLayerCommunicatorRegistry = new Dictionary<String, TransportLayerCommunicator>();
+		private static Object transportLayerCommunicatorRegistryLock = new Object();
 #else
 		//singleton
 		private static TransportLayerCommunicator transportLayerCommunicator = null;
@@ -920,9 +953,26 @@ namespace Tashjik.Tier0
 		
 		public static TransportLayerCommunicator getRefTransportLayerCommunicator()
 		{
+			Console.WriteLine("TransportLayerCommunicator::getRefTransportLayerCommunicator ENTER");
 #if SIM
-			return new TransportLayerCommunicator();
-#else			
+			Console.Write("IPAddress=");
+			Console.Write(UtilityMethod.GetLocalHostIP().ToString());
+			Console.Write("    Port=");
+			Console.WriteLine(UtilityMethod.GetPort());
+			
+			TransportLayerCommunicator transportLayerCommunicator;
+			lock(transportLayerCommunicatorRegistryLock)
+			{
+				if(!(transportLayerCommunicatorRegistry.TryGetValue(UtilityMethod.GetLocalHostIP().ToString(), out transportLayerCommunicator)))
+				{
+					transportLayerCommunicator = new TransportLayerCommunicator();
+					transportLayerCommunicatorRegistry.Add(UtilityMethod.GetLocalHostIP().ToString(), transportLayerCommunicator);
+				}
+			}
+			return transportLayerCommunicator;
+			
+			
+#else
 			lock(transportLayerCommunicatorLock)
 			{
 				if(transportLayerCommunicator!=null)
