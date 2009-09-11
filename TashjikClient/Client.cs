@@ -101,9 +101,32 @@ namespace TashjikClient
 #endif			
 		}
 		
-		private void receiveBootStrapNode()
+		private void receiveBootStrapNode(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
+			Console.WriteLine("Client::receiveBootStrapNode ENTER");
+			//Console.WriteLine(Encoding.ASCII.GetString(buffer));
+			ChordServer chord;
 			
+			if(String.Compare(Encoding.ASCII.GetString(buffer), "no bootstrapnode") == 0)
+			{
+				Console.WriteLine("Client::receiveBootStrapNode NO bootstrapnode received");
+			
+				chord = (ChordServer)(TashjikServer.createNew("Chord")); //new Guid("0c400880-0722-420e-a792-0a764d6539ee")));
+				Guid chordInstanceGuid = chord.getGuid();
+				Console.Write("Client::receiveBootStrapNode Created Chord GUID=");
+				Console.WriteLine(chordInstanceGuid.ToString());
+				byte[] byteIP = {127, 0, 0, 1};
+				IPAddress ipAddress = new IPAddress(byteIP);
+				byte[] msg = System.Text.Encoding.ASCII.GetBytes(chordInstanceGuid.ToString());
+				transportLayerCommunicator.BeginTransportLayerSend(ipAddress, msg, 0, chordInstanceGuid.ToString().Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
+
+			}
+			else
+			{
+				Console.WriteLine("Client::receiveBootStrapNode bootstrapnode RECEIVED");
+				Console.Write("RECEIVED bootstrapnode=");
+				Console.WriteLine(Encoding.ASCII.GetString(buffer));
+			}
 		}
 			
 		private void initializeChord()
@@ -187,7 +210,7 @@ namespace TashjikClient
 			Console.WriteLine();
 			Console.WriteLine();
 			
-			receiveBootStrapNode();
+			receiveBootStrapNode(fromIP, buffer, offset, size);
 		}
 
 		Guid ClientGuid = new Guid("2527df07-e8c5-4f0d-a46e-effa26cfcb0d");

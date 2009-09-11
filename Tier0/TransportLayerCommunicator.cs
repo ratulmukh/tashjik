@@ -245,6 +245,8 @@ namespace Tashjik.Tier0
 				//the next loop will handle data if it is inside
 				if(msgQueue.Count == 0)
 					return;
+				Console.Write("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msgQueue.Count =");
+				Console.WriteLine(msgQueue.Count);
 				
 				int msgQueueCount = msgQueue.Count;
 				Msg tempMsg;
@@ -279,6 +281,9 @@ namespace Tashjik.Tier0
 				SocketFlags f = new SocketFlags();  // :O
 			    SocketState so2 = new SocketState();
 			    so2.sock = sock;
+			    Console.Write("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msg to be sent = ");
+			    Console.WriteLine(strCompositeMsg);
+			    Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg finally calling beginSend on the socket");
 			    sock.BeginSend(compositeMsg, 0, compositeMsgLen, f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), so2);
 			    	    
 					

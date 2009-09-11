@@ -197,6 +197,7 @@ public static class Boxit
 			int bytesRead = sock.EndReceive(result);
 			if(bytesRead > 0)
 			{
+				socketState.concatenatedString.Remove(0, socketState.concatenatedString.Length);
 				socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
 				
 				if(content.IndexOf("\n") > -1)
@@ -225,7 +226,12 @@ public static class Boxit
 		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
 		{
 			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
+			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer content=");
+			Console.WriteLine(content);
+			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer split contents=");
 			String[] split = content.Split(new char[] {'\0'});
+			foreach (String s in split)
+				Console.WriteLine(s);
 			byte[] byteContent = System.Text.Encoding.ASCII.GetBytes(content);
 			
 			String strFromIP = null;
@@ -277,50 +283,149 @@ public static class Boxit
 					
 					//byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
 					//IPAddress fromIP = new IPAddress(byteFromIP);
-					processMsg(strFromIP, strToIP, strOverlayGuid, strBuffer, byteContent, 0, byteContent.Length);
+					
+					IncomingMsg incomingMsg = new IncomingMsg();
+					incomingMsg.strFromIP = strFromIP;
+					incomingMsg.strToIP = strToIP;
+					incomingMsg.strOverlayGuid = strOverlayGuid;
+					incomingMsg.extractedMsg = strBuffer;
+					incomingMsg.completeMsg = byteContent;
+					incomingMsg.offset = 0;
+					incomingMsg.size = byteContent.Length;
+					ParameterizedThreadStart processMsgJob = new ParameterizedThreadStart(processMsg);
+					Thread processMsgThread = new Thread(processMsgJob);
+					processMsgThread.Start(incomingMsg);
+					//processMsg(strFromIP, strToIP, strOverlayGuid, strBuffer, byteContent, 0, byteContent.Length);
 					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;
 				}
 			}
 		}
 		
+		struct IncomingMsg
+		{
+			public String strFromIP;
+			public String strToIP;
+			public String strOverlayGuid; 
+			public string extractedMsg;
+			public byte[] completeMsg; 
+			public int offset; 
+			public int size;
+
+		}
+		
+		enum BootstrapState
+		{
+			NO_BOOTSTRAP,
+			REQUEST_RECEIVED,
+			NULL_RETURNED,
+			OVERLAY_INSTANCE_GUID_RETURNED,
+			OVERLAY_INSTANCE_GUID_RECEIVED
+		}
 		static Guid overlayInstanceGuid;
 		static List<String> strBootstrapNodes = new List<String>();
+		static BootstrapState bootstrapState = BootstrapState.NO_BOOTSTRAP;
+		static Object bootStrapLock = new Object();
+		static ManualResetEvent bootStrapAllDone = new ManualResetEvent(false);
 		
-		static void processMsg(String strFromIP, String strToIP, String strOverlayGuid, string extractedMsg, byte[] completeMsg, int offset, int size)
+		//static void processMsg(String strFromIP, String strToIP, String strOverlayGuid, string extractedMsg, byte[] completeMsg, int offset, int size)
+		static void processMsg(Object incomingMsg)
 		{
+			String strFromIP = ((IncomingMsg)incomingMsg).strFromIP;
+			String strToIP = ((IncomingMsg)incomingMsg).strToIP;
+			String strOverlayGuid = ((IncomingMsg)incomingMsg).strOverlayGuid;
+			string extractedMsg = ((IncomingMsg)incomingMsg).extractedMsg;
+			byte[] completeMsg = ((IncomingMsg)incomingMsg).completeMsg;
+			int offset = ((IncomingMsg)incomingMsg).offset;
+			int size = ((IncomingMsg)incomingMsg).size;
+				
 			if(String.Compare(strToIP, "127.0.0.1") == 0)
 			{
-				Console.WriteLine("Msg for server!");
+				Console.WriteLine("Boxit::processMsg Msg for server!");
 				if(String.Compare(extractedMsg, "bootStrap request") == 0)
 				{
-					Console.WriteLine("Msg to server: bootStrap request");
-					if(strBootstrapNodes.Count == 0)
+					Console.WriteLine("Boxit::processMsg Msg to server: bootStrap request");
+
+					lock(bootStrapLock)
 					{
-						Console.WriteLine("Empty BootstrapNodes");
-						StringBuilder concatenatedMsg = new StringBuilder();
-						concatenatedMsg.Append(strToIP);
-						concatenatedMsg.Append('\0', 1);
-						concatenatedMsg.Append(strFromIP);
-						concatenatedMsg.Append('\0', 1);
-						concatenatedMsg.Append(strOverlayGuid);
-						concatenatedMsg.Append('\0', 1);
-						byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
-						concatenatedMsg.Append(Encoding.ASCII.GetString(msg));
-						concatenatedMsg.Append('\0', 1);
-						concatenatedMsg.Append('\n', 0);
+						//bootStrapAllDone.WaitOne();
+						Console.WriteLine("Boxit::processMsg bootStrap request : inside lock");
+						//bootstrapState = BootstrapState.REQUEST_RECEIVED;
+						if(strBootstrapNodes.Count == 0)
+						{
+							Console.WriteLine("Boxit::processMsg Empty BootstrapNodes");
+							//if(bootstrapState == BootstrapState.NULL_RETURNED)
+							//	bootStrapAllDone.WaitOne();
+							//else
+							bootStrapAllDone.Reset();
+							StringBuilder concatenatedMsg = new StringBuilder();
+							concatenatedMsg.Append(strToIP);
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strFromIP);
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strOverlayGuid);
+							concatenatedMsg.Append('\0', 1);
+							byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
+							concatenatedMsg.Append(Encoding.ASCII.GetString(msg));
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append('\n', 0);
 						
-						String strCompositeMsg = concatenatedMsg.ToString();
-						int compositeMsgLen    = strCompositeMsg.Length;
-						byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+							String strCompositeMsg = concatenatedMsg.ToString();
+							int compositeMsgLen    = strCompositeMsg.Length;
+							byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
 				
-						sendMsg(strFromIP, compositeMsg, 0, compositeMsgLen);
+							Console.WriteLine("Boxit::processMsg sending NULL back to client");
+							sendMsg(strFromIP, compositeMsg, 0, compositeMsgLen);
+							bootstrapState = BootstrapState.NULL_RETURNED;
+							bootStrapAllDone.WaitOne();
+						}
+						else
+						{
+							Console.WriteLine("Boxit::processMsg NON Empty BootstrapNodes");
+							
+							StringBuilder concatenatedMsg = new StringBuilder();
+							concatenatedMsg.Append(strToIP);
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strFromIP);
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strOverlayGuid);
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strBootstrapNodes[0]);
+							//concatenatedMsg.Append('\0', 1);                  
+							concatenatedMsg.Append(overlayInstanceGuid);
+							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append('\n', 0);
+						
+							String strCompositeMsg = concatenatedMsg.ToString();
+							int compositeMsgLen    = strCompositeMsg.Length;
+							byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+				
+							Console.WriteLine("Boxit::processMsg sending overlay back to client");
+							sendMsg(strFromIP, compositeMsg, 0, compositeMsgLen);
+							bootstrapState = BootstrapState.OVERLAY_INSTANCE_GUID_RETURNED;
+						}
 					}
 						
+				}
+				else if(bootstrapState == BootstrapState.NULL_RETURNED)
+				{
+					Console.WriteLine("Boxit::processMsg overlayInstanceGuid received from client");
+					overlayInstanceGuid = new Guid(extractedMsg);
+					//lock(bootStrapLock)
+					{
+						strBootstrapNodes.Add(strFromIP);
+					}
+					bootstrapState = BootstrapState.OVERLAY_INSTANCE_GUID_RECEIVED;
+					bootStrapAllDone.Set();
+				}
+				else
+				{
+					Console.WriteLine("Boxit::processMsg ?????");
+					
 				}
 			}
 			else
 			{
-				Console.WriteLine("Msg for some other client");
+				Console.WriteLine("Boxit::processMsg Msg for some other client");
 				sendMsg(strToIP, completeMsg, offset, size);
 			}
 				
