@@ -81,8 +81,9 @@ namespace Tashjik.Tier2
 		public void setProxyController(ProxyNodeController c)
 		{
 			//need to handle synchronised calls here
-			if(proxyController!=null)
-			proxyController = c;
+			//if(proxyController!=null) WTF is this? :O
+			if(proxyController == null)
+				proxyController = c;
 		}	
 
 
@@ -440,13 +441,16 @@ namespace Tashjik.Tier2
 
 		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
+			Console.WriteLine("ChordProxyNode::beginFindSuccessor ENTER");
 			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 			thisAppState.callBack = findSuccessorCallBack;
 			thisAppState.obj = appState;
+			Console.WriteLine("ChordProxyNode::beginFindSuccessor before adding to findSuccessorRegistry");
 			findSuccessorRegistry.Add(queryHashedKey, thisAppState);
 			Msg msg = new Msg(Msg.TypeEnum.FIND_SUCCESSOR, (Object)queryHashedKey, (Object)queryingNode);
 			List<Msg> msgList = new List<Msg>();
 			msgList.Add(msg);
+			Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
 			proxyController.sendMsg((Object)msgList, this);
 		}
 

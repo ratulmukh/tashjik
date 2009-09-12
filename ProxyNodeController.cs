@@ -51,6 +51,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using Tashjik.Tier0;
 
 namespace Tashjik
 {
@@ -80,10 +81,18 @@ namespace Tashjik
 			
 		}
 */
+		private Tier0.TransportLayerCommunicator transportLayerCommunicator;
+			
 		class ProxyNodeRegistry
 		{
 			List<ProxyNodeData> proxyDataList;
-	
+			//Tier0.TransportLayerCommunicator transportLayerCommunicator;
+			public ProxyNodeRegistry()
+			{
+				proxyDataList = new List<ProxyNodeData>();
+				//transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator();
+			}
+			
 			class ProxyNodeData
 			{
 				public ProxyNode proxyNode;
@@ -104,15 +113,18 @@ namespace Tashjik
 
 			public void AddData(ProxyNode n, Object data)
 			{
+				Console.WriteLine("ProxyNodeController::ProxyNodeData::AddData ENTER");
 				foreach(ProxyNodeData proxyNodeData in proxyDataList)
 				{
 					if(n==proxyNodeData.proxyNode)
 					{
+						Console.WriteLine("ProxyNodeController::ProxyNodeData::AddData proxyNode found");
 						proxyNodeData.AddDataToQueue(data);
 						return;
 					}
 				}
 				//proxyNode not existing; so create 1
+				Console.WriteLine("ProxyNodeController::ProxyNodeData::AddData proxyNode not existing; so creating 1");
 				ProxyNodeData npd = new ProxyNodeData(n);
 				npd.AddDataToQueue(data);
 				proxyDataList.Add(npd);
@@ -125,10 +137,7 @@ namespace Tashjik
 			}
 
 
-			public ProxyNodeRegistry()
-			{
-				proxyDataList = new List<ProxyNodeData>();
-			}
+			
 
 			public ProxyNode findProxyNode(IPAddress ip)
 			{
@@ -151,7 +160,8 @@ namespace Tashjik
 			
 		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
-			
+			//WE NEED TO IMPLEMENT THIS
+			//AND NOT THE FUNCTION BELOW
 		}
 	
 		public void notifyMsg(IPAddress fromIP, Object data)
@@ -162,9 +172,9 @@ namespace Tashjik
 				proxyFound.beginNotifyMsgRec(fromIP, data, null, null);
 			}
 			//RELAX: yes i know this is wrong; have to change it
-			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException)
+			catch (Exception)
 			{
-				ProxyNode n = createProxyNodeDelegate(fromIP);
+				ProxyNode n = createProxyNodeDelegate(fromIP, this);
 				proxyNodeRegistry.AddNewEntry(n);
 				n.beginNotifyMsgRec(fromIP, data, null, null);
 			}
@@ -173,15 +183,18 @@ namespace Tashjik
 		
 		public ProxyNode getProxyNode(IPAddress IP)
 		{
+			Console.WriteLine("ProxyNodeController::getProxyNode ENTER");
 			try
 			{
 				ProxyNode proxyFound = proxyNodeRegistry.findProxyNode(IP);
+				Console.WriteLine("ProxyNodeController::getProxyNode proxyFound");
 				return proxyFound;
 			}
 			//RELAX: yes i know this is wrong; have to change it
-			catch (Tashjik.Common.Exception.LocalHostIPNotFoundException)
+			catch (Exception)
 			{
-				ProxyNode n = createProxyNodeDelegate(IP);
+				Console.WriteLine("ProxyNodeController::getProxyNode proxy NOT Found: creating a new 1 and adding to registry");
+				ProxyNode n = createProxyNodeDelegate(IP, this);
 				proxyNodeRegistry.AddNewEntry(n);
 				return n;
 			}
@@ -204,11 +217,16 @@ namespace Tashjik
 			strOverlayType = ovType;
 		}
 		*/
-		public delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP);
+		public delegate ProxyNode CreateProxyNodeDelegate(IPAddress IP, ProxyNodeController proxyNodeController);
 		
-		public ProxyNodeController(CreateProxyNodeDelegate createProxyNodeDelegate)
+		private Guid overlayInstanceGuid;
+		
+		public ProxyNodeController(CreateProxyNodeDelegate createProxyNodeDelegate, Guid overlayInstanceGuid)
 		{
+			this.overlayInstanceGuid = overlayInstanceGuid;
 			this.createProxyNodeDelegate = createProxyNodeDelegate;
+			transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator();
+			transportLayerCommunicator.register(overlayInstanceGuid, this);
 		}
 		
 		//private String strOverlayType;
@@ -226,6 +244,7 @@ namespace Tashjik
 
 		public void sendMsg(Object data, ProxyNode sender)
 		{
+			Console.WriteLine("ProxyNodeController::sendMsg ENTER AddData to proxyNodeRegistry");
 			proxyNodeRegistry.AddData(sender, data);
 		}
 

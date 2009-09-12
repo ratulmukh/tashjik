@@ -32,44 +32,44 @@ namespace Tashjik
 		
 		internal OverlayServer createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
-			Console.WriteLine("OverlayServer::createServer ENTER");
+			Console.WriteLine("OverlayServerFactory::createServer ENTER");
 			Type overlayServerType = null; 
 			if(overlayServerTypeRegistry.TryGetValue(strOverlayType, out overlayServerType))
 			{
-				Console.WriteLine("OverlayServer::createServer overlayServerTypeRegistry.TryGetValue SUCCEEDED");
-				Console.WriteLine("OverlayServer::createServer EXIT ");
+				Console.WriteLine("OverlayServerFactory::createServer overlayServerTypeRegistry.TryGetValue SUCCEEDED");
+				Console.WriteLine("OverlayServerFactory::createServer EXIT ");
 				return (OverlayServer)(Activator.CreateInstance(overlayServerType));
 			}
 			else
 			{
-				Console.WriteLine("OverlayServer::createServer overlayServerTypeRegistry.TryGetValue FAILED");
+				Console.WriteLine("OverlayServerFactory::createServer overlayServerTypeRegistry.TryGetValue FAILED");
 				Assembly overlayAssembly = Assembly.Load(strOverlayType);
 				if(overlayAssembly == null)
-					Console.WriteLine("OverlayServer::createServer assembly load FAILED");
+					Console.WriteLine("OverlayServerFactory::createServer assembly load FAILED");
 				else
-					Console.WriteLine("OverlayServer::createServer assembly loaded");
+					Console.WriteLine("OverlayServerFactory::createServer assembly loaded");
 				String strOverlayServerType = "Tashjik.Tier2." + strOverlayType + "Server";
 				Console.WriteLine(strOverlayServerType);
 				overlayServerType = overlayAssembly.GetType(strOverlayServerType);
 				if(overlayServerType == null)
-					Console.WriteLine("OverlayServer::createServer type retrieve FAILED");
+					Console.WriteLine("OverlayServerFactory::createServer type retrieve FAILED");
 				else
-					Console.WriteLine("OverlayServer::createServer type retrieved");
+					Console.WriteLine("OverlayServerFactory::createServer type retrieved");
 				overlayServerTypeRegistry.Add(strOverlayType, overlayServerType );
-				Console.WriteLine("OverlayServer::createServer type added to registry");		
+				Console.WriteLine("OverlayServerFactory::createServer type added to registry");		
 				
 				//Activator.CreateInstance is very slow and should be optimized 
 				if(joinOtherIP==null || joinOtherGuid==null)
 				{
-					Console.WriteLine("OverlayServer::createServer joinOtherIP==null || joinOtherGuid==null");
-					Console.WriteLine("OverlayServer::createServer EXIT ");
+					Console.WriteLine("OverlayServerFactory::createServer joinOtherIP==null || joinOtherGuid==null");
+					Console.WriteLine("OverlayServerFactory::createServer EXIT ");
 					return (OverlayServer)(Activator.CreateInstance(overlayServerType));
 				}
 				else
 				{   
-					Console.WriteLine("OverlayServer::createServer NOT [joinOtherIP==null || joinOtherGuid==null]");
+					Console.WriteLine("OverlayServerFactory::createServer NOT [joinOtherIP==null || joinOtherGuid==null]");
 					Object[] constructorArgs = new Object[2]{joinOtherIP, joinOtherGuid};
-					Console.WriteLine("OverlayServer::createServer EXIT ");
+					Console.WriteLine("OverlayServerFactory::createServer EXIT ");
 					return (OverlayServer)(Activator.CreateInstance(overlayServerType, constructorArgs));
 				}
 

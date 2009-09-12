@@ -157,11 +157,15 @@ namespace Tashjik
 
 		public  OverlayServer joinExisting(IPAddress IP, Guid guid)
 		{
+			Console.WriteLine("OverlayController::joinExisting ENTER");
 			OverlayServer overlayServer = overlayServerFactory.createServer(strOverlayType, IP, guid);
+			Console.WriteLine("OverlayController::joinExisting overlayServer created");
 			Tier0.TransportLayerCommunicator.ISink sink = overlayServer.getProxyNodeController();
 			//Server overlay = new Server(IP, guid, (Tier2.Common.ProxyController)(sink));
 			OverlayInstanceInfo overlayInstanceInfo = new OverlayInstanceInfo(overlayServer, sink);
 			overlayInstanceRegistry.Add(overlayServer.getGuid(), overlayInstanceInfo);
+			Console.WriteLine("OverlayController::joinExisting overlayServer added to registry");
+			Console.WriteLine("OverlayController::joinExisting EXIT");
 			return overlayServer;
 		}
 /*

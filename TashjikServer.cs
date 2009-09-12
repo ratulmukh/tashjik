@@ -158,37 +158,51 @@ namespace Tashjik
 		private static OverlayController BATONController = null;
 		private static OverlayController pastryController = null;
 		
+		private static Object chordCreationLock = new Object();
+		private static Object BATONCreationLock = new Object();
+		private static Object pastryCreationLock = new Object();
+		
+		
 		private static OverlayController getRefChordController(String strOverlayType)
 		{
-			if(chordController != null)
-				return chordController;
-			else
+			lock(chordCreationLock)
 			{
-				chordController = new OverlayController(overlayServerFactory, new Guid(chordGUID), strOverlayType);
-				return chordController;
+				if(chordController != null)
+					return chordController;
+				else
+				{
+					chordController = new OverlayController(overlayServerFactory, new Guid(chordGUID), strOverlayType);
+					return chordController;
+				}
 			}
 		}
 		
 		private static OverlayController getRefBATONController(String strOverlayType)
 		{
-			if(BATONController != null)
-				return BATONController;
-			else
+			lock(BATONCreationLock)
 			{
-				BATONController = new OverlayController(overlayServerFactory, new Guid(BATONGUID), strOverlayType);
-				return BATONController;
+				if(BATONController != null)
+					return BATONController;
+				else
+				{
+					BATONController = new OverlayController(overlayServerFactory, new Guid(BATONGUID), strOverlayType);
+					return BATONController;
+				}
 			}
 		}
 		
 		private static OverlayController getRefPastrydController(String strOverlayType)
 		{
-			if(pastryController != null)
-				return pastryController;
-			else
+			lock(pastryCreationLock)
 			{
-				//new guid to be added here
-				pastryController = new OverlayController(overlayServerFactory, new Guid(pastryGUID), strOverlayType);
-				return pastryController;
+				if(pastryController != null)
+					return pastryController;
+				else
+				{
+					//new guid to be added here
+					pastryController = new OverlayController(overlayServerFactory, new Guid(pastryGUID), strOverlayType);
+					return pastryController;
+				}
 			}
 		}
 	}

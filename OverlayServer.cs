@@ -74,9 +74,9 @@ namespace Tashjik
 		
 		private ProxyNodeController proxyNodeController;
 		
-		public OverlayServer(ProxyNodeController.CreateProxyNodeDelegate createProxyNodeDelegate)
+		public OverlayServer(ProxyNodeController.CreateProxyNodeDelegate createProxyNodeDelegate, Guid overlayInstanceGuid)
 		{
-			proxyNodeController = new ProxyNodeController(createProxyNodeDelegate);
+			proxyNodeController = new ProxyNodeController(createProxyNodeDelegate, overlayInstanceGuid);
 		}
 		
 		protected ProxyNode getProxyNode(IPAddress IP)

@@ -59,7 +59,7 @@ namespace Tashjik.Tier2
 	{
 		private readonly Guid guid;
 		internal readonly ChordRealNode thisNode;
-		internal readonly static ProxyNodeController chordproxyNodeController = new ProxyNodeController(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode));
+	//	internal readonly static ProxyNodeController chordproxyNodeController = new ProxyNodeController(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode));
 	
 		public override Guid getGuid()
 		{
@@ -70,24 +70,38 @@ namespace Tashjik.Tier2
 		{
 			
 		}
-		public ChordServer() : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode))
+		public ChordServer() : this(System.Guid.NewGuid()) //: base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode), guid = System.Guid.NewGuid())
 		{
-			guid = System.Guid.NewGuid();
+		
+		}
+		
+		private ChordServer(Guid overlayInstanceGuid) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode), overlayInstanceGuid)
+		{
+			Console.WriteLine("ChordServer::ChordServer ENTER");
+			guid = overlayInstanceGuid;
 			thisNode = new ChordRealNode();
 			ChordProxyNode.thisNode = thisNode;
 		}
-		
-		public ChordServer(IPAddress joinOtherIP, Guid joinOtherGuid, ProxyNodeController proxyController) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode))
+		public ChordServer(IPAddress bootStrapIP, Guid bootStrapGuid/*, ProxyNodeController proxyController*/) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode), bootStrapGuid)
 		{
-/*			guid = joinOtherGuid;
-			Node joinOtherNode = new ProxyNode(joinOtherIP, proxyController);
-			thisNode = new Node(joinOtherNode);
-*/
+			Console.WriteLine("ChordServer::ChordServer ENTER");
+			guid = bootStrapGuid;
+			thisNode = new ChordRealNode();
+			ChordProxyNode.thisNode = thisNode;
+			IChordNode bootStrapNode = getChordProxyNode(bootStrapIP);
+			init(bootStrapNode);
+		}
+		
+		private void init(IChordNode bootStrapNode)
+		{
+			thisNode.beginJoin(bootStrapNode, null, null);
 		}
 
-		private static ProxyNode createChordProxyNode(IPAddress IP)
+		private static ProxyNode createChordProxyNode(IPAddress IP, ProxyNodeController proxyNodeController)
 		{
-			return new ChordProxyNode(IP, chordproxyNodeController);
+			return new ChordProxyNode(IP, /*base.getProxyNodeController*/proxyNodeController);
+			//return new ChordProxyNode(IP, base.getProxyNodeController());
+			//return null;
 		}
 		
 		internal IChordNode getChordProxyNode(IPAddress IP)
@@ -181,10 +195,10 @@ namespace Tashjik.Tier2
 			Console.WriteLine("ChordServer::processFindSuccessorForPutData EXIT");
 		}
 
-		public void joinOther(IPAddress IP, Guid giud)
-		{
+		//public void joinOther(IPAddress IP, Guid giud)
+		//{
 			//thisNode.initiateJoin(IP, giud);
-		}
+		//}
 	}
 
 }

@@ -390,7 +390,7 @@ public static class Boxit
 							concatenatedMsg.Append(strOverlayGuid);
 							concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append(strBootstrapNodes[0]);
-							//concatenatedMsg.Append('\0', 1);                  
+							concatenatedMsg.Append('\t', 1);                  
 							concatenatedMsg.Append(overlayInstanceGuid);
 							concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append('\n', 0);

@@ -383,34 +383,42 @@ namespace Tashjik.Tier2
 				//to be used only to pass application state while making async calls
 				class JoinAppState
 				{
-					public IChordNode successor;
+					//public IChordNode successor;
+					public Engine engine;
 					public AsyncCallback callback;
 					public Object appState;
 				}
 	
-				private void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+				public void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 				{
+					Console.WriteLine("ChordRealNode::Engine::beginJoin ENTER");
 					/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = joinCallBack;
 					thisAppState.obj = appState;
 					*/
-		
+					predecessor = null;
+					
 					JoinAppState joinAppState = new JoinAppState();
 					joinAppState.appState = appState;
-					joinAppState.successor = successor;
+					//joinAppState.successor = successor;
+					joinAppState.engine = this;
 					joinAppState.callback = joinCallBack;
 	
-					predecessor = null;
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForJoin);
+					Console.WriteLine("ChordRealNode::Engine::beginJoin before calling beginFindSuccessor");
 					joinNode.beginFindSuccessor(self, self, findSuccessorCallBack, joinAppState);
 
 				}
 
 				static void processFindSuccessorForJoin(IAsyncResult result)
 				{
+					Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin ENTER");
+					
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 					JoinAppState joinAppState = (JoinAppState)(iNode_Object.obj);
-					joinAppState.successor = iNode_Object.node;
+					IChordNode retrievedSuccessor = iNode_Object.node;
+					Engine engine = joinAppState.engine;
+					engine.successor = retrievedSuccessor;					//joinAppState.successor = iNode_Object.node;
 	
 					//Object thisAppState = Node_Object.obj;
 
@@ -420,9 +428,11 @@ namespace Tashjik.Tier2
 					if(!(callBack==null))
 					{
 						IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState1, true, true);
-						callBack(res);	
+						
+						callBack(res);
 					}
 				}
+				
 				private int leave()
 				{
 					return 1;
@@ -777,7 +787,10 @@ namespace Tashjik.Tier2
 		
 		}
 		*/
-
+		internal void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+		{
+			engine.beginJoin(joinNode, joinCallBack, appState);
+		}
 		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
 	

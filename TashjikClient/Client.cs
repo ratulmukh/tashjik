@@ -125,8 +125,37 @@ namespace TashjikClient
 			{
 				Console.WriteLine("Client::receiveBootStrapNode bootstrapnode RECEIVED");
 				Console.Write("RECEIVED bootstrapnode=");
-				Console.WriteLine(Encoding.ASCII.GetString(buffer));
+				String strBootStrapData = Encoding.ASCII.GetString(buffer);
+				Console.WriteLine(strBootStrapData);
+				String[] split = strBootStrapData.Split(new char[] {'\t'});
+				String strBootStrapIP = split[0];
+				String strBootStrapChordInstanceGuid = split[1];
+				Console.WriteLine(strBootStrapIP);
+				Console.WriteLine(strBootStrapChordInstanceGuid);
+			
+				chord = joinExistingChord(strBootStrapIP, strBootStrapChordInstanceGuid);
+				exereciseChord(chord);
 			}
+		}
+		
+		private ChordServer joinExistingChord(String strBootStrapIP, String strBootStrapChordInstanceGuid)
+		{
+			String[] strBootStrapIPsplit = strBootStrapIP.Split(new char[] {'.'});
+			
+			int IP0 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[0]));
+			int IP1 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[1]));
+			int IP2 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[2]));
+			int IP3 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[3]));
+			
+			byte[] byteBootStrapIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+			IPAddress bootStrapIP = new IPAddress(byteBootStrapIP);
+			ChordServer chord = (ChordServer)(TashjikServer.joinExisting(bootStrapIP, "Chord", new Guid(strBootStrapChordInstanceGuid)));
+			return chord;
+		}
+		
+		private void exereciseChord(ChordServer chord)
+		{
+			
 		}
 			
 		private void initializeChord()
