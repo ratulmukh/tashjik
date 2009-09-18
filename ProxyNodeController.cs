@@ -96,6 +96,8 @@ namespace Tashjik
 			class ProxyNodeData
 			{
 				public ProxyNode proxyNode;
+				//queue is defunct for the moment
+				//we will be sending data directly to transportLayerCommunicator
 				public Queue<Object> msgQueue;
 	
 				public ProxyNodeData(ProxyNode n)
@@ -241,11 +243,17 @@ namespace Tashjik
 		{
 			proxyNodeRegistry.AddNewEntry(proxyNode);
 		}
-
-		public void sendMsg(Object data, ProxyNode sender)
+		
+		public void sendMsg(Object data, ProxyNode n)
 		{
-			Console.WriteLine("ProxyNodeController::sendMsg ENTER AddData to proxyNodeRegistry");
-			proxyNodeRegistry.AddData(sender, data);
+			
+		}
+		
+		public void sendMsg(ProxyNode sender, byte[] buffer, int offset, int size, AsyncCallback callBack, Object appState)
+		{
+			Console.WriteLine("ProxyNodeController::sendMsg sending data to transportLayerCommunicator");
+			//proxyNodeRegistry.AddData(sender, data);
+			transportLayerCommunicator.BeginTransportLayerSend(sender.getIP(), buffer, offset, size, overlayInstanceGuid, callBack, appState);
 		}
 
 	}

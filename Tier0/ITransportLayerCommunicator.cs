@@ -57,7 +57,21 @@ namespace Tashjik.Tier0
 	{
 		void TransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
 		void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
+		void BeginTransportLayerSendTwoWay(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
+		void BeginTransportLayerSendTwoWayRelay(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState, Guid relayTicket);
+		
 		void EndTransportLayerSend(IPAddress IP);
 		void register(Guid guid, TransportLayerCommunicator.ISink sink);
+		void registerTwoWay(List<TwoWayCallbackData>);
+		        
+		public delegate ProxyNode TwoWayCallbackDelegate(Guid relayTicket, Object appState);
+
+		class TwoWayCallbackData
+		{
+			int twoWayId,
+			AsyncCallback callBack,
+			Object appState
+			
+		}
 	}
 }

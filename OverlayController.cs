@@ -118,7 +118,16 @@ namespace Tashjik
 		{
 			this.overlayServerFactory = overlayServerFactory ;
 			guid = g;
-			Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator().register(guid, this);
+			//Original plan was to have OverlayController
+			//to receive all messages from TransportLayerComm
+			//for the sake of decreasing contention there
+			//but I am not sure useful or important tht would be
+			//Experimental validation would be required
+			//Would help only at very high workloads
+			//Moreover it should offset the extra level of indirectio
+			//For now, let ever overlayInstance communicate directly with 
+			//TransportLayerCommunicator
+	//		Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator().register(guid, this);
 			this.strOverlayType = strOverlayType;
 		}
 

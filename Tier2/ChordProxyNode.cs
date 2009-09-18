@@ -78,7 +78,7 @@ namespace Tashjik.Tier2
 		private List<Tashjik.Common.AsyncCallback_Object> getPredecessorRegistry = new List<Tashjik.Common.AsyncCallback_Object>();
 		private Dictionary <byte[], Tashjik.Common.AsyncCallback_Object > getDataRegistry = new Dictionary<byte[], Tashjik.Common.AsyncCallback_Object >();
 
-		public void setProxyController(ProxyNodeController c)
+		private void setProxyController(ProxyNodeController c)
 		{
 			//need to handle synchronised calls here
 			//if(proxyController!=null) WTF is this? :O
@@ -442,16 +442,21 @@ namespace Tashjik.Tier2
 		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor ENTER");
-			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
-			thisAppState.callBack = findSuccessorCallBack;
-			thisAppState.obj = appState;
+			//Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+			//thisAppState.callBack = findSuccessorCallBack;
+			//thisAppState.obj = appState;
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before adding to findSuccessorRegistry");
+			
 			findSuccessorRegistry.Add(queryHashedKey, thisAppState);
 			Msg msg = new Msg(Msg.TypeEnum.FIND_SUCCESSOR, (Object)queryHashedKey, (Object)queryingNode);
 			List<Msg> msgList = new List<Msg>();
 			msgList.Add(msg);
+			
+			
+			
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
-			proxyController.sendMsg((Object)msgList, this);
+			//proxyController.sendMsg((Object)msgList, this);
+			proxyController.sendMsg(this, data, offset, size, findSuccessorCallBack, appState);
 		}
 
 

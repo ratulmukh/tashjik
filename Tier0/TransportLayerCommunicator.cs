@@ -257,7 +257,7 @@ namespace Tashjik.Tier0
 				Console.Write("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msgQueue.Count =");
 				Console.WriteLine(msgQueue.Count);
 				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
-			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
+				Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				int msgQueueCount = msgQueue.Count;
 				Msg tempMsg;
 				StringBuilder concatenatedMsg = new StringBuilder();
@@ -294,11 +294,11 @@ namespace Tashjik.Tier0
 			    Console.Write("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msg to be sent = ");
 			    Console.WriteLine(strCompositeMsg);
 			    Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
-			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
+				Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 			    Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg finally calling beginSend on the socket");
 			    sock.BeginSend(compositeMsg, 0, compositeMsgLen, f, new AsyncCallback(beginSendCallBackFor_DispatchMsg), so2);
 			    Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
-			Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);	    
+				Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);	    
 					
         		Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg EEXIT");
 			}
