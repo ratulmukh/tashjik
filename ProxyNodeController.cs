@@ -166,6 +166,13 @@ namespace Tashjik
 			//AND NOT THE FUNCTION BELOW
 		}
 	
+		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			Console.WriteLine("ProxyNodeController::notifyTwoWayMsg ENTER");
+			return null;
+		}
+		
+		
 		public void notifyMsg(IPAddress fromIP, Object data)
 		{
 			try

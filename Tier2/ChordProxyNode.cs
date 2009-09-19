@@ -442,9 +442,9 @@ namespace Tashjik.Tier2
 		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
 		{
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor ENTER");
-			//Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
-			//thisAppState.callBack = findSuccessorCallBack;
-			//thisAppState.obj = appState;
+			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+			thisAppState.callBack = findSuccessorCallBack;
+			thisAppState.obj = appState;
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before adding to findSuccessorRegistry");
 			
 			findSuccessorRegistry.Add(queryHashedKey, thisAppState);
@@ -456,7 +456,7 @@ namespace Tashjik.Tier2
 			
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
 			//proxyController.sendMsg((Object)msgList, this);
-			proxyController.sendMsg(this, data, offset, size, findSuccessorCallBack, appState);
+			//proxyController.sendMsg(this, data, offset, size, findSuccessorCallBack, appState);
 		}
 
 

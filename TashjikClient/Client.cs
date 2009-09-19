@@ -135,6 +135,8 @@ namespace TashjikClient
 			
 				chord = joinExistingChord(strBootStrapIP, strBootStrapChordInstanceGuid);
 				exereciseChord(chord);
+				
+				
 			}
 		}
 		
@@ -150,12 +152,23 @@ namespace TashjikClient
 			byte[] byteBootStrapIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
 			IPAddress bootStrapIP = new IPAddress(byteBootStrapIP);
 			ChordServer chord = (ChordServer)(TashjikServer.joinExisting(bootStrapIP, "Chord", new Guid(strBootStrapChordInstanceGuid)));
+			
+			//testing BeginTransportLayerSendTwoWay
+			//not the appropriate place to test
+			String strMsg = "testing BeginTransportLayerSendTwoWay";
+			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
+			transportLayerCommunicator.BeginTransportLayerSendTwoWay(bootStrapIP, msg, 0, strMsg.Length, ClientGuid, null, null); //new AsyncCallback(sendDataCallBack), ipAddress);
+			
+	
+			
+			
+			
 			return chord;
 		}
 		
 		private void exereciseChord(ChordServer chord)
 		{
-			
+		
 		}
 			
 		private void initializeChord()
@@ -240,6 +253,12 @@ namespace TashjikClient
 			Console.WriteLine();
 			
 			receiveBootStrapNode(fromIP, buffer, offset, size);
+		}
+		
+		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			Console.WriteLine("Client::notifyTwoWayMsg ENTER");
+			return null;
 		}
 
 		Guid ClientGuid = new Guid("2527df07-e8c5-4f0d-a46e-effa26cfcb0d");

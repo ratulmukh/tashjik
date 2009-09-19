@@ -83,6 +83,12 @@ namespace Tashjik
 		{
 			
 		}
+		
+		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			return null;
+		}
+		
 		public void notifyMsg(IPAddress fromIP, Object LowLevelData)
 		{
 			List<OverlayInstanceMsg> overlayInstanceMsgList = (List<OverlayInstanceMsg>)LowLevelData;

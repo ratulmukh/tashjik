@@ -220,6 +220,7 @@ public static class Boxit
 			NOTHING_EXTRACTED,
 			FROM_IP_EXTRACTED,
 			TO_IP_EXTRACTED,
+			CALLTYPE_EXTRACTED,
 			OVERLAYGUID_EXTRACTED,
 			MESSAGE_EXTRACTED
 		}
@@ -237,6 +238,7 @@ public static class Boxit
 			String strFromIP = null;
 			String strToIP = null;
 			String strOverlayGuid = null;
+			String strCallType = null;
 			byte[] byteOverlayGuid; 
 			Guid overlayGuid = new Guid();;
 			String strBuffer;
@@ -265,8 +267,18 @@ public static class Boxit
 				}
 				else if(msgExtractionStatus == MsgExtractionStatus.TO_IP_EXTRACTED)
 				{
-					strOverlayGuid = s;
+					strCallType = s;
 					Console.WriteLine("haha 1");
+					Console.WriteLine(s);
+					Console.WriteLine(s.Length);
+					//byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
+					//overlayGuid = new Guid(s);
+					msgExtractionStatus = MsgExtractionStatus.CALLTYPE_EXTRACTED;
+				}
+				else if(msgExtractionStatus == MsgExtractionStatus.CALLTYPE_EXTRACTED)
+				{
+					strOverlayGuid = s;
+					Console.WriteLine("haha 1.5");
 					Console.WriteLine(s);
 					Console.WriteLine(s.Length);
 					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
@@ -287,6 +299,7 @@ public static class Boxit
 					IncomingMsg incomingMsg = new IncomingMsg();
 					incomingMsg.strFromIP = strFromIP;
 					incomingMsg.strToIP = strToIP;
+					incomingMsg.strCallType = strCallType;
 					incomingMsg.strOverlayGuid = strOverlayGuid;
 					incomingMsg.extractedMsg = strBuffer;
 					incomingMsg.completeMsg = byteContent;
@@ -305,6 +318,7 @@ public static class Boxit
 		{
 			public String strFromIP;
 			public String strToIP;
+			public String strCallType;
 			public String strOverlayGuid; 
 			public string extractedMsg;
 			public byte[] completeMsg; 
@@ -332,6 +346,7 @@ public static class Boxit
 		{
 			String strFromIP = ((IncomingMsg)incomingMsg).strFromIP;
 			String strToIP = ((IncomingMsg)incomingMsg).strToIP;
+			String strCallType = ((IncomingMsg)incomingMsg).strCallType;
 			String strOverlayGuid = ((IncomingMsg)incomingMsg).strOverlayGuid;
 			string extractedMsg = ((IncomingMsg)incomingMsg).extractedMsg;
 			byte[] completeMsg = ((IncomingMsg)incomingMsg).completeMsg;
@@ -362,6 +377,8 @@ public static class Boxit
 							concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append(strFromIP);
 							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strCallType);
+             		        concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append(strOverlayGuid);
 							concatenatedMsg.Append('\0', 1);
 							byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
@@ -387,6 +404,8 @@ public static class Boxit
 							concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append(strFromIP);
 							concatenatedMsg.Append('\0', 1);
+							concatenatedMsg.Append(strCallType);
+             		        concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append(strOverlayGuid);
 							concatenatedMsg.Append('\0', 1);
 							concatenatedMsg.Append(strBootstrapNodes[0]);

@@ -50,11 +50,31 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Tashjik.Tier0
 {
 	public interface ITransportLayerCommunicator
 	{
+		
+	/*	class TwoWayCallbackData
+		{
+			public int twoWayId;
+			public TwoWayCallbackDelegate twoWayCallbackDelegate;
+			public TwoWayRelayCallbackDelegate twoWayRelayCallbackDelegate;
+			public Object appState;
+			
+		}
+
+		class Data
+		{
+			public byte[] buffer;
+			public int offset;
+			public int size;
+		
+		}
+*/	
 		void TransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
 		void BeginTransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
 		void BeginTransportLayerSendTwoWay(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState);
@@ -62,16 +82,16 @@ namespace Tashjik.Tier0
 		
 		void EndTransportLayerSend(IPAddress IP);
 		void register(Guid guid, TransportLayerCommunicator.ISink sink);
-		void registerTwoWay(List<TwoWayCallbackData>);
-		        
-		public delegate ProxyNode TwoWayCallbackDelegate(Guid relayTicket, Object appState);
 
-		class TwoWayCallbackData
-		{
-			int twoWayId,
-			AsyncCallback callBack,
-			Object appState
-			
-		}
+//		void registerTwoWay(Guid guid, List<TwoWayCallbackData> twoWayCallbackDataList);
+		        
+//		public delegate ProxyNode TwoWayCallbackDelegate(Guid relayTicket, Object appState);
+//		public delegate Data TwoWayCallbackDelegate(IPAddress fromIP, byte[] buffer, int offset, int size);
+//		public delegate Data TwoWayRelayCallbackDelegate(IPAddress fromIP, IPAddress originalFromIP, Guid relayTicket, byte[] buffer, int offset, int size);
+
+		
+
+
 	}
 }
+	
