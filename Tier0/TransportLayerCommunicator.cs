@@ -338,6 +338,7 @@ namespace Tashjik.Tier0
 		{
 			void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
 			Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
+			Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket);
 
 		}
 		
@@ -442,24 +443,39 @@ namespace Tashjik.Tier0
 		
 		public void BeginTransportLayerSendTwoWayRelay(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState, Guid relayTicket)
 		{
+			Console.WriteLine("TransportLayerCommunicator::BeginTransportLayerSendTwoWayRelay ENTER");
 			Guid twoWayTicket;
-			if(relayTicket == null)
+			if(relayTicket == new Guid("00000000-0000-0000-0000-000000000000"))
+			{
+				Console.WriteLine("TransportLayerCommunicator::BeginTransportLayerSendTwoWayRelay new relay request");
+			
 				twoWayTicket = Guid.NewGuid();
+				TwoWayCallBackData twoWayCallBackData = new TwoWayCallBackData();
+				twoWayCallBackData.callBack = callBack;
+				twoWayCallBackData.appState = appState;
+				twoWayCallBackRegistry.Add(twoWayTicket.ToString(), twoWayCallBackData);
+			}
 			else
+			{
+				Console.WriteLine("TransportLayerCommunicator::BeginTransportLayerSendTwoWayRelay old relay request");
 				twoWayTicket = relayTicket;
+			}
+			
+						
 			String strBuffer = Encoding.ASCII.GetString(buffer, offset, size);
 			StringBuilder concatenatedString = new StringBuilder();
 			concatenatedString.Append(twoWayTicket.ToString());
-			concatenatedString.Append('\0', 1);
+			concatenatedString.Append('\r', 1);
+			
 			String strOriginalFromIP;
-			if(relayTicket == null)
+			if(relayTicket == new Guid("00000000-0000-0000-0000-000000000000"))
 				strOriginalFromIP = UtilityMethod.GetLocalHostIP().ToString();
 			else
 				if(!(relayTicketRegistry.TryGetValue(relayTicket.ToString(), out strOriginalFromIP)))
 					throw new Exception();
 			
 			concatenatedString.Append(strOriginalFromIP);
-			concatenatedString.Append('\0', 1);
+			concatenatedString.Append('\r', 1);
 			
 			concatenatedString.Append(strBuffer);
 			
@@ -494,9 +510,11 @@ namespace Tashjik.Tier0
 			Console.Write("TransportLayerCommunicator::receiveTwoWay strTwoWayTicket = ");
 			Console.WriteLine(strTwoWayTicket);
 				
-			if(String.Compare(strCallType, CallType.TWO_WAY_REPLY.ToString()) == 0)
+			if(String.Compare(strCallType, CallType.TWO_WAY_REPLY.ToString()) == 0
+			   || String.Compare(strCallType, CallType.TWO_WAY_RELAY_REPLY.ToString()) == 0)
+			
 			{
-				Console.WriteLine("TransportLayerCommunicator::receiveTwoWay CallType =TWO_WAY_REPLY");
+				Console.WriteLine("TransportLayerCommunicator::receiveTwoWay CallType =TWO_WAY_REPLY || TWO_WAY_RELAY_REPLY");
 				TwoWayCallBackData twoWayCallbackData;
 				if(twoWayCallBackRegistry.TryGetValue(strTwoWayTicket, out twoWayCallbackData))
 				{
@@ -528,7 +546,7 @@ namespace Tashjik.Tier0
 				if(overlayRegistry.TryGetValue(overlayGuid, out sink))
 				{
 					Data data;
-					data = sink.notifyTwoWayMsg(fromIP, buffer, offset, size);
+					data = sink.notifyTwoWayMsg(fromIP, System.Text.Encoding.ASCII.GetBytes(strExtractedData), 0, strExtractedData.Length);
 					if(data == null)
 					{
 						Console.WriteLine("TransportLayerCommunicator::receiveTwoWay return data from notifyTwoWayMsg is null");
@@ -558,6 +576,55 @@ namespace Tashjik.Tier0
 				
 				
 			}
+			else if(String.Compare(strCallType, CallType.TWO_WAY_RELAY_SEND.ToString()) == 0)
+			{
+				Console.WriteLine("TransportLayerCommunicator::receiveTwoWay CallType =TWO_WAY_RELAY_SEND");
+				ISink sink;
+				if(overlayRegistry.TryGetValue(overlayGuid, out sink))
+				{
+					int endOfOriginalFromIP = strExtractedData.IndexOf('\r');
+					String strOriginalFromIP = strExtractedData.Substring(0, endOfOriginalFromIP);
+					Console.Write("TransportLayerCommunicator::receiveTwoWay strOriginalFromIP = ");
+					Console.WriteLine(strOriginalFromIP);
+					
+					String[] IPsplit = strOriginalFromIP.Split(new char[] {'.'});
+					int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
+					int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
+					int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
+					int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
+					byte[] byteOriginalFromIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+					IPAddress originalFromIP = new IPAddress(byteOriginalFromIP);
+					relayTicketRegistry.Add(strTwoWayTicket, strOriginalFromIP);
+					
+					String realExtractedData = strExtractedData.Substring(endOfOriginalFromIP + 1, strExtractedData.Length - endOfOriginalFromIP -1);
+					Console.Write("TransportLayerCommunicator::receiveTwoWay realExtractedData = ");  
+					Console.WriteLine(realExtractedData);
+					
+					Data data;
+					data = sink.notifyTwoWayRelayMsg(fromIP, originalFromIP, System.Text.Encoding.ASCII.GetBytes(realExtractedData), 0, realExtractedData.Length, new Guid(strTwoWayTicket));
+					if(data != null)
+					{
+						StringBuilder concatenatedString = new StringBuilder();
+						concatenatedString.Append(strTwoWayTicket);
+						concatenatedString.Append('\r', 1);
+						concatenatedString.Append(Encoding.ASCII.GetString(data.buffer), data.offset, data.size);
+					
+						String strCompositeMsg = concatenatedString.ToString();
+						int compositeMsgLen    = strCompositeMsg.Length;
+						byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+
+						addToSockMsgQueue(originalFromIP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_REPLY);
+					}
+					
+				}
+				else
+				{
+					Console.WriteLine("TransportLayerCommunicator::receiveTwoWay overlayGuid not found");
+					throw new Exception();
+				}
+				
+				
+			}
 			else
 			{
 				Console.WriteLine("TransportLayerCommunicator::receiveTwoWay unknown calltype");
@@ -566,6 +633,7 @@ namespace Tashjik.Tier0
 			
 				
 		}
+		
 				
 		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
@@ -1045,13 +1113,14 @@ namespace Tashjik.Tier0
 				
 					IPAddress fromIP = new IPAddress(byteFromIP);
 					
-					if(String.Compare(strCallType, CallType.TWO_WAY_REPLY.ToString()) == 0 || String.Compare(strCallType, CallType.TWO_WAY_SEND.ToString()) == 0)
+					if(String.Compare(strCallType, CallType.ONE_WAY.ToString()) == 0)
+						transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
+					else
 					{
-						//Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer CallType = TWO_WAY_SEND");
+						Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer CallType IS NOT ONE_WAY");
 						transportLayerCommunicator.receiveTwoWay(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length, strCallType);
 					}
-					else
-						transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
+					
 					msgExtractionStatus = MsgExtractionStatus.MESSAGE_EXTRACTED;
 				}
 			}

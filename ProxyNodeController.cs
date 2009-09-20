@@ -172,6 +172,10 @@ namespace Tashjik
 			return null;
 		}
 		
+		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket)
+		{
+			return null;
+		}
 		
 		public void notifyMsg(IPAddress fromIP, Object data)
 		{

@@ -155,11 +155,16 @@ namespace TashjikClient
 			
 			//testing BeginTransportLayerSendTwoWay
 			//not the appropriate place to test
-			String strMsg = "testing BeginTransportLayerSendTwoWay";
-			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
-			transportLayerCommunicator.BeginTransportLayerSendTwoWay(bootStrapIP, msg, 0, strMsg.Length, ClientGuid, null, null); //new AsyncCallback(sendDataCallBack), ipAddress);
+		//	String strMsg = "testing BeginTransportLayerSendTwoWay";
+	//		byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
+	//		transportLayerCommunicator.BeginTransportLayerSendTwoWay(bootStrapIP, msg, 0, strMsg.Length, ClientGuid, null, null); //new AsyncCallback(sendDataCallBack), ipAddress);
 			
-	
+			//testing BeginTransportLayerSendTwoWayRelay
+			//not the appropriate place to test
+			String strMsg = "testing BeginTransportLayerSendTwoWayRelay";
+			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
+			transportLayerCommunicator.BeginTransportLayerSendTwoWayRelay(bootStrapIP, msg, 0, strMsg.Length, ClientGuid, null, null, new Guid("00000000-0000-0000-0000-000000000000")); //new AsyncCallback(sendDataCallBack), ipAddress);
+			
 			
 			
 			
@@ -260,6 +265,13 @@ namespace TashjikClient
 			Console.WriteLine("Client::notifyTwoWayMsg ENTER");
 			return null;
 		}
+		
+		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket)
+		{
+			Console.WriteLine("Client::notifyTwoWayRelayMsg ENTER");
+			return null;
+		}
+		
 
 		Guid ClientGuid = new Guid("2527df07-e8c5-4f0d-a46e-effa26cfcb0d");
 		

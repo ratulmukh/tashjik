@@ -82,7 +82,7 @@ namespace Tashjik.Common
 
 #if SIM
 			return localIP ;
-#endif
+#else
 			String strHostName = Dns.GetHostName();
 
 			// Find host by name
@@ -95,6 +95,7 @@ namespace Tashjik.Common
 			}
 
 			throw new Exception.LocalHostIPNotFoundException();
+#endif
 		}
 
 		public static byte[] moduloAdd(byte[] A, byte[] B)
