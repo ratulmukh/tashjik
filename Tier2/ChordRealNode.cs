@@ -284,10 +284,11 @@ namespace Tashjik.Tier2
 	
 				public void beginFixFingers(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
+					Console.WriteLine("Chord::Engine::beginFixFingers ENTER");
 					//static int next = -1;
 					fingerNext ++;
-					if (fingerNext>160)
-						fingerNext = 1;
+					if (fingerNext>=160)
+						fingerNext = 0;
 					//bit wise addition is required
 					//will require some effort
 					byte[] C = new byte[20];
@@ -484,7 +485,7 @@ namespace Tashjik.Tier2
 				ChordCommon.IChordNode_Object iNode_Object;
 				if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)
 				{
-					Console.WriteLine("Chord::engine::beginFindSuccessor if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)");
+					Console.WriteLine("Chord::engine::beginFindSuccessor query falls inbetween node and successor");
 					if(!(findSuccessorCallBack==null))
 					{
 						iNode_Object = new ChordCommon.IChordNode_Object();
@@ -497,11 +498,11 @@ namespace Tashjik.Tier2
 				}
 				else
 				{
-					Console.WriteLine("Chord::engine::beginFindSuccessor NOT if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)");
+					Console.WriteLine("Chord::engine::beginFindSuccessor query DOES NOT fall inbetween node and successor");
 					IChordNode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
 					if (closestPrecNode==self)
 					{
-						Console.WriteLine("Chord::engine::beginFindSuccessor if (closestPrecNode==self)");
+						Console.WriteLine("Chord::engine::beginFindSuccessor closestPrecNode==self");
 						if(!(findSuccessorCallBack==null))
 						{
 							Console.WriteLine("Chord::engine::beginFindSuccessor if(!(findSuccessorCallBack==null))");
@@ -517,7 +518,7 @@ namespace Tashjik.Tier2
 					}		
 					else
 					{
-						Console.WriteLine("Chord::engine::beginFindSuccessor NOT if (closestPrecNode==self)");
+						Console.WriteLine("Chord::engine::beginFindSuccessor relaying request to closestPrecNode");
 						closestPrecNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
 					}
 
@@ -527,6 +528,7 @@ namespace Tashjik.Tier2
 
 			private IChordNode findClosestPreceedingNode(byte[] hashedKey)
 			{
+				Console.WriteLine("Chord::engine::findClosestPreceedingNode ENTER");
 				for(int i=159; i>=0 && finger[i]!=null; i--)
 					if((ChordRealNode)self<finger[i] && (ChordRealNode)(finger[i])<hashedKey)
 						return finger[i];
@@ -561,7 +563,7 @@ namespace Tashjik.Tier2
 				successor = self;
 
 				for(int i=159; i>=0; i--)
-					finger[0] = null;
+					finger[i] = null;
 		
 				fingerNext = -1;
 			}
@@ -595,31 +597,37 @@ namespace Tashjik.Tier2
 			{
 				updationInterval = interval;
 				engine = eng;
+				
+				ThreadStart job = new ThreadStart(Start);
+				Thread thread = new Thread(job);
+				thread.Start();
 			}
 	
 			public static EngineMgr createEngineMgr(int interval, Engine eng)
 			{
 				//have to correct singleton call
-				if(singleton!=null)
+/*				if(singleton!=null)
 					return singleton;
 				else
 				{
 					singleton = new EngineMgr(interval, eng );
 					return singleton;
 				}
+*/
+				return new EngineMgr(interval, eng );
 			}
 	
-			public void OnClockTick(object sender, ChordClockTimerArgs e, AsyncCallback OnClockTickCallBack, Object appState)
+			public void OnClockTick() //object sender, ChordClockTimerArgs e, AsyncCallback OnClockTickCallBack, Object appState)
 			{
-				IPAddress IP = e.Engine.getIP();
-				Console.WriteLine("Received a clock tick event. This is clock tick number {0}", e.TickCount);
+				IPAddress IP = engine.getIP();
+				Console.WriteLine("Received a clock tick event. This is clock tick number {0}"); //, e.TickCount);
 				//ThreadStart job = new ThreadStart(ThreadJob);
 				//Thread thread = new Thread(job);
 				//thread.Start();
 	
 				Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
-				thisAppState.callBack = OnClockTickCallBack;
-				thisAppState.obj = appState;
+				thisAppState.callBack = null; //OnClockTickCallBack;
+				thisAppState.obj = null;//appState;
 
 				AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
 				engine.beginCheckPredecessor(checkPredecessorCallBack, thisAppState);
@@ -636,7 +644,7 @@ namespace Tashjik.Tier2
 			}
 
 	
-			static void processCheckPredecesorForOnClockTick(IAsyncResult result)
+			/*static*/ void processCheckPredecesorForOnClockTick(IAsyncResult result)
 			{
 				Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(result.AsyncState);
 	
@@ -644,7 +652,7 @@ namespace Tashjik.Tier2
 				//Object appState1 = ((Tashjik.Common.AsyncCallback_Object)thisAppState).obj;
 		
 				AsyncCallback stabilizeCallBack = new AsyncCallback(processStabilizeForOnClockTick);
-				singleton.engine.beginStabilize(stabilizeCallBack, thisAppState);
+				engine.beginStabilize(stabilizeCallBack, thisAppState);
 		
 			}
 
@@ -690,8 +698,9 @@ namespace Tashjik.Tier2
 			{
 				for(; ;)
 				{
-					Timer(this, new ChordClockTimerArgs(0, this.engine));
-					Thread.Sleep(1000);
+					//Timer(this, new ChordClockTimerArgs(0, this.engine));
+					Thread.Sleep(10);
+					OnClockTick();
 				}
 			}
 		}
