@@ -53,6 +53,7 @@ using System.Net.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Tashjik.Tier2
 {
@@ -230,9 +231,99 @@ namespace Tashjik.Tier2
 			proxyController.sendMsg((Object)returnMsgList, iNode);
 	
 		}	
+		public override void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			
+		}
+		public override Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		{
+			return null;
+		}
+		
+		internal class IP_ChordProxyNode
+		{
+			public IPAddress IP;
+			public ChordProxyNode chordProxyNode;
+			public Guid ticket;
+		}
+		public override Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket)
+		{
+			Console.WriteLine("ChordProxyNode::notifyTwoWayRelayMsg ENTER");
+			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
+			String[] split = strReceivedData.Split(new char[] {'\r'});
+			if(String.Compare(split[0], "FIND_SUCCESSOR") == 0)
+			{
+				Console.WriteLine("ChordProxyNode::notifyTwoWayRelayMsg message = FIND_SUCCESSOR");
+				IP_ChordProxyNode iIP_ChordProxyNode = new IP_ChordProxyNode();
+				iIP_ChordProxyNode.IP = originalFromIP;
+				iIP_ChordProxyNode.chordProxyNode = this;
+				iIP_ChordProxyNode.ticket = relayTicket;
+				thisNode.beginFindSuccessor(System.Text.Encoding.ASCII.GetBytes(split[1]), (IChordNode)(proxyController.getProxyNode(originalFromIP)), new AsyncCallback(processFindSuccessor_notifyTwoWayRelayMsg_callback), iIP_ChordProxyNode, relayTicket);
+			}
+			return null;
+		}
+		
+		static void processFindSuccessor_notifyTwoWayRelayMsg_callback(IAsyncResult ayncResult)
+		{
+			ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(ayncResult.AsyncState);
+			IChordNode successor = (iNode_Object.node);
+			ChordProxyNode chordProxyNode = ((IP_ChordProxyNode)(iNode_Object.obj)).chordProxyNode;
+			IPAddress originalFromIP = ((IP_ChordProxyNode)(iNode_Object.obj)).IP;
+			Guid relayTicket = ((IP_ChordProxyNode)(iNode_Object.obj)).ticket;
+			
+			StringBuilder concatenatedString = new StringBuilder();
+			concatenatedString.Append("FIND_SUCCESSOR_REPLY");
+			concatenatedString.Append('\r', 1);
+			concatenatedString.Append(successor.getIP().ToString());
+			concatenatedString.Append('\r', 1);
+			
+			String strCompositeMsg = concatenatedString.ToString();
+			int compositeMsgLen    = strCompositeMsg.Length;
+			byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+
+			
+			
+			chordProxyNode.proxyController.sendMsgTwoWayRelay(chordProxyNode.proxyController.getProxyNode(originalFromIP), compositeMsg, 0, compositeMsgLen, null, null, relayTicket);
+		}
+			
+		public override void notifyTwoWayReplyReceived(IPAddress fromIP, byte[] buffer, int offset, int size, AsyncCallback originalRequestCallBack, Object originalAppState)
+		{
+			Console.WriteLine("ChordProxyNode::notifyTwoWayReplyReceived ENTER");
+			String receivedData = Encoding.ASCII.GetString(buffer, offset, size);
+			String[] split = receivedData.Split(new char[] {'\r'});
+			if(String.Compare(split[0], "FIND_SUCCESSOR_REPLY") == 0)
+			{
+				Console.WriteLine("ChordProxyNode::notifyTwoWayReplyReceived FIND_SUCCESSOR_RECEIVED");
+				String strSuccessorIP = split[1];
+				Console.Write("ChordProxyNode::notifyTwoWayReplyReceived SuccessorIP = ");
+				Console.WriteLine(strSuccessorIP);
+				
+				String[] strSuccessorIPsplit = strSuccessorIP.Split(new char[] {'.'});
+				
+				int IP0 = (int)(System.Convert.ToInt32 (strSuccessorIPsplit[0]));
+				int IP1 = (int)(System.Convert.ToInt32 (strSuccessorIPsplit[1]));
+				int IP2 = (int)(System.Convert.ToInt32 (strSuccessorIPsplit[2]));
+				int IP3 = (int)(System.Convert.ToInt32 (strSuccessorIPsplit[3]));
+				byte[] byteSuccessorIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+				IPAddress successorIP = new IPAddress(byteSuccessorIP);
+				
+				/*ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+				JoinAppState joinAppState = (JoinAppState)(iNode_Object.obj);
+				IChordNode retrievedSuccessor = iNode_Object.node;
+				Engine engine = joinAppState.engine;
+				engine.successor = retrievedSuccessor;	
+				*/
+				ChordCommon.IChordNode_Object iNode_Object = new ChordCommon.IChordNode_Object();
+				iNode_Object.node = (IChordNode)(proxyController.getProxyNode(successorIP));
+				iNode_Object.obj = originalAppState;
+				
+				Tashjik.Common.ObjectAsyncResult objectAsyncResult = new Tashjik.Common.ObjectAsyncResult(iNode_Object, false, false);
+				originalRequestCallBack(objectAsyncResult);
+			}
+		}
 
 		//need to make this asynchronous
-		public override void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
+		public /*override*/ void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState)
 		{
 			List<Msg> dataList = (List<Msg>)data;
 			List<Msg> returnMsgList = new List<Msg>();
@@ -253,7 +344,7 @@ namespace Tashjik.Tier2
 						iNode_Msg.msg = msg;
 
 						AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForNotifyMsgRec);
-						thisNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, iNode_Msg);
+						thisNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, iNode_Msg, new Guid("00000000-0000-0000-0000-000000000000"));
 						/* if(successor==thisNode)
 						{
 							//no need to add successorProxyForm to registry
@@ -434,29 +525,41 @@ namespace Tashjik.Tier2
 			//relay this call to the actual node via forwarder
 		}
 		*/
-		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
-			beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState);
+			beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState, relayTicket);
 		}
 
-		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor ENTER");
-			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
-			thisAppState.callBack = findSuccessorCallBack;
-			thisAppState.obj = appState;
-			Console.WriteLine("ChordProxyNode::beginFindSuccessor before adding to findSuccessorRegistry");
+			//Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+			//thisAppState.callBack = findSuccessorCallBack;
+			//thisAppState.obj = appState;
+			//Console.WriteLine("ChordProxyNode::beginFindSuccessor before adding to findSuccessorRegistry");
 			
-			findSuccessorRegistry.Add(queryHashedKey, thisAppState);
-			Msg msg = new Msg(Msg.TypeEnum.FIND_SUCCESSOR, (Object)queryHashedKey, (Object)queryingNode);
-			List<Msg> msgList = new List<Msg>();
-			msgList.Add(msg);
+			//findSuccessorRegistry.Add(queryHashedKey, thisAppState);
+			//Msg msg = new Msg(Msg.TypeEnum.FIND_SUCCESSOR, (Object)queryHashedKey, (Object)queryingNode);
+			//List<Msg> msgList = new List<Msg>();
+			//msgList.Add(msg);
 			
+			StringBuilder concatenatedString = new StringBuilder();
+			concatenatedString.Append("FIND_SUCCESSOR");
+			concatenatedString.Append('\r', 1);
+			String strQueryHashedKey = Encoding.ASCII.GetString(queryHashedKey);
+			concatenatedString.Append(strQueryHashedKey);
+			concatenatedString.Append('\r', 1);
 			
-			
+			String strCompositeMsg = concatenatedString.ToString();
+			int compositeMsgLen    = strCompositeMsg.Length;
+			byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
+			proxyController.sendMsgTwoWayRelay(this, compositeMsg, 0, compositeMsgLen, findSuccessorCallBack, appState, relayTicket);
+		
+			//Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
 			//proxyController.sendMsg((Object)msgList, this);
-			//proxyController.sendMsg(this, data, offset, size, findSuccessorCallBack, appState);
+			//proxyController.sendMsgTwoWayRelay(this, compositeMsg, 0, compositeMsg, findSuccessorCallBack, appState);
 		}
 
 

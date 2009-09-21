@@ -240,15 +240,17 @@ namespace Tashjik.Tier0
 			
 			public void dispatchMsg()
 			{
-//				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg ENTER");
+			//	Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg ENTER");
 
 				if(connectionState == ConnectionState.NOT_CONNECTED)
 				{
+					Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg connectionState == NOT_CONNECTED");
 					establishRemoteConnection();
 					return;
 				}
 				else if(connectionState == ConnectionState.WAITING_TO_CONNECT)
 				{
+					Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg connectionState == WAITING_TO_CONNECT");
 					if(sock.Connected)
 						connectionState = ConnectionState.CONNECTED;
 					else
@@ -256,6 +258,7 @@ namespace Tashjik.Tier0
 				}
 				else if(connectionState == ConnectionState.CONNECTION_FAILED)
 				{
+					Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg connectionState == CONNECTION_FAILED");
 					return;
 				}
 				//I don't think it is required to lock 'count'
@@ -339,7 +342,7 @@ namespace Tashjik.Tier0
 			void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
 			Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
 			Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket);
-
+			void notifyTwoWayReplyReceived(IPAddress fromIP, byte[] buffer, int offset, int size, AsyncCallback originalRequestCallBack, Object originalAppState);
 		}
 		
 
@@ -471,19 +474,30 @@ namespace Tashjik.Tier0
 			if(relayTicket == new Guid("00000000-0000-0000-0000-000000000000"))
 				strOriginalFromIP = UtilityMethod.GetLocalHostIP().ToString();
 			else
-				if(!(relayTicketRegistry.TryGetValue(relayTicket.ToString(), out strOriginalFromIP)))
+			{
+				if(relayTicketRegistry.TryGetValue(relayTicket.ToString(), out strOriginalFromIP))
+					relayTicketRegistry.Remove(relayTicket.ToString());
+				else
 					throw new Exception();
+			}
 			
-			concatenatedString.Append(strOriginalFromIP);
-			concatenatedString.Append('\r', 1);
-			
+			//no need to send originalIP if the relay is going back to originalIP itself!
+			if(String.Compare(IP.ToString(), strOriginalFromIP) != 0)
+			{
+			   	concatenatedString.Append(strOriginalFromIP);
+			 	concatenatedString.Append('\r', 1);
+			}
 			concatenatedString.Append(strBuffer);
 			
 			String strCompositeMsg = concatenatedString.ToString();
 			int compositeMsgLen    = strCompositeMsg.Length;
 			byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
 
-			addToSockMsgQueue(IP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_RELAY_SEND);
+			if(String.Compare(IP.ToString(), strOriginalFromIP) != 0)
+				addToSockMsgQueue(IP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_RELAY_SEND);
+			else
+				addToSockMsgQueue(IP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_RELAY_REPLY);
+	
 		
 		}
 			
@@ -515,27 +529,40 @@ namespace Tashjik.Tier0
 			
 			{
 				Console.WriteLine("TransportLayerCommunicator::receiveTwoWay CallType =TWO_WAY_REPLY || TWO_WAY_RELAY_REPLY");
-				TwoWayCallBackData twoWayCallbackData;
-				if(twoWayCallBackRegistry.TryGetValue(strTwoWayTicket, out twoWayCallbackData))
+				
+				ISink sink;
+				if(overlayRegistry.TryGetValue(overlayGuid, out sink))
 				{
-					Console.WriteLine("TransportLayerCommunicator::receiveTwoWay TwoWayTicket found in registry");
-					if(twoWayCallbackData.callBack != null)
+					
+					TwoWayCallBackData twoWayCallbackData;
+					if(twoWayCallBackRegistry.TryGetValue(strTwoWayTicket, out twoWayCallbackData))
 					{
-						CallBackReturnData callBackReturnData = new CallBackReturnData();
-						callBackReturnData.buffer = System.Text.Encoding.ASCII.GetBytes(strExtractedData);
-						callBackReturnData.offset = 0;
-						callBackReturnData.size = strExtractedData.Length;
-						callBackReturnData.AppState = twoWayCallbackData.appState;
+						Console.WriteLine("TransportLayerCommunicator::receiveTwoWay TwoWayTicket found in registry");
+						if(twoWayCallbackData.callBack != null)
+						{
+							sink.notifyTwoWayReplyReceived(fromIP, System.Text.Encoding.ASCII.GetBytes(strExtractedData), 0, strExtractedData.Length, twoWayCallbackData.callBack, twoWayCallbackData.appState);
+					/*		CallBackReturnData callBackReturnData = new CallBackReturnData();
+							callBackReturnData.buffer = System.Text.Encoding.ASCII.GetBytes(strExtractedData);
+							callBackReturnData.offset = 0;
+							callBackReturnData.size = strExtractedData.Length;
+							callBackReturnData.AppState = twoWayCallbackData.appState;
 				
-						Tashjik.Common.ObjectAsyncResult objectAsyncResult = new Tashjik.Common.ObjectAsyncResult(callBackReturnData, false, false);
-						twoWayCallbackData.callBack(objectAsyncResult);
+							Tashjik.Common.ObjectAsyncResult objectAsyncResult = new Tashjik.Common.ObjectAsyncResult(callBackReturnData, false, false);
+							twoWayCallbackData.callBack(objectAsyncResult);
+					*/	}
+					
+						twoWayCallBackRegistry.Remove(strTwoWayTicket);
+				
 					}
-					twoWayCallBackRegistry.Remove(strTwoWayTicket);
-				
+					else
+					{
+						Console.WriteLine("TransportLayerCommunicator::receiveTwoWay TwoWayTicket not found");
+						throw new Exception();
+					}
 				}
 				else
 				{
-					Console.WriteLine("TransportLayerCommunicator::receiveTwoWay TwoWayTicket not found");
+					Console.WriteLine("TransportLayerCommunicator::receiveTwoWay overlayGuid not found");
 					throw new Exception();
 				}
 			}

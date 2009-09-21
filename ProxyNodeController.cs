@@ -52,6 +52,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using Tashjik.Tier0;
+using System.Text;
 
 namespace Tashjik
 {
@@ -160,38 +161,43 @@ namespace Tashjik
 */
 			
 			
-		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
-		{
-			//WE NEED TO IMPLEMENT THIS
-			//AND NOT THE FUNCTION BELOW
-		}
+	
 	
 		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			Console.WriteLine("ProxyNodeController::notifyTwoWayMsg ENTER");
-			return null;
+			Tashjik.Tier0.TransportLayerCommunicator.Data data;
+			ProxyNode proxyNode = getProxyNode(fromIP);
+			data = proxyNode.notifyTwoWayMsg(fromIP, buffer, offset, size);
+			return data;
 		}
 		
 		public Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket)
 		{
-			return null;
+			Console.WriteLine("ProxyNodeController::notifyTwoWayRelayMsg ENTER");
+			
+			Tashjik.Tier0.TransportLayerCommunicator.Data data;
+			ProxyNode proxyNode = getProxyNode(fromIP);
+			data = proxyNode.notifyTwoWayRelayMsg(fromIP, originalFromIP, buffer, offset, size, relayTicket);
+			return data;
 		}
 		
-		public void notifyMsg(IPAddress fromIP, Object data)
+		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size) 
 		{
-			try
-			{
-				ProxyNode proxyFound = proxyNodeRegistry.findProxyNode(fromIP);
-				proxyFound.beginNotifyMsgRec(fromIP, data, null, null);
-			}
-			//RELAX: yes i know this is wrong; have to change it
-			catch (Exception)
-			{
-				ProxyNode n = createProxyNodeDelegate(fromIP, this);
-				proxyNodeRegistry.AddNewEntry(n);
-				n.beginNotifyMsgRec(fromIP, data, null, null);
-			}
+			Console.WriteLine("ProxyNodeController::notify ENTER");
+			
+			ProxyNode proxyNode = getProxyNode(fromIP);
+			proxyNode.notifyMsg(fromIP, buffer, offset, size);
+		}
 		
+		
+		public void notifyTwoWayReplyReceived(IPAddress fromIP, byte[] buffer, int offset, int size, AsyncCallback originalRequestCallBack, Object originalAppState)
+		{
+			Console.WriteLine("ProxyNodeController::notify ENTER");
+			
+			ProxyNode proxyNode = getProxyNode(fromIP);
+			proxyNode.notifyTwoWayReplyReceived(fromIP, buffer, offset, size, originalRequestCallBack, originalAppState);
+	
 		}
 		
 		public ProxyNode getProxyNode(IPAddress IP)
@@ -236,6 +242,7 @@ namespace Tashjik
 		
 		public ProxyNodeController(CreateProxyNodeDelegate createProxyNodeDelegate, Guid overlayInstanceGuid)
 		{
+			Console.WriteLine("ProxyNodeController::ProxyNodeController ENTER");
 			this.overlayInstanceGuid = overlayInstanceGuid;
 			this.createProxyNodeDelegate = createProxyNodeDelegate;
 			transportLayerCommunicator = Tier0.TransportLayerCommunicator.getRefTransportLayerCommunicator();
@@ -267,6 +274,22 @@ namespace Tashjik
 			transportLayerCommunicator.BeginTransportLayerSend(sender.getIP(), buffer, offset, size, overlayInstanceGuid, callBack, appState);
 		}
 
+		public void sendMsgTwoWay(ProxyNode sender, byte[] buffer, int offset, int size, AsyncCallback callBack, Object appState)
+		{
+			Console.WriteLine("ProxyNodeController::sendMsgTwoWay sending data to transportLayerCommunicator");
+			//proxyNodeRegistry.AddData(sender, data);
+			transportLayerCommunicator.BeginTransportLayerSendTwoWay(sender.getIP(), buffer, offset, size, overlayInstanceGuid, callBack, appState);
+		
+		}
+		
+		public void sendMsgTwoWayRelay(ProxyNode sender, byte[] buffer, int offset, int size, AsyncCallback callBack, Object appState, Guid relayTicket)
+		{
+			Console.WriteLine("ProxyNodeController::sendMsgTwoWayRelay sending data to transportLayerCommunicator");
+			//proxyNodeRegistry.AddData(sender, data);
+			transportLayerCommunicator.BeginTransportLayerSendTwoWayRelay(sender.getIP(), buffer, offset, size, overlayInstanceGuid, callBack, appState, relayTicket);
+		
+		}
+		
 	}
 
 }

@@ -94,6 +94,12 @@ namespace Tashjik
 			return null;
 		}
 
+		
+		public void notifyTwoWayReplyReceived(IPAddress fromIP, byte[] buffer, int offset, int size, AsyncCallback originalRequestCallBack, Object originalAppState)
+		{
+			
+		}
+		
 		public void notifyMsg(IPAddress fromIP, Object LowLevelData)
 		{
 			List<OverlayInstanceMsg> overlayInstanceMsgList = (List<OverlayInstanceMsg>)LowLevelData;

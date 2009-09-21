@@ -136,7 +136,7 @@ namespace Tashjik.Tier2
 			thisAppState.Push(appState);
 			
 			AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForGetData);
-			thisNode.beginFindSuccessor(key, thisNode, findSuccessorCallBack, thisAppState);
+			thisNode.beginFindSuccessor(key, thisNode, findSuccessorCallBack, thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 
 		}
 
@@ -170,7 +170,7 @@ namespace Tashjik.Tier2
 			thisAppState.Push(appState);
 			
 			
-			thisNode.beginFindSuccessor(key, thisNode, new AsyncCallback(processFindSuccessorForPutData), thisAppState);
+			thisNode.beginFindSuccessor(key, thisNode, new AsyncCallback(processFindSuccessorForPutData), thisAppState, new Guid("00000000-0000-0000-0000-000000000000") );
             Console.WriteLine("Chord::BeginPutData aync EXIT");
 		}
 		

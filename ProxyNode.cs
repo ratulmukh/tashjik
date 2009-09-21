@@ -85,9 +85,11 @@ namespace Tashjik
 			selfNodeBasic.setIP(ip);
 		}
 		
-		public abstract void beginNotifyMsgRec(IPAddress fromIP, Object data, AsyncCallback notifyMsgRecCallBack, Object appState);
+		public abstract void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
+		public abstract Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size);
+		public abstract Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket);
+		public abstract void notifyTwoWayReplyReceived(IPAddress fromIP, byte[] buffer, int offset, int size, AsyncCallback originalRequestCallBack, Object originalAppState);
 		
-			
 	//	
 		//public abstract void setProxyController(ProxyController c);
 	}

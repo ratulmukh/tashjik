@@ -306,7 +306,7 @@ namespace Tashjik.Tier2
 					fixFingersAppState.finger = finger;
 	
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForFixFingers);
-					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, fixFingersAppState);
+					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, fixFingersAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 				}
 
 
@@ -406,7 +406,7 @@ namespace Tashjik.Tier2
 	
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForJoin);
 					Console.WriteLine("ChordRealNode::Engine::beginJoin before calling beginFindSuccessor");
-					joinNode.beginFindSuccessor(self, self, findSuccessorCallBack, joinAppState);
+					joinNode.beginFindSuccessor(self.getHashedIP(), self, findSuccessorCallBack, joinAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 
 				}
 
@@ -419,7 +419,7 @@ namespace Tashjik.Tier2
 					IChordNode retrievedSuccessor = iNode_Object.node;
 					Engine engine = joinAppState.engine;
 					engine.successor = retrievedSuccessor;					//joinAppState.successor = iNode_Object.node;
-	
+					Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin successor has been set");
 					//Object thisAppState = Node_Object.obj;
 
 					AsyncCallback callBack = joinAppState.callback;
@@ -478,7 +478,7 @@ namespace Tashjik.Tier2
 				}
 			}
 			*/
-			public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+			public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 			{
 				Console.WriteLine("Chord::engine::beginFindSuccessor ENTER");
 				ChordCommon.IChordNode_Object iNode_Object;
@@ -518,7 +518,7 @@ namespace Tashjik.Tier2
 					else
 					{
 						Console.WriteLine("Chord::engine::beginFindSuccessor NOT if (closestPrecNode==self)");
-						closestPrecNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState);
+						closestPrecNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
 					}
 
 				}
@@ -746,15 +746,14 @@ namespace Tashjik.Tier2
 			return engine.findSuccessor(queryHashedKey, queryingNode);
 		}
 		*/
-
-		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
-			engine.beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState);
+			engine.beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState, relayTicket);
 		}
 
-		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState)
+		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
-			engine.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState);
+			engine.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
 		}
 
 

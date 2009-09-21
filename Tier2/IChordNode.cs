@@ -57,8 +57,8 @@ namespace Tashjik.Tier2
 	{
 		//Node findSuccessor(Node queryNode, Node queryingNode);
 		//Node findSuccessor(byte[] queryHashedKey, Node queryingNode);
-		void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
-		void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState);
+		void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket);
+		void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket);
 		//Node getPredecessor();
 		void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState);
 		//void notify(Node possiblePred);
