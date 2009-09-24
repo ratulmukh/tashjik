@@ -588,7 +588,7 @@ namespace Tashjik.Tier2
 		
 		private class EngineMgr
 		{
-			private static EngineMgr singleton;
+			//private static EngineMgr singleton;
 			private readonly Engine engine;
 			private readonly int updationInterval;
 
@@ -629,9 +629,12 @@ namespace Tashjik.Tier2
 				thisAppState.callBack = null; //OnClockTickCallBack;
 				thisAppState.obj = null;//appState;
 
-				AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
-				engine.beginCheckPredecessor(checkPredecessorCallBack, thisAppState);
-		
+	//			AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
+	//			engine.beginCheckPredecessor(checkPredecessorCallBack, thisAppState);
+				
+	engine.beginFixFingers(null, null);
+	
+	
 				/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 				thisAppState.callBack = OnClockTickCallBack;
 				thisAppState.obj = appState;
@@ -656,14 +659,14 @@ namespace Tashjik.Tier2
 		
 			}
 
-			static void processStabilizeForOnClockTick(IAsyncResult result)
+			void processStabilizeForOnClockTick(IAsyncResult result)
 			{	
 				Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(result.AsyncState);
 		
 				AsyncCallback callBack = ((Tashjik.Common.AsyncCallback_Object)thisAppState).callBack;
 				Object appState1 = ((Tashjik.Common.AsyncCallback_Object)thisAppState).obj;
 	
-				singleton.engine.beginFixFingers(callBack, appState1);
+				engine.beginFixFingers(callBack, appState1);
 			}
 
 			public class ChordClockTimerArgs : EventArgs
@@ -699,7 +702,7 @@ namespace Tashjik.Tier2
 				for(; ;)
 				{
 					//Timer(this, new ChordClockTimerArgs(0, this.engine));
-					Thread.Sleep(10);
+					Thread.Sleep(updationInterval);
 					OnClockTick();
 				}
 			}
