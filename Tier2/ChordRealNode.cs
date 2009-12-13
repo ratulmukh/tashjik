@@ -237,23 +237,32 @@ namespace Tashjik.Tier2
 
 				public void beginStabilize(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
+					Console.WriteLine("Chord::Engine::beginStabilize ENTER");
+
 					/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = beginStabilizeCallBack;
 					thisAppState.obj = appState;
 					*/
-					StabilizeAppState stabilizeAppState = new StabilizeAppState();
-					stabilizeAppState.appState = appState;
-					stabilizeAppState.callBack = beginStabilizeCallBack;
-					stabilizeAppState.self = self;
-					stabilizeAppState.successor = successor;
+					if(successor != self)
+					{
+						StabilizeAppState stabilizeAppState = new StabilizeAppState();
+						stabilizeAppState.appState = appState;
+						stabilizeAppState.callBack = beginStabilizeCallBack;
+						stabilizeAppState.self = self;
+						stabilizeAppState.successor = successor;
 	
+						AsyncCallback getPredecessorCallBack = new AsyncCallback(processGetPredecessorForStabilize);
+						successor.beginGetPredecessor(getPredecessorCallBack, stabilizeAppState);
+	
+					}
+					Console.WriteLine("Chord::Engine::beginStabilize EXIT");
 
-					AsyncCallback getPredecessorCallBack = new AsyncCallback(processGetPredecessorForStabilize);
-					successor.beginGetPredecessor(getPredecessorCallBack, stabilizeAppState);
 				}
-
+				
 				static void processGetPredecessorForStabilize(IAsyncResult result)
 				{
+					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize ENTER");
+
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 					Object appState = iNode_Object.obj;
 	
@@ -266,8 +275,10 @@ namespace Tashjik.Tier2
 					ChordRealNode self = ((StabilizeAppState)appState).self;
 					IChordNode successor = ((StabilizeAppState)appState).successor;
 
+					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before condition check");
 					if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
 						successor = x;
+					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
 					successor.beginNotify(self, callBack, appState1);
 
 				}		
@@ -390,6 +401,11 @@ namespace Tashjik.Tier2
 					public Object appState;
 				}
 	
+				//this is the method that the node uses to 
+				//initilize its own state based on a supplied bootstrap node
+				//here, it has been suppied with a bootstrap node
+				//which will be used to initilize itself
+				//as well as tell other nodes in n/w of its existence
 				public void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 				{
 					Console.WriteLine("ChordRealNode::Engine::beginJoin ENTER");
@@ -632,7 +648,8 @@ namespace Tashjik.Tier2
 	//			AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
 	//			engine.beginCheckPredecessor(checkPredecessorCallBack, thisAppState);
 				
-	engine.beginFixFingers(null, null);
+				engine.beginStabilize(null, null);
+				engine.beginFixFingers(null, null);
 	
 	
 				/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
@@ -716,7 +733,7 @@ namespace Tashjik.Tier2
 		{
 			engine = new Engine(this);
 			//engine = Engine.createEngine(this);
-			engineMgr = EngineMgr.createEngineMgr(1000, engine);
+			engineMgr = EngineMgr.createEngineMgr(10000, engine);
 			ChordDataStore dataStore = new ChordDataStore();
 
 			/*
@@ -779,6 +796,8 @@ namespace Tashjik.Tier2
 
 		public void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState)
 		{
+			Console.WriteLine("ChordRealNode::beginGetPredecessor ENTER");
+
 			IChordNode predecessor = engine.getPredecessor();
 		
 			ChordCommon.IChordNode_Object iNode_Object = new ChordCommon.IChordNode_Object();

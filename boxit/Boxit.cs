@@ -57,17 +57,9 @@ public static class Boxit
 		
 	static Dictionary<String, Triplet> registry = new Dictionary<String, Triplet>();
 	
-	static void init()
+	static byte[] getRandomByteIP()
 	{
-		ThreadStart listenJob = new ThreadStart(StartListening);
-		Thread listener = new Thread(listenJob);
-		listener.Start();
-		
-		Process process;
-		int portNo = 2336;
-		for(int i=0; i<2; i++)
-		{
-			Random rnd = new Random();
+		Random rnd = new Random();
 			
 			int add1 = rnd.Next(0, 255);		
 			int add2 = rnd.Next(0, 255);
@@ -81,8 +73,31 @@ public static class Boxit
 			Console.Write((int)byteIP[1]);
 			Console.Write((int)byteIP[2]);
 			Console.WriteLine((int)byteIP[3]);
-				
 			
+			return byteIP;
+	}
+	
+	static IPAddress getRandomIP()
+	{
+		return new IPAddress(getRandomByteIP());
+	}
+	
+	static String getRandomStringIP()
+	{
+		return Encoding.ASCII.GetString(getRandomByteIP());
+	}
+	
+	static void init()
+	{
+		ThreadStart listenJob = new ThreadStart(StartListening);
+		Thread listener = new Thread(listenJob);
+		listener.Start();
+		
+		Process process;
+		int portNo = 2336;
+		for(int i=0; i<5; i++)
+		{
+			byte[] byteIP = getRandomByteIP();
 			IPAddress IP = new IPAddress(byteIP);
 			String strIP = Encoding.ASCII.GetString(byteIP);
 			Console.WriteLine(strIP);
@@ -372,21 +387,18 @@ public static class Boxit
 							//	bootStrapAllDone.WaitOne();
 							//else
 							bootStrapAllDone.Reset();
-							StringBuilder concatenatedMsg = new StringBuilder();
-							concatenatedMsg.Append(strToIP);
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strFromIP);
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strCallType);
-             		        concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strOverlayGuid);
-							concatenatedMsg.Append('\0', 1);
-							byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
-							concatenatedMsg.Append(Encoding.ASCII.GetString(msg));
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append('\n', 0);
 						
-							String strCompositeMsg = concatenatedMsg.ToString();
+							
+							List<Object> msgParameters = new List<Object>(5);
+							msgParameters.Add(strToIP);
+							msgParameters.Add(strFromIP);
+							msgParameters.Add(strCallType);
+							msgParameters.Add(strOverlayGuid);
+							byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
+							msgParameters.Add(Encoding.ASCII.GetString(msg));
+							
+							String strCompositeMsg = createReplyMsg(msgParameters, null);
+							//String strCompositeMsg = createMsgForAbsentOverlay(strToIP, strFromIP, strCallType, strOverlayGuid);
 							int compositeMsgLen    = strCompositeMsg.Length;
 							byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
 				
@@ -399,22 +411,17 @@ public static class Boxit
 						{
 							Console.WriteLine("Boxit::processMsg NON Empty BootstrapNodes");
 							
-							StringBuilder concatenatedMsg = new StringBuilder();
-							concatenatedMsg.Append(strToIP);
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strFromIP);
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strCallType);
-             		        concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strOverlayGuid);
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append(strBootstrapNodes[0]);
-							concatenatedMsg.Append('\t', 1);                  
-							concatenatedMsg.Append(overlayInstanceGuid);
-							concatenatedMsg.Append('\0', 1);
-							concatenatedMsg.Append('\n', 0);
-						
-							String strCompositeMsg = concatenatedMsg.ToString();
+							List<Object> msgParameters = new List<Object>(5);
+							msgParameters.Add(strToIP);
+							msgParameters.Add(strFromIP);
+							msgParameters.Add(strCallType);
+							msgParameters.Add(strOverlayGuid);
+							msgParameters.Add(strBootstrapNodes[0]);
+							//msgParameters.Add(overlayInstanceGuid);
+							
+							String strCompositeMsg = createReplyMsg(msgParameters, overlayInstanceGuid);
+							
+							//String strCompositeMsg = createMsgForSendingOverlay(strToIP, strFromIP, strCallType, strOverlayGuid, strBootstrapNodes[0], overlayInstanceGuid);
 							int compositeMsgLen    = strCompositeMsg.Length;
 							byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
 				
@@ -451,6 +458,76 @@ public static class Boxit
 				
 				
 		}
+		
+		static String createReplyMsg(List<Object> msgParameters, Object objParameter)
+		{
+			StringBuilder concatenatedMsg = new StringBuilder();
+			
+			foreach(Object msgParameter in msgParameters)
+			
+			{
+				concatenatedMsg.Append(msgParameter);
+				
+				if(objParameter != null && msgParameter == msgParameters[msgParameters.Count-1])
+					concatenatedMsg.Append('\t', 1);
+				else
+					concatenatedMsg.Append('\0', 1);
+			}
+			if(objParameter != null)
+			{
+				concatenatedMsg.Append(objParameter);
+				concatenatedMsg.Append('\0', 1);
+			}
+			
+			concatenatedMsg.Append('\n', 0);
+			
+			return concatenatedMsg.ToString();
+		}
+		
+	/*	static String createMsgForAbsentOverlay(String strToIP, String strFromIP, String strCallType, String strOverlayGuid)
+		{
+			StringBuilder concatenatedMsg = new StringBuilder();
+			
+			concatenatedMsg.Append(strToIP);
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strFromIP);
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strCallType);
+            concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strOverlayGuid);
+			concatenatedMsg.Append('\0', 1);
+			byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
+			concatenatedMsg.Append(Encoding.ASCII.GetString(msg));
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append('\n', 0);
+						
+			return concatenatedMsg.ToString();
+		}
+		
+		static String createMsgForSendingOverlay(String strToIP, String strFromIP, String strCallType, String strOverlayGuid, String strBootstrapNode, Guid overlayInstanceGuid )
+		{	
+			StringBuilder concatenatedMsg = new StringBuilder();
+			
+			concatenatedMsg.Append(strToIP);
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strFromIP);
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strCallType);
+            concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strOverlayGuid);
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append(strBootstrapNode);
+			concatenatedMsg.Append('\t', 1);                  
+			concatenatedMsg.Append(overlayInstanceGuid);
+			concatenatedMsg.Append('\0', 1);
+			concatenatedMsg.Append('\n', 0);
+						
+			return concatenatedMsg.ToString();
+						
+		}
+		
+	*/
+	
 		static void sendMsg(String strToIP, byte[] msg, int offset, int size)
 		{
 			Triplet triplet;

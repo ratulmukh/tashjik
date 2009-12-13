@@ -571,18 +571,24 @@ namespace Tashjik.Tier2
 		*/
 		public void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState)
 		{
+			Console.WriteLine("ChordProxyNode::beginGetPredecessor ENTER");
+
 			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 			thisAppState.callBack = getPredecessorCallBack;
 			thisAppState.obj = appState;
+			Console.WriteLine("ChordProxyNode::beginGetPredecessor adding to getPredecessorRegistry");
 			getPredecessorRegistry.Add(thisAppState);
 			Msg msg = new Msg(Msg.TypeEnum.GET_PREDECESSOR, null, null);
 			List<Msg> msgList = new List<Msg>();
 			msgList.Add(msg);
+			Console.WriteLine("ChordProxyNode::beginGetPredecessor before calling sendMsg on proxyController");
 			proxyController.sendMsg((Object)msgList, this);
 		}
 
 		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
+			Console.WriteLine("ChordProxyNode::beginNotify ENTER");
+
 			Msg msg = new Msg(Msg.TypeEnum.NOTIFY, (Object)possiblePred, null);
 			List<Msg> msgList = new List<Msg>();
 			msgList.Add(msg);
