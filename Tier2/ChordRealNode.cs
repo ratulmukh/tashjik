@@ -283,16 +283,7 @@ namespace Tashjik.Tier2
 
 				}		
 
-				//NOT THREAD SAFE
-				//to be used only to pass application state while making async calls
-				class FixFingersAppState
-				{
-					public int fingerNext;
-					public IChordNode[] finger;
-					public AsyncCallback callback;
-					public Object appState;
-				}
-	
+				
 				public void beginFixFingers(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
 					Console.WriteLine("Chord::Engine::beginFixFingers ENTER");
@@ -310,33 +301,27 @@ namespace Tashjik.Tier2
 
 					C[19-bytePos] = (byte) (1 << bitPos);
 
+					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+					thisAppState.callBack = beginStabilizeCallBack;
+					thisAppState.obj = appState;
 
-					FixFingersAppState fixFingersAppState = new FixFingersAppState();
-					fixFingersAppState.callback = beginStabilizeCallBack;
-					fixFingersAppState.appState = appState;
-					fixFingersAppState.fingerNext = fingerNext;
-					fixFingersAppState.finger = finger;
+
 	
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForFixFingers);
-					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, fixFingersAppState, new Guid("00000000-0000-0000-0000-000000000000"));
+					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 				}
 
 
-				static void processFindSuccessorForFixFingers(IAsyncResult result)
+				void processFindSuccessorForFixFingers(IAsyncResult result)
 				{
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object) (result.AsyncState);
 		
-					FixFingersAppState fixFingersAppState = (FixFingersAppState)(iNode_Object.obj);
-					int i = fixFingersAppState.fingerNext;
-					fixFingersAppState.finger[i] = iNode_Object.node;
-					//Node finger = fixFingersAppState.finger[i];
-					//finger = iNode_Object.node;
+					Tashjik.Common.AsyncCallback_Object fixFingersAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
+					
+					this.finger[fingerNext] = iNode_Object.node;
 
-
-					//Object appState = iNode_Object.obj;
-
-					AsyncCallback callBack = fixFingersAppState.callback;
-					Object origAppState = fixFingersAppState.appState;
+					AsyncCallback callBack = fixFingersAppState.callBack;
+					Object origAppState = fixFingersAppState.obj;
 
 					if(!(callBack==null))
 					{
@@ -345,36 +330,26 @@ namespace Tashjik.Tier2
 					}
 				}
 
-				//NOT THREAD SAFE
-				//to be used only to pass application state while making async calls
-				class CheckPredecessorAppState
-				{
-					public IChordNode predecessor;
-					public AsyncCallback callback ;
-					public Object appState;
-				}
+			
 
 				public void beginCheckPredecessor(AsyncCallback checkPredecesorCallBack, Object appState)
 				{	
-					/*
+					
 					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = checkPredecesorCallBack;
 					thisAppState.obj = appState;
-					*/
-					CheckPredecessorAppState checkPredecessorAppState = new CheckPredecessorAppState();
-					checkPredecessorAppState.predecessor = predecessor;
-					checkPredecessorAppState.callback = checkPredecesorCallBack;
-					checkPredecessorAppState.appState = appState;
+					
+					
 	
 					AsyncCallback pingCallBack = new AsyncCallback(processPingForCheckPredecessor);
-					predecessor.beginPing(pingCallBack, checkPredecessorAppState);
+					predecessor.beginPing(pingCallBack, thisAppState);
 				}
 
-				static void processPingForCheckPredecessor(IAsyncResult result)
+				void processPingForCheckPredecessor(IAsyncResult result)
 				{
 					Tashjik.Common.Bool_Object thisAppState = (Tashjik.Common.Bool_Object)(result.AsyncState);
-					CheckPredecessorAppState checkPredecessorAppState = (CheckPredecessorAppState)(thisAppState.obj);
-					IChordNode predecessor = checkPredecessorAppState.predecessor;
+					Tashjik.Common.AsyncCallback_Object checkPredecessorAppState = (Tashjik.Common.AsyncCallback_Object)(thisAppState.obj);
+					
 
 					if(!(thisAppState.b))
 						predecessor = null;
@@ -384,22 +359,13 @@ namespace Tashjik.Tier2
 					//AsyncCallback callBack = ((Tashjik.Common.AsyncCallback_Object)appState).callBack;
 					//Object appState1 = ((Tashjik.Common.AsyncCallback_Object)appState).obj;
 	
-					if(!(checkPredecessorAppState.callback==null))
+					if(!(checkPredecessorAppState.callBack==null))
 					{
-						IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(checkPredecessorAppState.appState, true, true);
+						IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(checkPredecessorAppState.obj, true, true);
 					}
 				}
 
 
-				//NOT THREAD SAFE
-				//to be used only to pass application state while making async calls
-				class JoinAppState
-				{
-					//public IChordNode successor;
-					public Engine engine;
-					public AsyncCallback callback;
-					public Object appState;
-				}
 	
 				//this is the method that the node uses to 
 				//initilize its own state based on a supplied bootstrap node
@@ -409,38 +375,30 @@ namespace Tashjik.Tier2
 				public void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 				{
 					Console.WriteLine("ChordRealNode::Engine::beginJoin ENTER");
-					/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = joinCallBack;
 					thisAppState.obj = appState;
-					*/
+					
 					predecessor = null;
 					
-					JoinAppState joinAppState = new JoinAppState();
-					joinAppState.appState = appState;
-					//joinAppState.successor = successor;
-					joinAppState.engine = this;
-					joinAppState.callback = joinCallBack;
-	
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForJoin);
 					Console.WriteLine("ChordRealNode::Engine::beginJoin before calling beginFindSuccessor");
-					joinNode.beginFindSuccessor(self.getHashedIP(), self, findSuccessorCallBack, joinAppState, new Guid("00000000-0000-0000-0000-000000000000"));
+					joinNode.beginFindSuccessor(self.getHashedIP(), self, findSuccessorCallBack, thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 
 				}
 
-				static void processFindSuccessorForJoin(IAsyncResult result)
+				void processFindSuccessorForJoin(IAsyncResult result)
 				{
 					Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin ENTER");
 					
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
-					JoinAppState joinAppState = (JoinAppState)(iNode_Object.obj);
+					Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
 					IChordNode retrievedSuccessor = iNode_Object.node;
-					Engine engine = joinAppState.engine;
-					engine.successor = retrievedSuccessor;					//joinAppState.successor = iNode_Object.node;
 					Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin successor has been set");
-					//Object thisAppState = Node_Object.obj;
-
-					AsyncCallback callBack = joinAppState.callback;
-					Object appState1 = joinAppState.appState;
+					
+					successor = retrievedSuccessor;
+					AsyncCallback callBack = thisAppState.callBack;
+					Object appState1 = thisAppState.obj;
 
 					if(!(callBack==null))
 					{
