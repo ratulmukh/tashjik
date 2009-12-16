@@ -615,6 +615,7 @@ namespace Tashjik.Tier2
 
 		public void beginPing(AsyncCallback pingCallBack, Object appState)
 		{
+			Console.WriteLine("Chord::ChordProxyNode::Engine  beginPing ENTER");
 			Tashjik.Common.Bool_Object bool_object = new Tashjik.Common.Bool_Object();
 
 			IAsyncResult res;

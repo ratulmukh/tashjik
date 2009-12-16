@@ -225,55 +225,38 @@ namespace Tashjik.Tier2
 					//successor.notify(self);
 				}*/
 
-				//NOT THREAD SAFE
-				//to be used only to pass application state while making async calls
-				class StabilizeAppState
-				{
-					public ChordRealNode self;
-					public IChordNode successor;
-					public AsyncCallback callBack;
-					public Object appState;
-				}
+
 
 				public void beginStabilize(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
 					Console.WriteLine("Chord::Engine::beginStabilize ENTER");
 
-					/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = beginStabilizeCallBack;
 					thisAppState.obj = appState;
-					*/
+					
 					if(successor != self)
 					{
-						StabilizeAppState stabilizeAppState = new StabilizeAppState();
-						stabilizeAppState.appState = appState;
-						stabilizeAppState.callBack = beginStabilizeCallBack;
-						stabilizeAppState.self = self;
-						stabilizeAppState.successor = successor;
-	
+
 						AsyncCallback getPredecessorCallBack = new AsyncCallback(processGetPredecessorForStabilize);
-						successor.beginGetPredecessor(getPredecessorCallBack, stabilizeAppState);
+						successor.beginGetPredecessor(getPredecessorCallBack, thisAppState);
 	
 					}
 					Console.WriteLine("Chord::Engine::beginStabilize EXIT");
 
 				}
 				
-				static void processGetPredecessorForStabilize(IAsyncResult result)
+				void processGetPredecessorForStabilize(IAsyncResult result)
 				{
 					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize ENTER");
 
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
 					Object appState = iNode_Object.obj;
 	
-					AsyncCallback callBack = ((StabilizeAppState)appState).callBack;
-					Object appState1 = ((StabilizeAppState)appState).appState;
-
-
+					AsyncCallback callBack = ((Tashjik.Common.AsyncCallback_Object)appState).callBack;
+					Object appState1 = ((Tashjik.Common.AsyncCallback_Object)appState).obj;
 
 					IChordNode x = iNode_Object.node;
-					ChordRealNode self = ((StabilizeAppState)appState).self;
-					IChordNode successor = ((StabilizeAppState)appState).successor;
 
 					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before condition check");
 					if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
@@ -314,6 +297,7 @@ namespace Tashjik.Tier2
 
 				void processFindSuccessorForFixFingers(IAsyncResult result)
 				{
+					Console.WriteLine("Chord::ChordRealNode::Engine processFindSuccessorForFixFingers ENTER");
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object) (result.AsyncState);
 		
 					Tashjik.Common.AsyncCallback_Object fixFingersAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
@@ -334,7 +318,7 @@ namespace Tashjik.Tier2
 
 				public void beginCheckPredecessor(AsyncCallback checkPredecesorCallBack, Object appState)
 				{	
-					
+					Console.WriteLine("Chord::ChordRealNode::Engine beginCheckPredecessor ENTER");
 					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = checkPredecesorCallBack;
 					thisAppState.obj = appState;
@@ -342,9 +326,11 @@ namespace Tashjik.Tier2
 					
 	
 					AsyncCallback pingCallBack = new AsyncCallback(processPingForCheckPredecessor);
-					predecessor.beginPing(pingCallBack, thisAppState);
+					if(predecessor!=null)
+						predecessor.beginPing(pingCallBack, thisAppState);
+					
 				}
-
+				
 				void processPingForCheckPredecessor(IAsyncResult result)
 				{
 					Tashjik.Common.Bool_Object thisAppState = (Tashjik.Common.Bool_Object)(result.AsyncState);
@@ -362,6 +348,7 @@ namespace Tashjik.Tier2
 					if(!(checkPredecessorAppState.callBack==null))
 					{
 						IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(checkPredecessorAppState.obj, true, true);
+						checkPredecessorAppState.callBack(res);
 					}
 				}
 
@@ -599,15 +586,15 @@ namespace Tashjik.Tier2
 				//Thread thread = new Thread(job);
 				//thread.Start();
 	
-				Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
-				thisAppState.callBack = null; //OnClockTickCallBack;
-				thisAppState.obj = null;//appState;
+				//Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+				//thisAppState.callBack = null; //OnClockTickCallBack;
+				//thisAppState.obj = null;//appState;
 
-	//			AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
-	//			engine.beginCheckPredecessor(checkPredecessorCallBack, thisAppState);
+				AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
+				engine.beginCheckPredecessor(checkPredecessorCallBack, null);
 				
-				engine.beginStabilize(null, null);
-				engine.beginFixFingers(null, null);
+				//engine.beginStabilize(null, null);
+				//engine.beginFixFingers(null, null);
 	
 	
 				/*Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
@@ -622,15 +609,16 @@ namespace Tashjik.Tier2
 			}
 
 	
-			/*static*/ void processCheckPredecesorForOnClockTick(IAsyncResult result)
+			void processCheckPredecesorForOnClockTick(IAsyncResult result)
 			{
+				Console.WriteLine("ChordRealNode::processCheckPredecesorForOnClockTick ENTER");
 				Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(result.AsyncState);
 	
 				//AsyncCallback callBack = ((Tashjik.Common.AsyncCallback_Object)thisAppState).callBack;
 				//Object appState1 = ((Tashjik.Common.AsyncCallback_Object)thisAppState).obj;
 		
 				AsyncCallback stabilizeCallBack = new AsyncCallback(processStabilizeForOnClockTick);
-				engine.beginStabilize(stabilizeCallBack, thisAppState);
+	//			engine.beginStabilize(stabilizeCallBack, thisAppState);
 		
 			}
 
@@ -638,9 +626,14 @@ namespace Tashjik.Tier2
 			{	
 				Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(result.AsyncState);
 		
-				AsyncCallback callBack = ((Tashjik.Common.AsyncCallback_Object)thisAppState).callBack;
-				Object appState1 = ((Tashjik.Common.AsyncCallback_Object)thisAppState).obj;
-	
+				AsyncCallback callBack = null;
+				Object appState1 = null;
+				
+				if(thisAppState!=null)
+				{
+					callBack = ((Tashjik.Common.AsyncCallback_Object)thisAppState).callBack;
+					appState1 = ((Tashjik.Common.AsyncCallback_Object)thisAppState).obj;
+				}
 				engine.beginFixFingers(callBack, appState1);
 			}
 
@@ -803,6 +796,7 @@ namespace Tashjik.Tier2
 
 		public void beginPing(AsyncCallback pingCallBack, Object appState)
 		{
+			Console.WriteLine("ChordRealNode::beginPing ENTER");
 			Tashjik.Common.Bool_Object bool_Object = new Tashjik.Common.Bool_Object();
 			bool_Object.b = true;
 			bool_Object.obj = appState;
