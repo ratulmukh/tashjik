@@ -237,6 +237,28 @@ namespace Tashjik.Tier2
 		}
 		public override Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
+			Console.WriteLine("ChordProxyNode::notifyTwoWayMsg ENTER");
+			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
+			String[] split = strReceivedData.Split(new char[] {'\r'});
+			if(String.Compare(split[0], "GET_PREDECESSOR") == 0)
+			{
+				Console.WriteLine("ChordProxyNode::notifyTwoWayMsg message = GET_PREDECESSOR");
+/*				IP_ChordProxyNode iIP_ChordProxyNode = new IP_ChordProxyNode();
+				iIP_ChordProxyNode.IP = originalFromIP;
+				iIP_ChordProxyNode.chordProxyNode = this;
+				iIP_ChordProxyNode.ticket = relayTicket;
+				thisNode.beginFindSuccessor(System.Text.Encoding.ASCII.GetBytes(split[1]), (IChordNode)(proxyController.getProxyNode(originalFromIP)), new AsyncCallback(processFindSuccessor_notifyTwoWayRelayMsg_callback), iIP_ChordProxyNode, relayTicket);
+*/		
+				IChordNode predecessor = thisNode.getPredecessor();
+				if(predecessor == null)
+					return null;
+				IPAddress predecessorIP = predecessor.getIP();
+				Tashjik.Tier0.TransportLayerCommunicator.Data data = new Tashjik.Tier0.TransportLayerCommunicator.Data();
+				data.buffer = System.Text.Encoding.ASCII.GetBytes(predecessorIP.ToString());
+				data.offset = 0;
+				data.size = data.buffer.Length;
+				return data;
+			}
 			return null;
 		}
 		
@@ -573,7 +595,7 @@ namespace Tashjik.Tier2
 		{
 			Console.WriteLine("ChordProxyNode::beginGetPredecessor ENTER");
 
-			Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+	/*		Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 			thisAppState.callBack = getPredecessorCallBack;
 			thisAppState.obj = appState;
 			Console.WriteLine("ChordProxyNode::beginGetPredecessor adding to getPredecessorRegistry");
@@ -583,6 +605,24 @@ namespace Tashjik.Tier2
 			msgList.Add(msg);
 			Console.WriteLine("ChordProxyNode::beginGetPredecessor before calling sendMsg on proxyController");
 			proxyController.sendMsg((Object)msgList, this);
+*/
+			StringBuilder concatenatedString = new StringBuilder();
+			concatenatedString.Append("GET_PREDECESSOR");
+			concatenatedString.Append('\r', 1);
+			//String strQueryHashedKey = Encoding.ASCII.GetString(queryHashedKey);
+			//concatenatedString.Append(strQueryHashedKey);
+			//concatenatedString.Append('\r', 1);
+			
+			String strCompositeMsg = concatenatedString.ToString();
+			int compositeMsgLen    = strCompositeMsg.Length;
+			byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
+
+			Console.WriteLine("ChordProxyNode::beginGetPredecessor before sendMsg to proxyController");
+			proxyController.sendMsgTwoWay(this, compositeMsg, 0, compositeMsgLen, getPredecessorCallBack, appState);
+	
+		
+		
+		
 		}
 
 		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)

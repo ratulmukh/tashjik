@@ -577,7 +577,7 @@ namespace Tashjik.Tier0
 					if(data == null)
 					{
 						Console.WriteLine("TransportLayerCommunicator::receiveTwoWay return data from notifyTwoWayMsg is null");
-						String strNull = "NULL";
+						String strNull = "NULLBAKRA";
 						data = new Data();
 						data.buffer = System.Text.Encoding.ASCII.GetBytes(strNull);
 						data.offset = 0;

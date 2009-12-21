@@ -782,6 +782,12 @@ namespace Tashjik.Tier2
 			}
 		}
 
+		//NOT A PART OF COMMON CHORD INTERFACE
+		public IChordNode getPredecessor()
+		{
+			Console.WriteLine("ChordRealNode::getPredecessor ENTER");
+			return engine.getPredecessor();
+		}
 		/* public void notify(Node possiblePred)
 		{
 			engine.notify(possiblePred);
