@@ -265,15 +265,19 @@ namespace Tashjik.Tier2
 					Object appState1 = ((Tashjik.Common.AsyncCallback_Object)appState).obj;
 
 					IChordNode x = iNode_Object.node;
+					if(x==null)
+						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize UNKNOWN_PREDECESSOR");
+					else
+					{
+					
+						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before condition check");
+						if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
+							successor = x;
+						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
+						successor.beginNotify(self, callBack, appState1);
 
-					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before condition check");
-					if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
-						successor = x;
-					Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
-					successor.beginNotify(self, callBack, appState1);
-
-				}		
-
+					}		
+				}
 				
 				public void beginFixFingers(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
