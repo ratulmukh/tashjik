@@ -52,6 +52,7 @@ using System;
 using System.Security.Cryptography;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Tashjik.Common
 {
@@ -203,5 +204,33 @@ namespace Tashjik.Common
 				throw se;
 			}
 		}	
+		
+		public static IPAddress convertStrToIP(String strIP)
+		{
+			String[] strSplit = strIP.Split(new char[] {'.'});
+				
+			int IP0 = (int)(System.Convert.ToInt32 (strSplit[0]));
+			int IP1 = (int)(System.Convert.ToInt32 (strSplit[1]));
+			int IP2 = (int)(System.Convert.ToInt32 (strSplit[2]));
+			int IP3 = (int)(System.Convert.ToInt32 (strSplit[3]));
+			byte[] byteIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
+			return new IPAddress(byteIP);
+		}
+		
+		public static String convertToTabSeparatedStr(params String[] strDataSet)
+		{
+			StringBuilder concatenatedString = new StringBuilder();
+			foreach(String strData in strDataSet)
+			{
+				concatenatedString.Append(strData);
+				concatenatedString.Append('\r', 1);
+			}
+			return concatenatedString.ToString();
+		}
+
+		public static byte[] convertToTabSeparatedByteArray(params String[] strDataSet)
+		{
+			return System.Text.Encoding.ASCII.GetBytes(convertToTabSeparatedStr(strDataSet));
+		}
 	}
 }

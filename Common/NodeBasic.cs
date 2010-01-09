@@ -75,16 +75,7 @@ namespace Tashjik.Common
 			Console.WriteLine("Common::NodeBasic::getIP ENTER");
 			lock(nodeBasicLock)
 			{
-				String[] strIPsplit = IP.ToString().Split(new char[] {'.'});
-			
-				int IP0 = (int)(System.Convert.ToInt32 (strIPsplit[0]));
-				int IP1 = (int)(System.Convert.ToInt32 (strIPsplit[1]));
-				int IP2 = (int)(System.Convert.ToInt32 (strIPsplit[2]));
-				int IP3 = (int)(System.Convert.ToInt32 (strIPsplit[3]));
-			
-				byte[] byteIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
-				IPAddress copiedIP = new IPAddress(byteIP);
-				
+				IPAddress copiedIP = UtilityMethod.convertStrToIP(IP.ToString());
 				return copiedIP;
 			}
 	

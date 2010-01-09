@@ -33,7 +33,7 @@ rem csc /out:I:\ratul\code\tashjik\trunk\bin\debug\Narada.dll /r:I:\ratul\code\t
 echo on
 
 cd ..\TashjikClient
-csc /out:..\bin\debug\TashjikClient.exe  /r:..\bin\debug\TashjikCommon.dll /r:..\bin\debug\TashjikTier0.dll /r:..\bin\debug\TashjikServer.dll /r:..\bin\debug\Chord.dll /target:exe Client.cs 
+csc /out:..\bin\debug\TashjikClient.exe  /r:..\bin\debug\TashjikCommon.dll /r:..\bin\debug\TashjikTier0.dll /r:..\bin\debug\TashjikServer.dll /r:..\bin\debug\log4net.dll /r:..\bin\debug\Chord.dll /target:exe Client.cs 
 
 cd ..\boxit
 csc /r:..\bin\debug\TashjikCommon.dll /r:..\bin\debug\TashjikTier0.dll /out:..\bin\debug\Boxit.exe /target:exe Boxit.cs 

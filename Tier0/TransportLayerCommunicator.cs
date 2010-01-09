@@ -614,13 +614,8 @@ namespace Tashjik.Tier0
 					Console.Write("TransportLayerCommunicator::receiveTwoWay strOriginalFromIP = ");
 					Console.WriteLine(strOriginalFromIP);
 					
-					String[] IPsplit = strOriginalFromIP.Split(new char[] {'.'});
-					int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
-					int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
-					int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
-					int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
-					byte[] byteOriginalFromIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
-					IPAddress originalFromIP = new IPAddress(byteOriginalFromIP);
+					IPAddress originalFromIP = UtilityMethod.convertStrToIP(strOriginalFromIP);
+
 					relayTicketRegistry.Add(strTwoWayTicket, strOriginalFromIP);
 					
 					String realExtractedData = strExtractedData.Substring(endOfOriginalFromIP + 1, strExtractedData.Length - endOfOriginalFromIP -1);
@@ -660,7 +655,21 @@ namespace Tashjik.Tier0
 			
 				
 		}
-		
+		public static String convertToTransportLayerStr(params String[] strDataSet)
+		{
+			StringBuilder concatenatedString = new StringBuilder();
+			foreach(String strData in strDataSet)
+			{
+				concatenatedString.Append(strData);
+				concatenatedString.Append('\r', 1);
+			}
+			return concatenatedString.ToString();
+		}
+
+		public static byte[] convertToTransportLayerByteArray(params String[] strDataSet)
+		{
+			return System.Text.Encoding.ASCII.GetBytes(convertToTransportLayerStr(strDataSet));
+		}
 				
 		internal void receive(IPAddress fromIP, Guid overlayGuid, byte[] buffer, int offset, int size)
 		{
@@ -1131,15 +1140,8 @@ namespace Tashjik.Tier0
 					Console.WriteLine(s.Length);
 					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
 					
-					String[] IPsplit = strFromIP.Split(new char[] {'.'});
-					int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
-					int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
-					int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
-					int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
-					byte[] byteFromIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
-				
-					IPAddress fromIP = new IPAddress(byteFromIP);
-					
+					IPAddress fromIP = UtilityMethod.convertStrToIP(strFromIP);
+
 					if(String.Compare(strCallType, CallType.ONE_WAY.ToString()) == 0)
 						transportLayerCommunicator.receive(fromIP, overlayGuid, byteBuffer, 0, byteBuffer.Length);
 					else

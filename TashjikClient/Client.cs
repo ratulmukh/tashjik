@@ -7,19 +7,21 @@ using Tashjik;
 using Tashjik.Tier2;
 using Tashjik.Tier0;
 using Tashjik.Common;
+
 using System.Collections;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-//using log4net;
-//using log4net.Config;
+using log4net;
+using log4net.Appender;
+using log4net.Config;
 
 namespace TashjikClient
 {
 	public class Client : TransportLayerCommunicator.ISink
 	{
-		//private static readonly ILog log = LogManager.GetLogger(typeof(Client));
+		private static readonly ILog log = LogManager.GetLogger(typeof(Client));
 		
 		public Client()
 		{
@@ -39,28 +41,8 @@ namespace TashjikClient
 				String[] IPsplit = args[0].Split(new char[] {'.'});
 				Console.WriteLine("Hi there");
 
-				int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
-				int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
-				int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
-				int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
-				byte[] byteIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
-				Console.Write(IP0);
-				Console.Write(".");
-				Console.Write(IP1);
-				Console.Write(".");
-				Console.Write(IP2);
-				Console.Write(".");
-				Console.WriteLine(IP3);
-/*				Console.Write((int)byteIP[0]);
-				Console.Write(" ");
-				Console.Write((int)byteIP[1]);
-				Console.Write(" ");
-				Console.Write((int)byteIP[2]);
-				Console.Write(" ");
-				Console.WriteLine((int)byteIP[3]);
-*/				
-				IPAddress ipAddress = new IPAddress(byteIP);
-
+				IPAddress ipAddress = UtilityMethod.convertStrToIP(args[0]);
+				
 				UtilityMethod.SetLocalHostIP(ipAddress);
 				Console.Write("received port=");
 				Console.WriteLine(args[1]);
@@ -68,6 +50,10 @@ namespace TashjikClient
 				
 				transportLayerCommunicator = TransportLayerCommunicator.getRefTransportLayerCommunicator();
 				
+				FileAppender fileAppender = new FileAppender();
+					fileAppender.File = "E:/manga";
+				BasicConfigurator.Configure(fileAppender);
+				log.Info("hi");
 			}
 
 #else
@@ -142,15 +128,8 @@ namespace TashjikClient
 		
 		private ChordServer joinExistingChord(String strBootStrapIP, String strBootStrapChordInstanceGuid)
 		{
-			String[] strBootStrapIPsplit = strBootStrapIP.Split(new char[] {'.'});
-			
-			int IP0 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[0]));
-			int IP1 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[1]));
-			int IP2 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[2]));
-			int IP3 = (int)(System.Convert.ToInt32 (strBootStrapIPsplit[3]));
-			
-			byte[] byteBootStrapIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
-			IPAddress bootStrapIP = new IPAddress(byteBootStrapIP);
+			IPAddress bootStrapIP = UtilityMethod.convertStrToIP(strBootStrapIP);
+				
 			ChordServer chord = (ChordServer)(TashjikServer.joinExisting(bootStrapIP, "Chord", new Guid(strBootStrapChordInstanceGuid)));
 			
 			//testing BeginTransportLayerSendTwoWay
@@ -285,19 +264,8 @@ namespace TashjikClient
 			transportLayerCommunicator.register(ClientGuid, this);
 			Console.WriteLine("Please enter IP address of node to send msg to");
 			String IP = Console.ReadLine();
-			String[] IPsplit = IP.Split(new char[] {'.'});
-			Console.WriteLine(IPsplit[0]);
-			Console.WriteLine(IPsplit[1]);
-			Console.WriteLine(IPsplit[2]);
-			Console.WriteLine(IPsplit[3]);
-			int IP0 = (int)(System.Convert.ToInt32 (IPsplit[0]));
-			int IP1 = (int)(System.Convert.ToInt32 (IPsplit[1]));
-			int IP2 = (int)(System.Convert.ToInt32 (IPsplit[2]));
-			int IP3 = (int)(System.Convert.ToInt32 (IPsplit[3]));
-			
-			byte[] byteIP = {(byte)IP0, (byte)IP1, (byte)IP2, (byte)IP3};
-			IPAddress ipAddress = new IPAddress(byteIP);
-			
+			IPAddress ipAddress = UtilityMethod.convertStrToIP(IP);
+
 			String strMsg = "Client sending msg ";
 			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-# SharpDevelop 2.2.1.2648
+# SharpDevelop 3.0.0.3800
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tashjik", "Tashjik.csproj", "{2EDD17CC-33CC-409D-8CEC-84A29B4D1F3F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TashjikTest", "TashjikTest.csproj", "{F0F71FD6-91EC-46AC-8AA8-943C6239171A}"

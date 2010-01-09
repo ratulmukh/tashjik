@@ -10,6 +10,7 @@
     <NoStdLib>False</NoStdLib>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <SourceAnalysisOverrideSettingsFile>E:\Documents and Settings\ratul\Application Data\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -40,6 +41,9 @@
       <HintPath>..\..\..\..\Program Files\log4net\log4net-1.2.10\bin\net\2.0\release\log4net.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\..\..\..\Program Files\log4net\log4net-1.2.10\bin\net\2.0\release\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Rhino.Mocks">
       <HintPath>D:\Program Files\RhinoMocks\Rhino.Mocks.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
@@ -51,6 +55,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Common\TashjikAsyncResult.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="Tier0\ITransportLayerCommunicator.cs" />
     <Compile Include="Tier0\TransportLayerCommunicator.cs" />
     <Compile Include="Common\AsyncCallback_Object.cs" />

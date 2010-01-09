@@ -266,7 +266,17 @@ namespace Tashjik.Tier2
 
 					IChordNode x = iNode_Object.node;
 					if(x==null)
+					{
 						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize UNKNOWN_PREDECESSOR");
+						if(callBack != null)
+						{	iNode_Object = new ChordCommon.IChordNode_Object();
+							iNode_Object.node = null;
+							iNode_Object.obj = appState1;
+
+							IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
+							callBack(res);
+						}
+					}
 					else
 					{
 					
@@ -274,7 +284,7 @@ namespace Tashjik.Tier2
 						if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
 							successor = x;
 						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
-						successor.beginNotify(self, callBack, appState1);
+						//successor.beginNotify(self, callBack, appState1);
 
 					}		
 				}
@@ -575,12 +585,13 @@ namespace Tashjik.Tier2
 			//private static EngineMgr singleton;
 			private readonly Engine engine;
 			private readonly int updationInterval;
-
+			private int maintainanceCounter;
 
 			public EngineMgr(int interval, Engine eng)
 			{
 				updationInterval = interval;
 				engine = eng;
+				maintainanceCounter = 0;
 				
 				ThreadStart job = new ThreadStart(Start);
 				Thread thread = new Thread(job);
@@ -603,6 +614,7 @@ namespace Tashjik.Tier2
 	
 			public void OnClockTick() //object sender, ChordClockTimerArgs e, AsyncCallback OnClockTickCallBack, Object appState)
 			{
+				
 				IPAddress IP = engine.getIP();
 				Console.WriteLine("Received a clock tick event. This is clock tick number {0}"); //, e.TickCount);
 				//ThreadStart job = new ThreadStart(ThreadJob);
@@ -612,10 +624,24 @@ namespace Tashjik.Tier2
 				//Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 				//thisAppState.callBack = null; //OnClockTickCallBack;
 				//thisAppState.obj = null;//appState;
-
-				AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
-				engine.beginCheckPredecessor(checkPredecessorCallBack, null);
-				
+				if(maintainanceCounter == 0)
+				{
+					//AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
+					//engine.beginCheckPredecessor(checkPredecessorCallBack, null);
+					//engine.beginCheckPredecessor(null, null);
+					maintainanceCounter++;
+				}
+				else if(maintainanceCounter == 1)
+				{
+					engine.beginStabilize(null, null);
+					maintainanceCounter++;
+				}
+				else if(maintainanceCounter == 2)
+				{
+					//engine.beginFixFingers(null, null);
+					//maintainanceCounter++;
+					maintainanceCounter = 0;
+				}
 				//engine.beginStabilize(null, null);
 				//engine.beginFixFingers(null, null);
 	
@@ -691,6 +717,8 @@ namespace Tashjik.Tier2
 
 			private void Start()
 			{
+				for(int i=0; i<6; i++)
+					Thread.Sleep(10000);
 				for(; ;)
 				{
 					//Timer(this, new ChordClockTimerArgs(0, this.engine));
