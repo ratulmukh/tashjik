@@ -428,7 +428,7 @@ namespace Tashjik.Tier0
 			twoWayCallBackRegistry.Add(twoWayTicket.ToString(), twoWayCallBackData);
 			
 			String strBuffer = Encoding.ASCII.GetString(buffer, offset, size);
-			StringBuilder concatenatedString = new StringBuilder();
+		/*	StringBuilder concatenatedString = new StringBuilder();
 			concatenatedString.Append(twoWayTicket.ToString());
 			concatenatedString.Append('\r', 1);
 			concatenatedString.Append(strBuffer);
@@ -436,8 +436,9 @@ namespace Tashjik.Tier0
 			String strCompositeMsg = concatenatedString.ToString();
 			int compositeMsgLen    = strCompositeMsg.Length;
 			byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
-
-			addToSockMsgQueue(IP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_SEND);
+		*/	
+			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(false, twoWayTicket.ToString(), strBuffer);
+			addToSockMsgQueue(IP, compositeMsg, 0, compositeMsg.Length, overlayGuid, null, null, CallType.TWO_WAY_SEND);
 		
 		}
 		
@@ -466,10 +467,10 @@ namespace Tashjik.Tier0
 			
 						
 			String strBuffer = Encoding.ASCII.GetString(buffer, offset, size);
-			StringBuilder concatenatedString = new StringBuilder();
+/*			StringBuilder concatenatedString = new StringBuilder();
 			concatenatedString.Append(twoWayTicket.ToString());
 			concatenatedString.Append('\r', 1);
-			
+*/			
 			String strOriginalFromIP;
 			if(relayTicket == new Guid("00000000-0000-0000-0000-000000000000"))
 				strOriginalFromIP = UtilityMethod.GetLocalHostIP().ToString();
@@ -480,7 +481,7 @@ namespace Tashjik.Tier0
 				else
 					throw new Exception();
 			}
-			
+/*			
 			//no need to send originalIP if the relay is going back to originalIP itself!
 			if(String.Compare(IP.ToString(), strOriginalFromIP) != 0)
 			{
@@ -488,15 +489,25 @@ namespace Tashjik.Tier0
 			 	concatenatedString.Append('\r', 1);
 			}
 			concatenatedString.Append(strBuffer);
+*/			
 			
-			String strCompositeMsg = concatenatedString.ToString();
+			
+			
+			byte[] compositeMsg;
+			//no need to send originalIP if the relay is going back to originalIP itself!
+			if(String.Compare(IP.ToString(), strOriginalFromIP) != 0)
+				compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(false, twoWayTicket.ToString(), strOriginalFromIP, strBuffer);
+			else
+				compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(false, twoWayTicket.ToString(), strBuffer);
+
+/*			String strCompositeMsg = concatenatedString.ToString();
 			int compositeMsgLen    = strCompositeMsg.Length;
 			byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
-
+*/
 			if(String.Compare(IP.ToString(), strOriginalFromIP) != 0)
-				addToSockMsgQueue(IP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_RELAY_SEND);
+				addToSockMsgQueue(IP, compositeMsg, 0, compositeMsg.Length, overlayGuid, null, null, CallType.TWO_WAY_RELAY_SEND);
 			else
-				addToSockMsgQueue(IP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_RELAY_REPLY);
+				addToSockMsgQueue(IP, compositeMsg, 0, compositeMsg.Length, overlayGuid, null, null, CallType.TWO_WAY_RELAY_REPLY);
 	
 		
 		}
@@ -584,7 +595,7 @@ namespace Tashjik.Tier0
 						data.size = strNull.Length;
 					}
 					
-					StringBuilder concatenatedString = new StringBuilder();
+				/*	StringBuilder concatenatedString = new StringBuilder();
 					concatenatedString.Append(strTwoWayTicket);
 					concatenatedString.Append('\r', 1);
 					concatenatedString.Append(Encoding.ASCII.GetString(data.buffer), data.offset, data.size);
@@ -592,8 +603,9 @@ namespace Tashjik.Tier0
 					String strCompositeMsg = concatenatedString.ToString();
 					int compositeMsgLen    = strCompositeMsg.Length;
 					byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
-
-					addToSockMsgQueue(fromIP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_REPLY);
+				*/	
+					byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(false, strTwoWayTicket, Encoding.ASCII.GetString(data.buffer));  //WARNING: data.offset and data.size have not been considered here
+					addToSockMsgQueue(fromIP, compositeMsg, 0, compositeMsg.Length, overlayGuid, null, null, CallType.TWO_WAY_REPLY);
 				}
 				else
 				{
@@ -626,7 +638,7 @@ namespace Tashjik.Tier0
 					data = sink.notifyTwoWayRelayMsg(fromIP, originalFromIP, System.Text.Encoding.ASCII.GetBytes(realExtractedData), 0, realExtractedData.Length, new Guid(strTwoWayTicket));
 					if(data != null)
 					{
-						StringBuilder concatenatedString = new StringBuilder();
+		/*				StringBuilder concatenatedString = new StringBuilder();
 						concatenatedString.Append(strTwoWayTicket);
 						concatenatedString.Append('\r', 1);
 						concatenatedString.Append(Encoding.ASCII.GetString(data.buffer), data.offset, data.size);
@@ -634,8 +646,9 @@ namespace Tashjik.Tier0
 						String strCompositeMsg = concatenatedString.ToString();
 						int compositeMsgLen    = strCompositeMsg.Length;
 						byte[] compositeMsg    = System.Text.Encoding.ASCII.GetBytes(strCompositeMsg);
-
-						addToSockMsgQueue(originalFromIP, compositeMsg, 0, compositeMsgLen, overlayGuid, null, null, CallType.TWO_WAY_REPLY);
+*/
+						byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(false, strTwoWayTicket, Encoding.ASCII.GetString(data.buffer));  //WARNING: data.offset and data.size have not been considered here
+						addToSockMsgQueue(originalFromIP, compositeMsg, 0, compositeMsg.Length, overlayGuid, null, null, CallType.TWO_WAY_REPLY);
 					}
 					
 				}

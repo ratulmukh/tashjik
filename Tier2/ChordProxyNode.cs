@@ -262,7 +262,7 @@ namespace Tashjik.Tier2
 				{
 					Console.Write("ChordProxyNode::notifyTwoWayMsg predecessor =");
 					Console.WriteLine(predecessor.getIP().ToString());
-					compositeMsg = UtilityMethod.convertToTabSeparatedByteArray("GET_PREDECESSOR_REPLY", predecessor.getIP().ToString());
+					compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "GET_PREDECESSOR_REPLY", predecessor.getIP().ToString());
 				}
 				
 				data.buffer = compositeMsg;
@@ -304,7 +304,7 @@ namespace Tashjik.Tier2
 			IPAddress originalFromIP = ((IP_ChordProxyNode)(iNode_Object.obj)).IP;
 			Guid relayTicket = ((IP_ChordProxyNode)(iNode_Object.obj)).ticket;
 			
-			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray("GET_PREDECESSOR", successor.getIP().ToString());
+			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "FIND_SUCCESSOR_REPLY", successor.getIP().ToString());
 			chordProxyNode.proxyController.sendMsgTwoWayRelay(chordProxyNode.proxyController.getProxyNode(originalFromIP), compositeMsg, 0, compositeMsg.Length, null, null, relayTicket);
 		}
 			
@@ -583,7 +583,7 @@ namespace Tashjik.Tier2
 		{
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor ENTER");
 
-			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray("FIND_SUCCESSOR", Encoding.ASCII.GetString(queryHashedKey));
+			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "FIND_SUCCESSOR", Encoding.ASCII.GetString(queryHashedKey));
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
 			proxyController.sendMsgTwoWayRelay(this, compositeMsg, 0, compositeMsg.Length, findSuccessorCallBack, appState, relayTicket);
 		

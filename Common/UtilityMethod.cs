@@ -217,20 +217,22 @@ namespace Tashjik.Common
 			return new IPAddress(byteIP);
 		}
 		
-		public static String convertToTabSeparatedStr(params String[] strDataSet)
+		public static String convertToTabSeparatedStr(bool lastTab, params String[] strDataSet)
 		{
+			
 			StringBuilder concatenatedString = new StringBuilder();
 			foreach(String strData in strDataSet)
 			{
 				concatenatedString.Append(strData);
-				concatenatedString.Append('\r', 1);
+				if(!(strData == strDataSet[strDataSet.Length-1] && !lastTab))
+					concatenatedString.Append('\r', 1);
 			}
 			return concatenatedString.ToString();
 		}
 
-		public static byte[] convertToTabSeparatedByteArray(params String[] strDataSet)
+		public static byte[] convertToTabSeparatedByteArray(bool lastTab, params String[] strDataSet)
 		{
-			return System.Text.Encoding.ASCII.GetBytes(convertToTabSeparatedStr(strDataSet));
+			return System.Text.Encoding.ASCII.GetBytes(convertToTabSeparatedStr(lastTab, strDataSet));
 		}
 	}
 }
