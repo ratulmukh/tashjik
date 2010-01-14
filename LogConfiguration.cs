@@ -1,5 +1,5 @@
-﻿/************************************************************
-* File Name: TransportLayerCommunicatorTest.cs
+/************************************************************
+* File Name: LogConfiguration.cs
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -45,20 +45,14 @@
 * Modification History:
 *
 ************************************************************/
-
-
 using System;
-using NUnit.Framework;
 
-namespace Tashjik.Test.Tier0Test
+namespace Tashjik
 {
-	/// <summary>
-	/// Description of TransportLayerCommunicator.
-	/// </summary>
-	[TestFixture()]
-	public class TransportLayerCommunicatorTest
+
+	public class LogConfiguration
 	{
-		public TransportLayerCommunicatorTest()
+		public LogConfiguration()
 		{
 		}
 	}

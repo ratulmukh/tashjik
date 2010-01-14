@@ -1,5 +1,5 @@
 ﻿/************************************************************
-* File Name: 
+* File Name: ChordProxyNode.cs
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -7,7 +7,7 @@
 * This software is licensed under the terms and conditions of
 * the MIT license, as given below.
 *
-* Copyright (c) <2008> <Ratul Mukhopadhyay>
+* Copyright (c) <2008-2010> <Ratul Mukhopadhyay>
 *
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -256,7 +256,7 @@ namespace Tashjik.Tier2
 				if(predecessor == null)
 				{
 					Console.WriteLine("ChordProxyNode::notifyTwoWayMsg  predecessor is unknown");
-					compositeMsg = TransportLayerCommunicator.convertToTransportLayerByteArray("GET_PREDECESSOR_REPLY", "UNKNOWN_PREDECESSOR");
+					compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "GET_PREDECESSOR_REPLY", "UNKNOWN_PREDECESSOR");
 				}
 				else
 				{
@@ -603,7 +603,7 @@ namespace Tashjik.Tier2
 		{
 			Console.WriteLine("ChordProxyNode::beginGetPredecessor ENTER");
 
-			byte[] compositeMsg = TransportLayerCommunicator.convertToTransportLayerByteArray("GET_PREDECESSOR");
+			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "GET_PREDECESSOR");
 
 			Console.WriteLine("ChordProxyNode::beginGetPredecessor before sendMsg to proxyController");
 			proxyController.sendMsgTwoWay(this, compositeMsg, 0, compositeMsg.Length, getPredecessorCallBack, appState);

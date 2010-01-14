@@ -1,5 +1,5 @@
 ﻿/************************************************************
-* File Name: 
+* File Name: ChordRealNode.cs
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -7,7 +7,7 @@
 * This software is licensed under the terms and conditions of
 * the MIT license, as given below.
 *
-* Copyright (c) <2008> <Ratul Mukhopadhyay>
+* Copyright (c) <2008-2010> <Ratul Mukhopadhyay>
 *
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
@@ -274,7 +274,7 @@ namespace Tashjik.Tier2
 							iNode_Object.obj = appState1;
 
 							IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
-							callBack(res);
+					//		callBack(res);
 						}
 					}
 					else
@@ -284,9 +284,10 @@ namespace Tashjik.Tier2
 						if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
 							successor = x;
 						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
-						//successor.beginNotify(self, callBack, appState1);
+						
 
 					}		
+					successor.beginNotify(self, callBack, appState1);
 				}
 				
 				public void beginFixFingers(AsyncCallback beginStabilizeCallBack, Object appState)

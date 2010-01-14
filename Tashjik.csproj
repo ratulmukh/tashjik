@@ -56,6 +56,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Common\TashjikAsyncResult.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="LogConfiguration.cs" />
     <Compile Include="Tier0\ITransportLayerCommunicator.cs" />
     <Compile Include="Tier0\TransportLayerCommunicator.cs" />
     <Compile Include="Common\AsyncCallback_Object.cs" />
@@ -97,14 +98,18 @@
     <Compile Include="Tier2\ChordCommon\ByteKey_IChordNodeAsyncResult.cs" />
     <Compile Include="Tier2\ChordCommon\IChordNodeAsyncResult.cs" />
     <Compile Include="Tier2\ChordCommon\IChordNode_Object.cs" />
-    <Compile Include="Tier2\ChordCommon\IChordNode_ObjectAsyncResult.cs" />
+    <Compile Include="Tier2\ChordCommon\IChordNode_ObjectAsyncResult.cs">
+      <DependentUpon>IChordNodeAsyncResult.cs</DependentUpon>
+    </Compile>
     <Compile Include="Tier2\ChordCommon\MessageCapsule.cs" />
     <Compile Include="Tier2\ChordCommon\Node.cs" />
     <Compile Include="Tier2\ChordCommon\PendingLookUpRequest.cs" />
     <Compile Include="Tier2\ChordDataStore.cs" />
     <Compile Include="Tier2\ChordException\DataNotFoundInStoreException.cs" />
     <Compile Include="Tier2\ChordException\Exception.cs" />
-    <Compile Include="Tier2\ChordException\LookUpDelayedException.cs" />
+    <Compile Include="Tier2\ChordException\LookUpDelayedException.cs">
+      <DependentUpon>SearchPendingLookUpRequestListFailedException.cs</DependentUpon>
+    </Compile>
     <Compile Include="Tier2\ChordException\NotificationArrivedInterruptedException.cs" />
     <Compile Include="Tier2\ChordException\SearchPendingLookUpRequestListFailedException.cs" />
     <Compile Include="Tier2\ChordException\SuccessorNotDeterminedFromRoutingTableException.cs" />

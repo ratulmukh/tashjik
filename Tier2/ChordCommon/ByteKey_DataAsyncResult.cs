@@ -1,5 +1,5 @@
 ﻿/************************************************************
-* File Name: 
+* File Name: ByteKey_DataAsyncResult.cs
 *
 * Author: Ratul Mukhopadhyay
 * ratuldotmukhATgmaildotcom
@@ -7,7 +7,7 @@
 * This software is licensed under the terms and conditions of
 * the MIT license, as given below.
 *
-* Copyright (c) <2008> <Ratul Mukhopadhyay>
+* Copyright (c) <2008-2010> <Ratul Mukhopadhyay>
 *
 * Permission is hereby granted, free of charge, to any person
 * obtaining a copy of this software and associated documentation
