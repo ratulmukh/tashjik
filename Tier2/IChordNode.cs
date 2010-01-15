@@ -62,7 +62,8 @@ namespace Tashjik.Tier2
 		//Node getPredecessor();
 		void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState);
 		//void notify(Node possiblePred);
-		void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState);
+		void beginPredecessorNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState);
+		void predecessorNotify(IChordNode possiblePred);
 		//bool ping();
 		void beginPing(AsyncCallback pingCallBack, Object appState);
 		byte[] getHashedIP();

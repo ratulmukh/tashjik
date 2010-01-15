@@ -274,8 +274,8 @@ namespace TashjikClient
 			//chord.beginGetData(key, data, putDataCallBack, null);
 */
 //Tashjik.Server.Node node = new Tashjik.Server.Node();
-			Console.WriteLine("Please enter IP address of node to send msg to");
-			String IP = Console.ReadLine();
+			//Console.WriteLine("Please enter IP address of node to send msg to");
+			//String IP = Console.ReadLine();
 		}
 		
 		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)

@@ -143,6 +143,17 @@ namespace Tashjik.Tier2
 					return false;
 			}	
 
+			/*public static bool operator<(IChordNode n1, ChordRealNode n2)
+			{
+				String strHash1 = n1.getHashedIP().ToString();
+				String strHash2 = n2.getHashedIP().ToString();
+		
+				if(String.Compare(strHash1, strHash2)<0)
+					return true;
+				else 
+					return false;
+			}	*/
+			
 			public static bool operator>(ChordRealNode n1, IChordNode n2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
@@ -154,7 +165,17 @@ namespace Tashjik.Tier2
 					return false;
 			}
 
-
+	/*		public static bool operator>(IChordNode n1, ChordRealNode n2)
+			{
+				String strHash1 = n1.getHashedIP().ToString();
+				String strHash2 = n2.getHashedIP().ToString();
+	
+				if(String.Compare(strHash1, strHash2)>0)
+					return true;
+				else
+					return false;
+			}
+	*/		
 			public static bool operator>(ChordRealNode n1, byte[] hash2)
 			{
 				String strHash1 = n1.getHashedIP().ToString();
@@ -287,7 +308,7 @@ namespace Tashjik.Tier2
 						
 
 					}		
-					successor.beginNotify(self, callBack, appState1);
+					successor.beginPredecessorNotify(self, callBack, appState1);
 				}
 				
 				public void beginFixFingers(AsyncCallback beginStabilizeCallBack, Object appState)
@@ -453,8 +474,17 @@ namespace Tashjik.Tier2
 
 				public void notify(IChordNode possiblePred) //IPAddress possiblePredIP, byte[] possiblePredHashedIP)
 				{
-					if((predecessor==null) || (((ChordRealNode)possiblePred<self) && ((ChordRealNode)predecessor<possiblePred)))
-					predecessor = possiblePred;
+					if(predecessor==null) //|| ((/*(ChordRealNode)*/possiblePred<self) && (/*(ChordRealNode)*/predecessor<possiblePred)))
+						predecessor = possiblePred;
+					else 
+					{
+						String strPossiblePredHash = possiblePred.getHashedIP().ToString();
+						String strSelfHash = self.getHashedIP().ToString();
+						String strPredecessorHash = predecessor.getHashedIP().ToString();
+						
+						if((String.Compare(strPossiblePredHash, strSelfHash)<0) && (String.Compare(strPredecessorHash, strPossiblePredHash)<0))
+							predecessor = possiblePred;
+					}
 				}
 
 				/*
@@ -831,7 +861,7 @@ namespace Tashjik.Tier2
 		{
 			engine.beginJoin(joinNode, joinCallBack, appState);
 		}
-		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
+		public void beginPredecessorNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
 	
 
@@ -841,6 +871,11 @@ namespace Tashjik.Tier2
 				IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState, true, true);
 				notifyCallBack(res);
 			}
+		}
+		
+		public void predecessorNotify(IChordNode possiblePred)
+		{
+			engine.notify(possiblePred);
 		}
 
 

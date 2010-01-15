@@ -237,8 +237,15 @@ namespace Tashjik.Tier2
 		}	
 		public override void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
-			
+			Console.WriteLine("ChordProxyNode::notifyMsg ENTER");
+			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
+			String[] split = strReceivedData.Split(new char[] {'\r'});
+			if(String.Compare(split[0], "PREDECESSOR_NOTIFY") == 0)
+			{
+				thisNode.predecessorNotify((IChordNode)(proxyController.getProxyNode(UtilityMethod.convertStrToIP(split[1]))));
+			}
 		}
+		
 		public override Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			Console.WriteLine("ChordProxyNode::notifyTwoWayMsg ENTER");
@@ -433,7 +440,7 @@ namespace Tashjik.Tier2
 					}
 					else if(msg.getType()==Msg.TypeEnum.NOTIFY)
 						//thisNode.notify((Node)msg.getParameter1());
-						thisNode.beginNotify((IChordNode)msg.getParameter1(), null, null);
+						thisNode.beginPredecessorNotify((IChordNode)msg.getParameter1(), null, null);
 					else if(msg.getType()==Msg.TypeEnum.GET_DATA)
 					{
 						IChordNode_Node_Msg iNode_Msg = new IChordNode_Node_Msg();
@@ -610,26 +617,24 @@ namespace Tashjik.Tier2
 
 		}
 
-		public void beginNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
+		public void beginPredecessorNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
 			Console.WriteLine("ChordProxyNode::beginNotify ENTER");
 
-			Msg msg = new Msg(Msg.TypeEnum.NOTIFY, (Object)possiblePred, null);
-			List<Msg> msgList = new List<Msg>();
-			msgList.Add(msg);
-			proxyController.sendMsg((Object)msgList, this);
-		
-			if(!(notifyCallBack==null))
-			{
-				if(!(notifyCallBack==null))
-				{
-					//should not do this; rather should wait till node really has been notified
-					IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState, true, true);
-					notifyCallBack(res);
-				}
-			}
+			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "PREDECESSOR_NOTIFY", possiblePred.getIP().ToString());
+
+			Console.WriteLine("ChordProxyNode::beginGetPredecessor before sendMsg to proxyController");
+			proxyController.sendMsg(this, compositeMsg, 0, compositeMsg.Length, notifyCallBack, appState);
+
+			
 	
-		}	
+		}
+		
+		//to be implemented
+		public void predecessorNotify(IChordNode possiblePred)
+		{
+			
+		}
 
 		public ChordProxyNode(IPAddress ip, ProxyNodeController proxyController) : base(ip)
 		{
