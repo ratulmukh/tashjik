@@ -218,7 +218,7 @@ namespace TashjikClient
 	
 			//transportLayerCommunicator.register(ClientGuid, this);
 		
-			Console.WriteLine("Creating new Chord overlay");
+			//Console.WriteLine("Creating new Chord overlay");
 			Guid chordInstanceGuid;
 			//IPAddress bootStrapIP =
 			requestBootStrapNode();
