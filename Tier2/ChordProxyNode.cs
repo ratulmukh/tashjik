@@ -165,29 +165,26 @@ namespace Tashjik.Tier2
 		}
 */
 
+		private String[] splitMsgBuffer(byte[] buffer, int offset, int size)
+		{
+			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
+			return strReceivedData.Split(new char[] {'\r'});
+		}
+		
 		public override void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			Console.WriteLine("ChordProxyNode::notifyMsg ENTER");
-			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
-			String[] split = strReceivedData.Split(new char[] {'\r'});
+			String[] split = splitMsgBuffer(buffer, offset, size);
 			if(String.Compare(split[0], "PREDECESSOR_NOTIFY") == 0)
-			{
 				thisNode.predecessorNotify((IChordNode)(proxyController.getProxyNode(UtilityMethod.convertStrToIP(split[1]))));
-			}
 		}
 		
 		public override Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			Console.WriteLine("ChordProxyNode::notifyTwoWayMsg ENTER");
-			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
-			String[] split = strReceivedData.Split(new char[] {'\r'});
+			String[] split = splitMsgBuffer(buffer, offset, size);
 			if(String.Compare(split[0], "GET_PREDECESSOR") == 0)
 			{
-
-
-				Tashjik.Tier0.TransportLayerCommunicator.Data data = new Tashjik.Tier0.TransportLayerCommunicator.Data();
-				data.offset = 0;
-				
 				byte[] compositeMsg;
 				IChordNode predecessor = thisNode.getPredecessor();
 				if(predecessor == null)
@@ -201,11 +198,7 @@ namespace Tashjik.Tier2
 					Console.WriteLine(predecessor.getIP().ToString());
 					compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "GET_PREDECESSOR_REPLY", predecessor.getIP().ToString());
 				}
-				
-				data.buffer = compositeMsg;
-				data.size = compositeMsg.Length;
-				return data;
-			
+				return new Tashjik.Tier0.TransportLayerCommunicator.Data(compositeMsg, 0, compositeMsg.Length);
 			}
 			return null;
 		}
@@ -215,19 +208,27 @@ namespace Tashjik.Tier2
 			public IPAddress IP;
 			public ChordProxyNode chordProxyNode;
 			public Guid ticket;
+			public IP_ChordProxyNode()
+			{
+				
+			}
+			public IP_ChordProxyNode(IPAddress IP, ChordProxyNode chordProxyNode, Guid ticket)
+			{
+				this.IP = IP;
+				this.chordProxyNode = chordProxyNode;
+				this.ticket = ticket;
+			}
+			
 		}
+		
 		public override Tashjik.Tier0.TransportLayerCommunicator.Data notifyTwoWayRelayMsg(IPAddress fromIP, IPAddress originalFromIP, byte[] buffer, int offset, int size, Guid relayTicket)
 		{
 			Console.WriteLine("ChordProxyNode::notifyTwoWayRelayMsg ENTER");
-			String strReceivedData = Encoding.ASCII.GetString(buffer, offset, size);
-			String[] split = strReceivedData.Split(new char[] {'\r'});
+			String[] split = splitMsgBuffer(buffer, offset, size);
 			if(String.Compare(split[0], "FIND_SUCCESSOR") == 0)
 			{
 				Console.WriteLine("ChordProxyNode::notifyTwoWayRelayMsg message = FIND_SUCCESSOR");
-				IP_ChordProxyNode iIP_ChordProxyNode = new IP_ChordProxyNode();
-				iIP_ChordProxyNode.IP = originalFromIP;
-				iIP_ChordProxyNode.chordProxyNode = this;
-				iIP_ChordProxyNode.ticket = relayTicket;
+				IP_ChordProxyNode iIP_ChordProxyNode = new IP_ChordProxyNode(originalFromIP, this, relayTicket);
 				thisNode.beginFindSuccessor(System.Text.Encoding.ASCII.GetBytes(split[1]), (IChordNode)(proxyController.getProxyNode(originalFromIP)), new AsyncCallback(processFindSuccessor_notifyTwoWayRelayMsg_callback), iIP_ChordProxyNode, relayTicket);
 			}
 			return null;
@@ -248,8 +249,7 @@ namespace Tashjik.Tier2
 		public override void notifyTwoWayReplyReceived(IPAddress fromIP, byte[] buffer, int offset, int size, AsyncCallback originalRequestCallBack, Object originalAppState)
 		{
 			Console.WriteLine("ChordProxyNode::notifyTwoWayReplyReceived ENTER");
-			String receivedData = Encoding.ASCII.GetString(buffer, offset, size);
-			String[] split = receivedData.Split(new char[] {'\r'});
+			String[] split = splitMsgBuffer(buffer, offset, size);
 			if(String.Compare(split[0], "FIND_SUCCESSOR_REPLY") == 0)
 			{
 				Console.WriteLine("ChordProxyNode::notifyTwoWayReplyReceived FIND_SUCCESSOR_RECEIVED");

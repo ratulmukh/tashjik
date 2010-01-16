@@ -1038,6 +1038,18 @@ namespace Tashjik.Tier0
 			public byte[] buffer;
 			public int offset;
 			public int size;
+			
+			public Data()
+			{
+				
+			}
+			
+			public Data(byte[] buffer, int offset, int size)
+			{
+				this.buffer = buffer;
+				this.offset = offset;
+				this.size   = size;
+			}
 		
 		}
 		
