@@ -147,6 +147,7 @@ public static class Boxit
 			registry.Add(IP.ToString(), new Triplet(process, Convert.ToInt16(Convert.ToString(portNo)), null));
 			//registry.Add(IP.ToString(), new Triplet(process, portNo, null));
 			portNo++;
+			//Thread.Sleep(15000);
 		}
 	}
 	

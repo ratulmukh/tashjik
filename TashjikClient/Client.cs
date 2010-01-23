@@ -102,8 +102,8 @@ namespace TashjikClient
 				//	fileAppender.File = "E:/manga";
 				//BasicConfigurator.Configure(fileAppender);
 				//log.Info("hi");
-				string fn = @"e:\ratul\code\tashjik\logs\" + args[0]+ ".txt";
-				TextWriter errStream = new StreamWriter(fn);
+				//string fn = @"e:\ratul\code\tashjik\logs\" + args[0]+ ".txt";
+				//TextWriter errStream = new StreamWriter(fn);
 				//Console.SetError(errStream);
 				//Console.SetOut(errStream);
 			}

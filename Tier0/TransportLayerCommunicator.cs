@@ -782,7 +782,8 @@ namespace Tashjik.Tier0
 			String content = String.Empty;
 			SocketState socketState = ((SocketState)(result.AsyncState));
 			Socket sock = socketState.sock;
-			
+		try
+		{
 			int bytesRead = sock.EndReceive(result);
 			if(bytesRead > 0)
 			{
@@ -800,6 +801,30 @@ namespace Tashjik.Tier0
 			Console.WriteLine(content);
 			notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
 			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
+		}
+		catch(Exception e)
+		{
+		/*	if(bytesRead > 0)
+			{
+				socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
+				
+				if(content.IndexOf("\n") > -1)
+				{
+					content = socketState.concatenatedString.ToString();
+					notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+				}
+				else 
+					sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+			}
+			content = socketState.concatenatedString.ToString();
+			Console.WriteLine(content);
+			notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
+*/
+		}
+		
+		
+		
 		}
 		
 #if SIM		
@@ -935,7 +960,7 @@ namespace Tashjik.Tier0
 			internal class SocketState
 			{
 				public Socket sock;
-				public byte[] buffer = new byte[1024];
+				public byte[] buffer = new byte[5024];
 				public StringBuilder concatenatedString = new StringBuilder();
 				public TransportLayerCommunicator transportLayerCommunicator;
 			}

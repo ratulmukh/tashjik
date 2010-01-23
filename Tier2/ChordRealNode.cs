@@ -647,7 +647,7 @@ namespace Tashjik.Tier2
 			{
 				
 				IPAddress IP = engine.getIP();
-				Console.WriteLine("Received a clock tick event. This is clock tick number {0}"); //, e.TickCount);
+				//Console.WriteLine("Received a clock tick event. This is clock tick number {0}"); //, e.TickCount);
 				//ThreadStart job = new ThreadStart(ThreadJob);
 				//Thread thread = new Thread(job);
 				//thread.Start();

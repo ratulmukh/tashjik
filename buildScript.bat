@@ -1,5 +1,5 @@
 echo on
-rem csc=E:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc
+rem csc=C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc
 
 cd Common
 csc /out:..\bin\debug\TashjikCommon.dll /target:library AsyncCallback_Object.cs Bool_Object.cs Bool_ObjectAsyncResult.cs   Data.cs Data_AsyncCallback_Object.cs Data_Object.cs Data_ObjectAsyncResult.cs DataAsyncResult.cs NodeBasic.cs ObjectAsyncResult.cs TashjikAsyncResult.cs UtilityMethod.cs Exception\BytesLengthsNotMatchingException.cs Exception\LocalHostIPNotFoundException.cs
