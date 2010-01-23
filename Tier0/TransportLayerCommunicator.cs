@@ -200,17 +200,8 @@ namespace Tashjik.Tier0
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection endPoint created");
 				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
 				Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
-				/*
-				SocketState socketState = new SocketState();
-				socketState.sock = sock;
 				
-				Stack<Object> thisAppState = new Stack<Object>();
-				thisAppState.Push(this);
-				thisAppState.Push();
-				thisAppState.Push(appState);
-				
-				socketState.transportLayerCommunicator = transportLayerCommunicator;
-			*/	AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
+				AsyncCallback beginConnectCallBack = new AsyncCallback(beginConnectCallBackFor_establishRemoteConnection);
 				Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
 				Console.WriteLine(transportLayerCommunicator.overlayRegistry.Count);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection before calling beginConnect");					
@@ -379,7 +370,7 @@ namespace Tashjik.Tier0
 		
 		}
 		
-		public void addToSockMsgQueue(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState, CallType callType)
+		private void addToSockMsgQueue(IPAddress IP, byte[] buffer, int offset, int size, Guid overlayGuid, AsyncCallback callBack, Object appState, CallType callType)
 		{
 			Console.WriteLine("TransportLayerCommunicator::addToSockMsgQueue ENTER");
 			Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = ");
