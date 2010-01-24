@@ -238,7 +238,7 @@ public static class Boxit
 			{
 				socketState.sock = handler;
 		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
-		        Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
+		        Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening System.ArgumentException exception");
 			}
 			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
 	
