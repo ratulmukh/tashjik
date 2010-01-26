@@ -182,12 +182,12 @@ namespace Tashjik
 			return data;
 		}
 		
-		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size) 
+		public void notifyOneWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size) 
 		{
 			Console.WriteLine("ProxyNodeController::notify ENTER");
 			
 			ProxyNode proxyNode = getProxyNode(fromIP);
-			proxyNode.notifyMsg(fromIP, buffer, offset, size);
+			proxyNode.notifyOneWayMsg(fromIP, buffer, offset, size);
 		}
 		
 		
@@ -271,7 +271,7 @@ namespace Tashjik
 		{
 			Console.WriteLine("ProxyNodeController::sendMsg sending data to transportLayerCommunicator");
 			//proxyNodeRegistry.AddData(sender, data);
-			transportLayerCommunicator.BeginTransportLayerSend(sender.getIP(), buffer, offset, size, overlayInstanceGuid, callBack, appState);
+			transportLayerCommunicator.BeginTransportLayerSendOneWay(sender.getIP(), buffer, offset, size, overlayInstanceGuid, callBack, appState);
 		}
 
 		public void sendMsgTwoWay(ProxyNode sender, byte[] buffer, int offset, int size, AsyncCallback callBack, Object appState)

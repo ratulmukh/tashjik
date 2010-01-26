@@ -659,7 +659,7 @@ namespace Tashjik.Tier2
 				{
 					//AsyncCallback checkPredecessorCallBack = new AsyncCallback(processCheckPredecesorForOnClockTick);
 					//engine.beginCheckPredecessor(checkPredecessorCallBack, null);
-					//engine.beginCheckPredecessor(null, null);
+					engine.beginCheckPredecessor(null, null);
 					maintainanceCounter++;
 				}
 				else if(maintainanceCounter == 1)
@@ -669,7 +669,7 @@ namespace Tashjik.Tier2
 				}
 				else if(maintainanceCounter == 2)
 				{
-					//engine.beginFixFingers(null, null);
+					engine.beginFixFingers(null, null);
 					//maintainanceCounter++;
 					maintainanceCounter = 0;
 				}

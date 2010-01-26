@@ -79,7 +79,7 @@ namespace Tashjik
 			}
 		}
 		
-		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		public void notifyOneWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			
 		}
@@ -100,14 +100,14 @@ namespace Tashjik
 			
 		}
 		
-		public void notifyMsg(IPAddress fromIP, Object LowLevelData)
+		public void notifyOneWayMsg(IPAddress fromIP, Object LowLevelData)
 		{
 			List<OverlayInstanceMsg> overlayInstanceMsgList = (List<OverlayInstanceMsg>)LowLevelData;
 			foreach(OverlayInstanceMsg overlayInstanceMsg in overlayInstanceMsgList)
 			{
 /*				OverlayInstanceInfo overlayInstanceInfo;
 				if(overlayInstanceRegistry.TryGetValue(overlayInstanceMsg.guid, out overlayInstanceInfo))
-					overlayInstanceInfo.sink.notifyMsg(fromIP, overlayInstanceMsg.data);
+					overlayInstanceInfo.sink.notifyOneWayMsg(fromIP, overlayInstanceMsg.data);
 				else
 					throw new System.Exception();
 */			}

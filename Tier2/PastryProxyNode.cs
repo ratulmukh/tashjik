@@ -101,7 +101,7 @@ namespace Tashjik.Tier2
 			
 		}
 	
-		public void notifyMsg(IPAddress fromIP, Object data)
+		public void notifyOneWayMsg(IPAddress fromIP, Object data)
 		{
 			
 		}

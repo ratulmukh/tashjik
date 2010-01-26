@@ -101,7 +101,7 @@ namespace Tashjik.Test.Tier0Test
 			
 			Thread.Sleep(1000);
 			
-			transportLayerCommunicator.BeginTransportLayerSend(IP, msg, 0, strMsg.Length, Tier0TestGuid, new AsyncCallback(sendDataCallBack), IP);
+			transportLayerCommunicator.BeginTransportLayerSendOneWay(IP, msg, 0, strMsg.Length, Tier0TestGuid, new AsyncCallback(sendDataCallBack), IP);
 			
 			//sendSameDataToSameIP_MultipleTimes(IP, msg, 0, strMsg.Length, Tier0TestGuid, null, null);
 			
@@ -113,7 +113,7 @@ namespace Tashjik.Test.Tier0Test
 		{
 			while(true)
 			{
-				transportLayerCommunicator.BeginTransportLayerSend(IP, buffer, offset, size, overlayGuid, callBack, appState);
+				transportLayerCommunicator.BeginTransportLayerSendOneWay(IP, buffer, offset, size, overlayGuid, callBack, appState);
 			}
 		}
 		
@@ -130,7 +130,7 @@ namespace Tashjik.Test.Tier0Test
 			}
 		}
 		
- 		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+ 		public void notifyOneWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 			
 		}

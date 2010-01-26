@@ -171,9 +171,9 @@ namespace Tashjik.Tier2
 			return strReceivedData.Split(new char[] {'\r'});
 		}
 		
-		public override void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		public override void notifyOneWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
-			Console.WriteLine("ChordProxyNode::notifyMsg ENTER");
+			Console.WriteLine("ChordProxyNode::notifyOneWayMsg ENTER");
 			String[] split = splitMsgBuffer(buffer, offset, size);
 			if(String.Compare(split[0], "PREDECESSOR_NOTIFY") == 0)
 				thisNode.predecessorNotify((IChordNode)(proxyController.getProxyNode(UtilityMethod.convertStrToIP(split[1]))));

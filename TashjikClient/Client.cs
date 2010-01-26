@@ -132,7 +132,7 @@ namespace TashjikClient
 
 			String strMsg = "bootStrap request";
 			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
-			transportLayerCommunicator.BeginTransportLayerSend(ipAddress, msg, 0, strMsg.Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
+			transportLayerCommunicator.BeginTransportLayerSendOneWay(ipAddress, msg, 0, strMsg.Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
 #else
 			chordInstanceGuid = new Guid("");
 			return null;
@@ -156,7 +156,7 @@ namespace TashjikClient
 				byte[] byteIP = {127, 0, 0, 1};
 				IPAddress ipAddress = new IPAddress(byteIP);
 				byte[] msg = System.Text.Encoding.ASCII.GetBytes(chordInstanceGuid.ToString());
-				transportLayerCommunicator.BeginTransportLayerSend(ipAddress, msg, 0, chordInstanceGuid.ToString().Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
+				transportLayerCommunicator.BeginTransportLayerSendOneWay(ipAddress, msg, 0, chordInstanceGuid.ToString().Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
 
 			}
 			else
@@ -278,7 +278,7 @@ namespace TashjikClient
 			//String IP = Console.ReadLine();
 		}
 		
-		public void notifyMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
+		public void notifyOneWayMsg(IPAddress fromIP, byte[] buffer, int offset, int size)
 		{
 		
 			Console.WriteLine("Msg received");
@@ -321,7 +321,7 @@ namespace TashjikClient
 			String strMsg = "Client sending msg ";
 			byte[] msg = System.Text.Encoding.ASCII.GetBytes(strMsg);
 
-			transportLayerCommunicator.BeginTransportLayerSend(ipAddress, msg, 0, strMsg.Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
+			transportLayerCommunicator.BeginTransportLayerSendOneWay(ipAddress, msg, 0, strMsg.Length, ClientGuid, new AsyncCallback(sendDataCallBack), ipAddress);
 		}
 		
 		static void sendDataCallBack(IAsyncResult result)
