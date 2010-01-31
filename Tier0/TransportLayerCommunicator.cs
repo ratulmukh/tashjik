@@ -722,9 +722,11 @@ namespace Tashjik.Tier0
                         messageDispatcher.Start();      
                        
                         //initialise connection acceptor thread, etc,.
-                    ThreadStart listenJob = new ThreadStart(this.StartListening);
+                    ThreadStart listenJob = new ThreadStart(initListener);
                         Thread listener = new Thread(listenJob);
-                        listener.Start();      
+                        listener.Start(); 
+                        
+                        
                 }
                        
                 static ManualResetEvent allDone = new ManualResetEvent(false);
@@ -744,61 +746,30 @@ namespace Tashjik.Tier0
                 return new IPAddress(byteIP);
                 }
                
-                private void StartListening()
-                {
-                        Console.Write("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", overlayRegistry.Count);
-                        Console.WriteLine("StartListening : IP={0} Port={1}", getIP().ToString(), getPort());
-                Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", overlayRegistry.Count);
-                       
-                        Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-                IPEndPoint localEndPoint = new IPEndPoint(getIP(), getPort());
-                try
-                {
-                        listener.Bind(localEndPoint);
-                listener.Listen(100);
-                //listener.Listen(SocketOptionName.MaxConnections );
-
-
-                    while (true)
-                    {
-                    // Set the event to nonsignaled state.
-                        allDone.Reset();
-       
-                    // Start an asynchronous socket to listen for connections.
-                    Console.WriteLine("TrnsportLayerComm::Waiting for a connection at port {0}", getPort());
-                    Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = overlayRegistry.Count");
-                                       
-                        SocketState socketState = new SocketState(listener, this);
-                    listener.BeginAccept(
-                            new AsyncCallback(beginAcceptCallback_forStartListening),
-                        socketState );
-
-                        // Wait until a connection is made before continuing.
-                    allDone.WaitOne();
-                    }
-
-                }
-                catch (Exception e)
-                {
-                Console.WriteLine(e.ToString());
-                }      
-
-                }
+                void initListener()
+      			{
+               
+         		   	SocketUtility.SocketListener socketListener = new SocketUtility.SocketListener(getIP(), getPort(), new AsyncCallback(beginAcceptCallback_forStartListening), this);
+           	        socketListener.SocketStartListening();
+       			}
                
                 private void beginAcceptCallback_forStartListening(IAsyncResult result)
                 {
                         Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
-                        // Signal the main thread to continue.
-                allDone.Set();
-
-                // Get the socket that handles the client request.
-            SocketState socketState = (SocketState) result.AsyncState;
-            Socket listener = socketState.sock;
-                Socket handler = listener.EndAccept(result);
-                        TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
+                
+            SocketUtility.SocketListener.SocketListenState socketListenState = (SocketUtility.SocketListener.SocketListenState) result.AsyncState;
+            // Signal the listener thread to continue.
+            socketListenState.allDone.Set();
+            Socket listener = socketListenState.sock;
+            Socket handler = listener.EndAccept(result);
+              
+            TransportLayerCommunicator transportLayerCommunicator = (TransportLayerCommunicator)(socketListenState.obj);
                        
                 SockMsgQueue sockMsgQueue = new SockMsgQueue(handler, transportLayerCommunicator );
                 IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
+                SocketState socketState = new SocketState();
+                socketState.transportLayerCommunicator = transportLayerCommunicator;
+                           
                 try
                         {
                                 transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
@@ -910,9 +881,14 @@ namespace Tashjik.Tier0
                                         Console.WriteLine("haha 2\n{0}\n{1}", s, s.Length);
                                         byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
                                         IPAddress fromIP = UtilityMethod.convertStrToIP(strFromIP);
-
+                                        Console.WriteLine("before ONE-WAY decision");
                                         if(String.Compare(strCallType, CallType.ONE_WAY.ToString()) == 0)
-                                                transportLayerCommunicator.receive(fromIP, clientGuid, byteBuffer, 0, byteBuffer.Length);
+                                        {
+                                        	Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer CallType IS ONE_WAY transportLayerCommunicator={0}", transportLayerCommunicator);
+                                        	if(transportLayerCommunicator == null)
+                                        		Console.WriteLine("aiyoo");
+                                        	transportLayerCommunicator.receive(fromIP, clientGuid, byteBuffer, 0, byteBuffer.Length);
+                                        }
                                         else
                                         {
                                                 Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer CallType IS NOT ONE_WAY");
@@ -939,7 +915,7 @@ namespace Tashjik.Tier0
             {
                 if(readytoNotify == false)
                 {
-                        if(s.Length == 0)
+                    if(s.Length == 0)
                         break;
                     strclientGuid = s;
                     Console.WriteLine("haha 1\n{0}\n{1}", s, s.Length);

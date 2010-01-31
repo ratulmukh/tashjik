@@ -91,7 +91,7 @@ namespace Tashjik.Tier0
     	    	        allDone.Reset();
 		
     	    	        // Start an asynchronous socket to listen for connections.
-        		        Console.WriteLine("Boxit::Waiting for a connection at port {0}", iPortNo);
+        		        Console.WriteLine("SocketUtility::Waiting for a connection at port {0}", iPortNo);
     	                	            
         	    	    SocketListenState socketListenState = new SocketListenState(listener, allDone, appState);
 						listener.BeginAccept(callbackListener,socketListenState);

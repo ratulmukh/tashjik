@@ -68,19 +68,7 @@ public static class Boxit
         public static void Main()
         {
             init();
-/*
-    Process process;
-    while(true)
-    {
-        process = Process.Start("TashjikClient.exe");
-        //Thread.Sleep(15000);
-    }
-        try {
-        process.BeginE
-  //            process.Kill();
-        } catch {}
-*/      
-   }
+ 	    }
        
         struct Triplet
         {
@@ -120,11 +108,13 @@ public static class Boxit
 
         static void init()
         {
-            ThreadStart listenJob = new ThreadStart(initListener);
-            Thread listener = new Thread(listenJob);
-            listener.Start();
-               
-            Process process;
+        	startListenerThread();
+        	forkClientProcesses();
+        }
+        
+        static void forkClientProcesses()
+        {
+        	Process process;
             int portNo = 2340;
             for(int i=0; i<5; i++)
             {
@@ -139,6 +129,7 @@ public static class Boxit
                 portNo++;
                 //Thread.Sleep(15000);
             }
+
         }
        
         private static void startListenerThread()
@@ -172,17 +163,13 @@ public static class Boxit
         {
         	Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
       
-            // Get the socket that handles the client request.
             SocketUtility.SocketListener.SocketListenState socketListenState = (SocketUtility.SocketListener.SocketListenState) result.AsyncState;
             // Signal the listener thread to continue.
             socketListenState.allDone.Set();
             Socket listener = socketListenState.sock;
             Socket handler = listener.EndAccept(result);
-            //TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
-                       
-            //SockMsgQueue sockMsgQueue = new SockMsgQueue(handler);
+                        
             IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
-               
             Triplet triplet;
             if(registry.TryGetValue(IP.ToString(), out triplet))
                 triplet.sock = handler;
@@ -190,7 +177,6 @@ public static class Boxit
             SocketState socketState = new SocketState();
             try
             {
-                //transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
                 socketState.sock = handler;
                 handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);      
                 Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
@@ -205,32 +191,32 @@ public static class Boxit
        
    		}
                
-                static private void beginReceiveCallBack(IAsyncResult result)
-                {
-                        Console.WriteLine("Boxit::beginReceiveCallBack ENTER");
-                        String content = String.Empty;
-                        SocketState socketState = ((SocketState)(result.AsyncState));
-                        Socket sock = socketState.sock;
+        static private void beginReceiveCallBack(IAsyncResult result)
+        {
+            Console.WriteLine("Boxit::beginReceiveCallBack ENTER");
+            String content = String.Empty;
+            SocketState socketState = ((SocketState)(result.AsyncState));
+            Socket sock = socketState.sock;
                        
-                        int bytesRead = sock.EndReceive(result);
-                        if(bytesRead > 0)
-                        {
-                                socketState.concatenatedString.Remove(0, socketState.concatenatedString.Length);
-                                socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
-                               
-                                if(content.IndexOf("\n") > -1)
-                                {
-                                        content = socketState.concatenatedString.ToString();
-                                        notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
-                                }
-                                else
-                                        sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
-                        }
-                        content = socketState.concatenatedString.ToString();
-                        Console.WriteLine(content);
-                        notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
-                        Console.WriteLine("Boxit::beginReceiveCallBack EXIT");
+            int bytesRead = sock.EndReceive(result);
+            if(bytesRead > 0)
+            {
+                socketState.concatenatedString.Remove(0, socketState.concatenatedString.Length);
+                socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
+                                
+                if(content.IndexOf("\n") > -1)
+                {
+                    content = socketState.concatenatedString.ToString();
+                    notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
                 }
+                else
+                    sock.BeginReceive(socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);
+            }
+            content = socketState.concatenatedString.ToString();
+            Console.WriteLine(content);
+            notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
+            Console.WriteLine("Boxit::beginReceiveCallBack EXIT");
+        }
                
        
                 enum MsgExtractionStatus
