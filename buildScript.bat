@@ -6,7 +6,7 @@ csc /out:..\bin\debug\TashjikCommon.dll /target:library AsyncCallback_Object.cs 
 
 
 cd ../Tier0 
-csc /out:..\bin\debug\TashjikTier0.dll /r:..\bin\debug\TashjikCommon.dll /target:library ITransportLayerCommunicator.cs TransportLayerCommunicator.cs
+csc /out:..\bin\debug\TashjikTier0.dll /r:..\bin\debug\TashjikCommon.dll /target:library ITransportLayerCommunicator.cs TransportLayerCommunicator.cs SocketUtility.cs
 
 
 

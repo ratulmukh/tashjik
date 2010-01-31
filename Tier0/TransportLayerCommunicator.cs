@@ -133,7 +133,12 @@ namespace Tashjik.Tier0
 					connectionState = ConnectionState.NOT_CONNECTED;
 					
 			}
-			
+			public void notifyConnectionBusted()
+			{
+				if(!(sock.Connected))
+					connectionState = ConnectionState.NOT_CONNECTED;
+			}
+
 			public ConnectionState getConnectionState()
 			{
 				return connectionState;
@@ -147,12 +152,17 @@ namespace Tashjik.Tier0
 				{
 					sockMsgQueue.sock.EndConnect(result);
 				}
-				catch(SocketException e)
+				catch(SocketException)
 				{
 					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException");
 					lock(sockMsgQueue.msgQueueLock)
 					{
 						sockMsgQueue.connectionState = ConnectionState.CONNECTION_FAILED;
+#if SIM
+						//if socket connection to Boxit failed, just relax
+						//it will be attempted again, and hopefully connect
+						
+#else
 						Msg msg;
 						Tashjik.Common.TashjikAsyncResult asyncResult;
 						Console.WriteLine(" inside connectionState = ConnectionState.CONNECTION_FAILED");
@@ -168,9 +178,11 @@ namespace Tashjik.Tier0
 								msg.callBack(asyncResult);
 							}
 							else
-								throw e;
+								;//throw e;
 							
+
 						}
+#endif						
 					}
 					Console.WriteLine("TransportLayerCommunicator::beginConnectCallBackFor_establishRemoteConnection SocketException END of catch");
 					
@@ -178,22 +190,27 @@ namespace Tashjik.Tier0
 			
 			}
 			
+			private IPEndPoint getEndPoint()
+			{
+				
+#if SIM
+				int iPortNo = System.Convert.ToInt16("2335"); //Boxit port
+				return new IPEndPoint (transportLayerCommunicator.getIP(),iPortNo);
+#else				
+				int iPortNo = System.Convert.ToInt16 ("2334");
+				return new IPEndPoint (IP,iPortNo);
+#endif				
 			
+			}
 			private void establishRemoteConnection()
 			{
 				
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection ENTER");
 				Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", transportLayerCommunicator.overlayRegistry.Count);
+
 				connectionState = ConnectionState.WAITING_TO_CONNECT;
-#if SIM
-				int iPortNo = System.Convert.ToInt16("2335"); //Boxit port
-				IPEndPoint ipEnd = new IPEndPoint (transportLayerCommunicator.getIP(),iPortNo);
-#else				
-				int iPortNo = System.Convert.ToInt16 ("2334");
-				IPEndPoint ipEnd = new IPEndPoint (IP,iPortNo);
-#endif
-				
-				
+				IPEndPoint ipEnd = getEndPoint();
+
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::establishRemoteConnection endPoint created");
 				Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", transportLayerCommunicator.overlayRegistry.Count);
 								
@@ -248,19 +265,32 @@ namespace Tashjik.Tier0
 					return;
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msgQueue.Count ={0}", msgQueue.Count);
 				Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", transportLayerCommunicator.overlayRegistry.Count);
-				
+#if SIM
+				Queue<Msg> tmpMsgQueue = new Queue<Msg>();
+				byte[] compositeMsg = composeMsgForDispatch(tmpMsgQueue);
+#else
 				byte[] compositeMsg = composeMsgForDispatch();
+#endif
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg msg to be sent = {0}", compositeMsg);
 			    
 			    Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", transportLayerCommunicator.overlayRegistry.Count);
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg finally calling beginSend on the socket");
+			    sock.SendTimeout = 3;
+#if SIM
+				sock.BeginSend(compositeMsg, 0, compositeMsg.Length, new SocketFlags(), new AsyncCallback(beginSendCallBackFor_DispatchMsg), new SocketState(sock, null, tmpMsgQueue));
+#else
 			    sock.BeginSend(compositeMsg, 0, compositeMsg.Length, new SocketFlags(), new AsyncCallback(beginSendCallBackFor_DispatchMsg), new SocketState(sock, null));
+#endif
 			    Console.WriteLine("TransportLayerCommunicator::DEEPCHK overlayRegistry count = {0}", transportLayerCommunicator.overlayRegistry.Count);
 									
         		Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::dispatchMsg EEXIT");
 			}
 
+#if SIM
+			private  byte[] composeMsgForDispatch(Queue<Msg> tmpMsgQueue)
+#else	
 			private  byte[] composeMsgForDispatch()
+#endif
 			{
 				int msgQueueCount = msgQueue.Count;
 				StringBuilder concatenatedMsg = new StringBuilder();
@@ -272,6 +302,9 @@ namespace Tashjik.Tier0
 						//not sure if it required to apply a lock for this deque
 						//thr is only 1 thread tht deques, while multiple 1s enque
 						tempMsg = msgQueue.Dequeue();
+#if SIM
+						tmpMsgQueue.Enqueue(tempMsg);
+#endif
 					}
 #if SIM
 					convertToNullSeparatedStr(concatenatedMsg, UtilityMethod.GetLocalHostIP().ToString(), IP.ToString());
@@ -296,12 +329,30 @@ namespace Tashjik.Tier0
 				}
 			}
 
-			private static void beginSendCallBackFor_DispatchMsg(IAsyncResult result)
+			private void beginSendCallBackFor_DispatchMsg(IAsyncResult result)
 			{
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::beginSendCallBackFor_DispatchMsg ENTER");
 				
 				SocketState so2   = ((SocketState)(result.AsyncState));
-				so2.sock.EndSend(result);
+				try
+				{	
+					so2.sock.EndSend(result);
+				}
+				catch (SocketException)
+				{
+					Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::beginSendCallBackFor_DispatchMsg SOCKET EXCEPTION");
+					connectionState = ConnectionState.NOT_CONNECTED;
+#if SIM
+					//only applicable for sim
+					//sometimes Boxit takes too much time to respond and the socket times out 
+					//for some reason, the msgs couldnot be send
+					//so enqueing them again for a second try
+					Queue<Msg> tmpMsgQueue = (Queue<Msg>)(so2.obj);
+					int tmpMsgQueueCount = tmpMsgQueue.Count;
+					for(int i=0; i<tmpMsgQueueCount; i++)
+						enqueue(tmpMsgQueue.Dequeue());
+#endif
+				}
 				Console.WriteLine("TransportLayerCommunicator::SockMsgQueue::beginSendCallBackFor_DispatchMsg EXIT");
 			}
 			
@@ -348,7 +399,7 @@ namespace Tashjik.Tier0
 			SockMsgQueue sockMsgQueue;
 			if(commRegistry.TryGetValue(IP, out sockMsgQueue))
 				if(sockMsgQueue.getConnectionState() == SockMsgQueue.ConnectionState.CONNECTION_FAILED)
-					throw new SocketException();
+					;//throw new SocketException();
 		}
 		
 		void TransportLayerSend(IPAddress IP, byte[] buffer, int offset, int size, Guid clientGuid, AsyncCallback callBack, Object appState)
@@ -731,7 +782,7 @@ namespace Tashjik.Tier0
 
 		}
 		
-		static private void beginAcceptCallback_forStartListening(IAsyncResult result)
+		private void beginAcceptCallback_forStartListening(IAsyncResult result)
 		{
 			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
 			// Signal the main thread to continue.
@@ -762,7 +813,7 @@ namespace Tashjik.Tier0
 	
 		}
 		
-		static private void beginReceiveCallBack(IAsyncResult result)
+		private void beginReceiveCallBack(IAsyncResult result)
 		{
 			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack ENTER");
 			String content = String.Empty;
@@ -789,9 +840,13 @@ namespace Tashjik.Tier0
 				notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
 				Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
 			}
-			catch(Exception e)
+			catch(SocketException)
 			{
-				
+				SockMsgQueue sockMsgQueue;
+				IPAddress sockIP = ((IPEndPoint)(sock.RemoteEndPoint)).Address;
+				if(commRegistry.TryGetValue(sockIP, out sockMsgQueue))
+					sockMsgQueue.notifyConnectionBusted();
+					
 			}
 		}
 		
@@ -909,6 +964,16 @@ namespace Tashjik.Tier0
 				public byte[] buffer = new byte[5024];
 				public StringBuilder concatenatedString = new StringBuilder();
 				public TransportLayerCommunicator transportLayerCommunicator;
+#if SIM
+				public Object obj;
+				public SocketState(Socket sock, TransportLayerCommunicator transportLayerCommunicator, Object obj)
+				{
+					this.sock = sock;
+					this.transportLayerCommunicator = transportLayerCommunicator;
+					this.obj = obj; 
+				}
+
+#endif
 				public SocketState(Socket sock, TransportLayerCommunicator transportLayerCommunicator)
 				{
 					this.sock = sock;

@@ -101,21 +101,10 @@ public static class Boxit
 	static byte[] getRandomByteIP()
 	{
 		Random rnd = new Random();
+		byte[] byteIP = {(byte)(rnd.Next(0, 255)), (byte)(rnd.Next(0, 255)), (byte)(rnd.Next(0, 255)), (byte)(rnd.Next(0, 255))};
 			
-			int add1 = rnd.Next(0, 255);		
-			int add2 = rnd.Next(0, 255);
-			int add3 = rnd.Next(0, 255);
-			int add4 = rnd.Next(0, 255);
-			
-			byte[] byteIP = {(byte)add1, (byte)add2, (byte)add3, (byte)add4};
-			
-			Console.WriteLine("Hi there");
-			Console.Write((int)byteIP[0]);
-			Console.Write((int)byteIP[1]);
-			Console.Write((int)byteIP[2]);
-			Console.WriteLine((int)byteIP[3]);
-			
-			return byteIP;
+		Console.WriteLine("Hi there \n {0} {1} {2} {3}", (int)byteIP[0], (int)byteIP[1], (int)byteIP[2], (int)byteIP[3]);
+		return byteIP;
 	}
 	
 	static IPAddress getRandomIP()
@@ -128,9 +117,25 @@ public static class Boxit
 		return Encoding.ASCII.GetString(getRandomByteIP());
 	}
 	
+	static SocketUtility.SocketStartListeningParams createSocketListenerParams()
+	{
+		SocketUtility.SocketStartListeningParams socketStartListeningParams = new SocketUtility.SocketStartListeningParams();
+		socketStartListeningParams.iPortNo   = System.Convert.ToInt16 ("2335");
+		byte[] byteIP = {127, 0, 0, 1};
+		socketStartListeningParams.ipAddress = new IPAddress(byteIP);
+		socketStartListeningParams.callback  = new AsyncCallback(beginAcceptCallback_forStartListening);
+		socketStartListeningParams.appState  = null;
+		return socketStartListeningParams;	
+	}
 	static void init()
 	{
-		ThreadStart listenJob = new ThreadStart(StartListening);
+//		SocketUtility.SocketStartListeningParams socketStartListeningParams = createSocketListenerParams();
+//		ParameterizedThreadStart listenJob = new ParameterizedThreadStart(SocketUtility.SocketStartListening);
+//		Thread listener = new Thread(listenJob);
+//		listener.Start(socketStartListeningParams);
+
+		SocketUtility.SocketStartListeningParams socketStartListeningParams = createSocketListenerParams();
+		ThreadStart listenJob = new ThreadStart(initListener);
 		Thread listener = new Thread(listenJob);
 		listener.Start();
 		
@@ -141,8 +146,8 @@ public static class Boxit
 			byte[] byteIP = getRandomByteIP();
 			IPAddress IP = new IPAddress(byteIP);
 			String strIP = Encoding.ASCII.GetString(byteIP);
-			Console.WriteLine(strIP);
-			Console.WriteLine(IP.ToString());
+			Console.WriteLine("{0} \n {1}",  strIP, IP.ToString());
+			
 			process = Process.Start("TashjikClient.exe", IP.ToString() + " " + Convert.ToString(portNo));
 			registry.Add(IP.ToString(), new Triplet(process, Convert.ToInt16(Convert.ToString(portNo)), null));
 			//registry.Add(IP.ToString(), new Triplet(process, portNo, null));
@@ -151,7 +156,16 @@ public static class Boxit
 		}
 	}
 	
-			static ManualResetEvent allDone = new ManualResetEvent(false);
+	static void initListener()
+	{
+		
+		byte[] byteIP = {127, 0, 0, 1};
+		SocketUtility.SocketListener socketListener = new SocketUtility.SocketListener(new IPAddress(byteIP), System.Convert.ToInt16 ("2335"), new AsyncCallback(beginAcceptCallback_forStartListening), null);
+		allDone = socketListener.allDone;
+		socketListener.SocketStartListening();
+	}
+	
+			//static ManualResetEvent allDone = new ManualResetEvent(false);
 		
 			internal class SocketState
 			{
@@ -207,18 +221,20 @@ public static class Boxit
         	}	
 
 		}
-		
-		static private void beginAcceptCallback_forStartListening(IAsyncResult result)
+		static ManualResetEvent allDone;
+		private static void beginAcceptCallback_forStartListening(IAsyncResult result)
 		{
 			Console.WriteLine("TransportLayerCommunicator::beginAcceptCallback_forStartListening ENTER");
 			// Signal the main thread to continue.
-        	allDone.Set();
+        	//allDone.Set();
 
 	        // Get the socket that handles the client request.
-    	    SocketState socketState = (SocketState) result.AsyncState;
-    	    Socket listener = socketState.sock;
+    	    SocketUtility.SocketListenState socketListenState = (SocketUtility.SocketListenState) result.AsyncState;
+    	    // Signal the listener thread to continue.
+    	    /*socketListenState.*/allDone.Set();
+    	    Socket listener = socketListenState.sock;
         	Socket handler = listener.EndAccept(result);
-			TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
+			//TransportLayerCommunicator transportLayerCommunicator = socketState.transportLayerCommunicator;
 			
         	//SockMsgQueue sockMsgQueue = new SockMsgQueue(handler);
         	IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
@@ -227,8 +243,10 @@ public static class Boxit
         	if(registry.TryGetValue(IP.ToString(), out triplet))
         		triplet.sock = handler;
         		
+        	SocketState socketState = new SocketState();
         	try
 			{
+        		
 				//transportLayerCommunicator.commRegistry.Add(IP, sockMsgQueue);
 				socketState.sock = handler;
 		        handler.BeginReceive( socketState.buffer, 0, socketState.buffer.Length, new SocketFlags(), new AsyncCallback(beginReceiveCallBack), socketState);	
@@ -246,7 +264,7 @@ public static class Boxit
 		
 		static private void beginReceiveCallBack(IAsyncResult result)
 		{
-			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack ENTER");
+			Console.WriteLine("Boxit::beginReceiveCallBack ENTER");
 			String content = String.Empty;
 			SocketState socketState = ((SocketState)(result.AsyncState));
 			Socket sock = socketState.sock;
@@ -268,7 +286,7 @@ public static class Boxit
 			content = socketState.concatenatedString.ToString();
 			Console.WriteLine(content);
 			notifyUpperLayer(content, sock, socketState.transportLayerCommunicator );
-			Console.WriteLine("TransportLayerCommunicator::beginReceiveCallBack EXIT");
+			Console.WriteLine("Boxit::beginReceiveCallBack EXIT");
 		}
 		
 	
@@ -283,10 +301,9 @@ public static class Boxit
 		}
 		static private void notifyUpperLayer(String content, Socket fromSock, TransportLayerCommunicator transportLayerCommunicator)
 		{
-			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer ENTER");
-			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer content=");
-			Console.WriteLine(content);
-			Console.WriteLine("TransportLayerCommunicator::notifyUpperLayer split contents=");
+			Console.WriteLine("Boxit::notifyUpperLayer ENTER");
+			Console.WriteLine("Boxit::notifyUpperLayer content=\n{0}", content);
+			Console.WriteLine("Boxit::notifyUpperLayer split contents=");
 			String[] split = content.Split(new char[] {'\0'});
 			foreach (String s in split)
 				Console.WriteLine(s);
@@ -308,16 +325,14 @@ public static class Boxit
 					if(s.Length == 0)
 						break;
 					strFromIP = s;  	
-					Console.Write("FromIP received: ");
-					Console.WriteLine(s);
+					Console.WriteLine("FromIP received: {0}", s);
 					msgExtractionStatus = MsgExtractionStatus.FROM_IP_EXTRACTED;
 					
 				}
 				else if(msgExtractionStatus == MsgExtractionStatus.FROM_IP_EXTRACTED)
 				{
 					strToIP = s;	
-					Console.Write("ToIP received: ");
-					Console.WriteLine(s);
+					Console.WriteLine("ToIP received: {0}", s);
 					msgExtractionStatus = MsgExtractionStatus.TO_IP_EXTRACTED;
 						
 					
@@ -325,9 +340,7 @@ public static class Boxit
 				else if(msgExtractionStatus == MsgExtractionStatus.TO_IP_EXTRACTED)
 				{
 					strCallType = s;
-					Console.WriteLine("haha 1");
-					Console.WriteLine(s);
-					Console.WriteLine(s.Length);
+					Console.WriteLine("haha 1\n{0}\n{1}", s, s.Length);
 					//byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
 					//overlayGuid = new Guid(s);
 					msgExtractionStatus = MsgExtractionStatus.CALLTYPE_EXTRACTED;
@@ -335,9 +348,7 @@ public static class Boxit
 				else if(msgExtractionStatus == MsgExtractionStatus.CALLTYPE_EXTRACTED)
 				{
 					strOverlayGuid = s;
-					Console.WriteLine("haha 1.5");
-					Console.WriteLine(s);
-					Console.WriteLine(s.Length);
+					Console.WriteLine("haha 1.5\n{0}\n{1}", s, s.Length);
 					byteOverlayGuid = System.Text.Encoding.ASCII.GetBytes(strOverlayGuid);
 					overlayGuid = new Guid(s);
 					msgExtractionStatus = MsgExtractionStatus.OVERLAYGUID_EXTRACTED;
@@ -345,9 +356,7 @@ public static class Boxit
 				else if(msgExtractionStatus == MsgExtractionStatus.OVERLAYGUID_EXTRACTED)
 				{
 					strBuffer = s;
-					Console.WriteLine("haha 2");
-					Console.WriteLine(s);
-					Console.WriteLine(s.Length);
+					Console.WriteLine("haha 2 \n {0}\n{1}", s, s.Length);
 					byteBuffer = System.Text.Encoding.ASCII.GetBytes(strBuffer);
 					
 					//byte[] byteFromIP = System.Text.Encoding.ASCII.GetBytes(strFromIP);
@@ -431,11 +440,8 @@ public static class Boxit
 							bootStrapAllDone.Reset();
 						
 							
-							List<Object> msgParameters = new List<Object>(5);
-							msgParameters.Add(strToIP);
-							msgParameters.Add(strFromIP);
-							msgParameters.Add(strCallType);
-							msgParameters.Add(strOverlayGuid);
+							List<Object> msgParameters = createList(strToIP, strFromIP, strCallType, strOverlayGuid);
+							
 							byte[] msg = {(byte)'n', (byte)'o', (byte)' ', (byte)'b', (byte)'o', (byte)'o', (byte)'t', (byte)'s', (byte)'t', (byte)'r', (byte)'a', (byte)'p', (byte)'n', (byte)'o', (byte)'d', (byte)'e'};
 							msgParameters.Add(Encoding.ASCII.GetString(msg));
 							
@@ -453,14 +459,8 @@ public static class Boxit
 						{
 							Console.WriteLine("Boxit::processMsg NON Empty BootstrapNodes");
 							
-							List<Object> msgParameters = new List<Object>(5);
-							msgParameters.Add(strToIP);
-							msgParameters.Add(strFromIP);
-							msgParameters.Add(strCallType);
-							msgParameters.Add(strOverlayGuid);
-							msgParameters.Add(strBootstrapNodes[0]);
-							//msgParameters.Add(overlayInstanceGuid);
-							
+							List<Object> msgParameters = createList(strToIP, strFromIP, strCallType, strOverlayGuid, strBootstrapNodes[0]);
+														
 							String strCompositeMsg = createReplyMsg(msgParameters, overlayInstanceGuid);
 							
 							//String strCompositeMsg = createMsgForSendingOverlay(strToIP, strFromIP, strCallType, strOverlayGuid, strBootstrapNodes[0], overlayInstanceGuid);
@@ -471,6 +471,7 @@ public static class Boxit
 							sendMsg(strFromIP, compositeMsg, 0, compositeMsgLen);
 							bootstrapState = BootstrapState.OVERLAY_INSTANCE_GUID_RETURNED;
 						}
+						
 					}
 						
 				}
@@ -499,6 +500,14 @@ public static class Boxit
 				
 				
 				
+		}
+		
+		private static List<Object> createList(params Object[] listObjects)
+		{
+			List<Object> createdList = new List<Object>();
+			foreach(Object obj in createdList)
+				createdList.Add(obj);
+			return createdList;
 		}
 		
 		static String createReplyMsg(List<Object> msgParameters, Object objParameter)

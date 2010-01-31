@@ -58,6 +58,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="LogConfiguration.cs" />
     <Compile Include="Tier0\ITransportLayerCommunicator.cs" />
+    <Compile Include="Tier0\SocketUtility.cs" />
     <Compile Include="Tier0\TransportLayerCommunicator.cs" />
     <Compile Include="Common\AsyncCallback_Object.cs" />
     <Compile Include="Common\Bool_Object.cs" />
