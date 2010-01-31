@@ -54,8 +54,6 @@ namespace Tashjik.Tier0
 {
 	public class SocketUtility
 	{
-		//static ManualResetEvent allDone = new ManualResetEvent(false);
-		
 		public SocketUtility()
 		{
 		}
@@ -66,7 +64,7 @@ namespace Tashjik.Tier0
 			private readonly int iPortNo;
 			private AsyncCallback callbackListener;
 			private Object appState;
-			public ManualResetEvent allDone = new ManualResetEvent(false);
+			private ManualResetEvent allDone = new ManualResetEvent(false);
 			
 			public SocketListener(IPAddress ipAddress, int iPortNo, AsyncCallback callbackListener, Object appState)
 			{
@@ -80,99 +78,55 @@ namespace Tashjik.Tier0
 			{
 				IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
            		Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-			       
-           	
-           	try
-        	{
-           		
-            	listener.Bind(localEndPoint);
-            	listener.Listen(100);
-            	//listener.Listen(SocketOptionName.MaxConnections );
+			              	
+           		try
+        		{
+           		  	listener.Bind(localEndPoint);
+            		listener.Listen(100);
+            		//listener.Listen(SocketOptionName.MaxConnections );
 
-	            while (true) 
-	            {
-    	            // Set the event to nonsignaled state.
-        	        allDone.Reset();
-	
-    	            // Start an asynchronous socket to listen for connections.
-        	        Console.WriteLine("Boxit::Waiting for a connection at port {0}", iPortNo);
-    	                	            
-        	        SocketListenState socketListenState = new SocketListenState(listener, allDone, appState);
-					listener.BeginAccept(callbackListener,socketListenState);
-					
-	                // Wait until a connection is made before continuing.
-    	            allDone.WaitOne();
-        	    }
-
-	        } 
-        	catch (Exception e) 
-        	{
-    	        Console.WriteLine(e.ToString());
-        	}	
-			
-		}
-	}
+	            	while (true) 
+	            	{
+	    	            // Set the event to nonsignaled state.
+    	    	        allDone.Reset();
 		
-		public static void SocketStartListening(Object objSocketStartListeningParams)
-		{
-			SocketStartListeningParams socketStartListeningParams = (SocketStartListeningParams)(objSocketStartListeningParams);
-	        IPAddress ipAddress = socketStartListeningParams.ipAddress;
-	        int iPortNo = socketStartListeningParams.iPortNo;
-	        AsyncCallback callback  = socketStartListeningParams.callback;
-	        Object appState  = socketStartListeningParams.appState;
-	        
-			IPEndPoint localEndPoint = new IPEndPoint(ipAddress, iPortNo);
-           	Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-			       
-           	ManualResetEvent allDone = new ManualResetEvent(false);
-           	try
-        	{
-           		
-            	listener.Bind(localEndPoint);
-            	listener.Listen(100);
-            	//listener.Listen(SocketOptionName.MaxConnections );
-
-	            while (true) 
-	            {
-    	            // Set the event to nonsignaled state.
-        	        allDone.Reset();
-	
-    	            // Start an asynchronous socket to listen for connections.
-        	        Console.WriteLine("Boxit::Waiting for a connection at port {0}", iPortNo);
+    	    	        // Start an asynchronous socket to listen for connections.
+        		        Console.WriteLine("Boxit::Waiting for a connection at port {0}", iPortNo);
     	                	            
-        	        SocketListenState socketListenState = new SocketListenState(listener, allDone, appState);
-					listener.BeginAccept(callback,socketListenState);
-					
-	                // Wait until a connection is made before continuing.
-    	            allDone.WaitOne();
-        	    }
-
-	        } 
-        	catch (Exception e) 
-        	{
-    	        Console.WriteLine(e.ToString());
-        	}	
-			
-		}
-		public class SocketStartListeningParams
-		{
-			public IPAddress ipAddress; 
-			public int iPortNo;
-			public AsyncCallback callback;
-			public Object appState;
-		}
-		
-		public class SocketListenState
-		{
-			public Socket sock;
-			public ManualResetEvent allDone;
-			public Object obj;
-			public SocketListenState(Socket sock, ManualResetEvent allDone, Object obj)
-			{
-				this.sock = sock;
-				this.allDone = allDone;
-				this.obj = obj; 
+        	    	    SocketListenState socketListenState = new SocketListenState(listener, allDone, appState);
+						listener.BeginAccept(callbackListener,socketListenState);
+						
+	    	            // Wait until a connection is made before continuing.
+    	    	        allDone.WaitOne();
+        	    	}
+	
+		        } 
+        		catch (Exception e) 
+	        	{
+    		        Console.WriteLine(e.ToString());
+        		}	
 			}
-		}
+		
+			public class SocketStartListeningParams
+			{
+				public IPAddress ipAddress; 
+				public int iPortNo;
+				public AsyncCallback callback;
+				public Object appState;
+			}
+		
+			public class SocketListenState
+			{
+				public Socket sock;
+				public ManualResetEvent allDone;
+				public Object obj;
+				public SocketListenState(Socket sock, ManualResetEvent allDone, Object obj)
+				{
+					this.sock = sock;
+					this.allDone = allDone;
+					this.obj = obj; 
+				}
+			}
+		}	
 	}
 }
