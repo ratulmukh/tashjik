@@ -57,6 +57,10 @@
     <Compile Include="Common\TashjikAsyncResult.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="LogConfiguration.cs" />
+    <Compile Include="Tier0\Graph\Dijkstra.cs" />
+    <Compile Include="Tier0\Graph\GraphImpl.cs" />
+    <Compile Include="Tier0\Graph\Program.cs" />
+    <Compile Include="Tier0\Graph\Waxman.cs" />
     <Compile Include="Tier0\ITransportLayerCommunicator.cs" />
     <Compile Include="Tier0\SocketUtility.cs" />
     <Compile Include="Tier0\TransportLayerCommunicator.cs" />
@@ -137,6 +141,7 @@
     <Folder Include="Tier0" />
     <Folder Include="Common" />
     <Folder Include="Common\Exception" />
+    <Folder Include="Tier0\Graph" />
     <Folder Include="Tier1\STUN" />
     <Folder Include="Tier2" />
     <Folder Include="Tier1" />
