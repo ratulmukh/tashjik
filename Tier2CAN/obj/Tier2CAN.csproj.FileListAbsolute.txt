@@ -3,3 +3,8 @@ H:\ratul\code\tashjik\trunkReconstruct\Tier2CAN\bin\Debug\Tier2CAN.pdb
 H:\ratul\code\tashjik\trunkReconstruct\Tier2CAN\obj\Debug\ResolveAssemblyReference.cache
 H:\ratul\code\tashjik\trunkReconstruct\Tier2CAN\obj\Debug\Tier2CAN.dll
 H:\ratul\code\tashjik\trunkReconstruct\Tier2CAN\obj\Debug\Tier2CAN.pdb
+H:\ratul\code\tashjik\trunk\Tier2CAN\bin\Debug\Tier2CAN.dll
+H:\ratul\code\tashjik\trunk\Tier2CAN\bin\Debug\Tier2CAN.pdb
+H:\ratul\code\tashjik\trunk\Tier2CAN\obj\Debug\ResolveAssemblyReference.cache
+H:\ratul\code\tashjik\trunk\Tier2CAN\obj\Debug\Tier2CAN.dll
+H:\ratul\code\tashjik\trunk\Tier2CAN\obj\Debug\Tier2CAN.pdb

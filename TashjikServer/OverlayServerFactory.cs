@@ -89,7 +89,7 @@ namespace Tashjik
 			else
 			{
 				Console.WriteLine("OverlayServerFactory::createServer overlayServerTypeRegistry.TryGetValue FAILED");
-				Assembly overlayAssembly = Assembly.Load(strOverlayType);
+				Assembly overlayAssembly = Assembly.Load("Tier2"+strOverlayType);
 				if(overlayAssembly == null)
 					Console.WriteLine("OverlayServerFactory::createServer assembly load FAILED");
 				else

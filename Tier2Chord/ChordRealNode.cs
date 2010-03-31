@@ -583,14 +583,24 @@ namespace Tashjik.Tier2
 					//dunno how to do it though :(
 				}
 
-				self = encapsulatingNode;
+//				self = encapsulatingNode;
+//				
+//				for(int i=159; i>=0; i--)
+//					finger[i] = self;
+//				predecessor = self;
+//				successor = finger[0];
+//		
+//				fingerNext = -1;
 				
-				for(int i=159; i>=0; i--)
-					finger[i] = self;
-				predecessor = self;
-				successor = finger[0];
-		
-				fingerNext = -1;
+				self = encapsulatingNode;
+                                predecessor = null;
+                                successor = self;
+
+                                for(int i=159; i>=0; i--)
+                                        finger[i] = null;
+                
+                                fingerNext = -1;
+
 			}
 
 			//should never be called
