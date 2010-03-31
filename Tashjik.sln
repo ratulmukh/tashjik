@@ -1,14 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-# SharpDevelop 3.0.0.3800
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tashjik", "Tashjik.csproj", "{2EDD17CC-33CC-409D-8CEC-84A29B4D1F3F}"
-EndProject
+# SharpDevelop 2.2.1.2648
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TashjikTest", "TashjikTest.csproj", "{F0F71FD6-91EC-46AC-8AA8-943C6239171A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TashjikClient", "TashjikClient\TashjikClient.csproj", "{706BC513-503F-451A-8803-609DAD4749F7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "boxit", "boxit\boxit.csproj", "{C376BC9A-DBC4-420C-8FD0-ADE6FA55FAF3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

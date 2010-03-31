@@ -36,7 +36,4 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Boxit.cs" />
-  </ItemGroup>
 </Project>

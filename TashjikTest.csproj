@@ -37,7 +37,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="TashjikServerTest.cs" />
     <Compile Include="Tier0Test\DataReceiver.cs" />
     <Compile Include="Tier0Test\DataSender.cs" />
@@ -48,7 +47,6 @@
     <Compile Include="Tier2Test\StreamingTest\NaradaTest\NaradaTestExerciser.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="BaseTest" />
     <Folder Include="CommonTest" />
     <Folder Include="Tier0Test" />
     <Folder Include="Tier2Test" />

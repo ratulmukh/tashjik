@@ -43,7 +43,4 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Client.cs" />
-  </ItemGroup>
 </Project>
