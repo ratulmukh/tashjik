@@ -1,0 +1,71 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{E4D6905D-3448-47D4-9193-156BC9820F5F}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Tashjik.Tier2</RootNamespace>
+    <AssemblyName>Tier2Chord</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup>
+    <Reference Include="Common">
+      <HintPath>..\Common\obj\Debug\Common.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="TashjikServer">
+      <HintPath>..\TashjikServer\obj\Debug\TashjikServer.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Tier0">
+      <HintPath>..\Tier0\obj\Debug\Tier0.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="ChordCommon\ByteKey_Data.cs" />
+    <Compile Include="ChordCommon\ByteKey_DataAsyncResult.cs" />
+    <Compile Include="ChordCommon\ByteKey_IChordNode.cs" />
+    <Compile Include="ChordCommon\ByteKey_IChordNodeAsyncResult.cs" />
+    <Compile Include="ChordCommon\IChordNodeAsyncResult.cs" />
+    <Compile Include="ChordCommon\IChordNode_Object.cs" />
+    <Compile Include="ChordCommon\IChordNode_ObjectAsyncResult.cs" />
+    <Compile Include="ChordCommon\MessageCapsule.cs" />
+    <Compile Include="ChordCommon\Node.cs" />
+    <Compile Include="ChordCommon\PendingLookUpRequest.cs" />
+    <Compile Include="ChordDataStore.cs" />
+    <Compile Include="ChordException\DataNotFoundInStoreException.cs" />
+    <Compile Include="ChordException\Exception.cs" />
+    <Compile Include="ChordException\LookUpDelayedException.cs" />
+    <Compile Include="ChordException\NotificationArrivedInterruptedException.cs" />
+    <Compile Include="ChordException\SearchPendingLookUpRequestListFailedException.cs" />
+    <Compile Include="ChordException\SuccessorNotDeterminedFromRoutingTableException.cs" />
+    <Compile Include="ChordProxyNode.cs" />
+    <Compile Include="ChordRealNode.cs" />
+    <Compile Include="ChordServer.cs" />
+    <Compile Include="IChordNode.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ChordException" />
+    <Folder Include="ChordCommon" />
+  </ItemGroup>
+</Project>
