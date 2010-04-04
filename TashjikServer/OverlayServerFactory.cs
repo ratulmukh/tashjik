@@ -109,7 +109,8 @@ namespace Tashjik
 				{
 					Console.WriteLine("OverlayServerFactory::createServer joinOtherIP==null || joinOtherGuid==null");
 					Console.WriteLine("OverlayServerFactory::createServer EXIT ");
-					return (OverlayServer)(Activator.CreateInstance(overlayServerType));
+                    Object[] constructorArgs = new Object[1] { joinOtherGuid };
+                    return (OverlayServer)(Activator.CreateInstance(overlayServerType, constructorArgs));
 				}
 				else
 				{   

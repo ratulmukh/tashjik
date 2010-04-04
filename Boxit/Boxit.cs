@@ -168,8 +168,17 @@ public static class Boxit
             // Signal the listener thread to continue.
             socketListenState.allDone.Set();
             Socket listener = socketListenState.sock;
-            Socket handler = listener.EndAccept(result);
-                        
+            Socket handler = null;
+        try
+        {
+             handler = listener.EndAccept(result);
+        }
+        catch (SocketException se)
+        {
+        	Console.WriteLine("EndAccept SOCKET EXCEPTION!! ERROR CODE = {0}",se.ErrorCode);
+        	throw se;
+        	                  
+        }
             IPAddress IP = ((IPEndPoint)(handler.RemoteEndPoint)).Address;
             Triplet triplet;
             if(registry.TryGetValue(IP.ToString(), out triplet))
@@ -198,9 +207,20 @@ public static class Boxit
             String content = String.Empty;
             SocketState socketState = ((SocketState)(result.AsyncState));
             Socket sock = socketState.sock;
-                       
-            int bytesRead = sock.EndReceive(result);
-            if(bytesRead > 0)
+                       int bytesRead = 0;
+            
+            try
+        	{
+            	 bytesRead = sock.EndReceive(result);
+        	}
+	        catch (SocketException se)
+        	{
+	        	Console.WriteLine("EndReceive SOCKET EXCEPTION!! ERROR CODE = {0}",se.ErrorCode);
+	        	//throw se;
+    	    	                  
+        	}
+    
+	        if(bytesRead > 0)
             {
                 socketState.concatenatedString.Remove(0, socketState.concatenatedString.Length);
                 socketState.concatenatedString.Append(Encoding.ASCII.GetString(socketState.buffer, 0, bytesRead));
@@ -541,8 +561,21 @@ public static class Boxit
                                
                                 Console.WriteLine("Boxit::establishRemoteConnection before calling Connect");                                  
                                 triplet.sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                                triplet.sock.Connect(ipEnd);
+                                
                                
+                                try
+        	{
+            	  triplet.sock.Connect(ipEnd);
+        	}
+	        catch (SocketException se)
+        	{
+	        	Console.WriteLine("Connect SOCKET EXCEPTION!! ERROR CODE = {0}",se.ErrorCode);
+	        	if(se.ErrorCode == 10056)
+	        		Console.WriteLine("10056: socket is already connected");
+//	        	
+	        	//throw se;
+    	    	                  
+        	}
                                 Console.WriteLine("Boxit::establishRemoteConnection connect DONE");
                                
                                 SocketFlags f = new SocketFlags();

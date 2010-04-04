@@ -200,6 +200,20 @@ namespace Tashjik.Tier2
 				}
 				return new Tashjik.Tier0.TransportLayerCommunicator.Data(compositeMsg, 0, compositeMsg.Length);
 			}
+            else if(String.Compare(split[0], "GET_FINGERTABLE") == 0)
+            {
+                byte[] compositeMsg;
+				IChordNode[] fingerTable = thisNode.getFingerTable();
+                String[] str = new String[fingerTable.Length + 1];
+                str[0] = "GET_FINGERTABLE_REPLY";
+                int i = 1;
+                foreach (IChordNode chordNode in fingerTable)
+                    str[i++] = chordNode.getIP().ToString();
+                
+                Console.Write("ChordProxyNode::notifyTwoWayMsg FingerTable = .... well some other day");
+                compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true,  str);
+                return new Tashjik.Tier0.TransportLayerCommunicator.Data(compositeMsg, 0, compositeMsg.Length);
+            }
 			return null;
 		}
 		
@@ -294,6 +308,23 @@ namespace Tashjik.Tier2
 				if(originalRequestCallBack != null)
 					originalRequestCallBack(objectAsyncResult);
 			}
+            else if (String.Compare(split[0], "GET_FINGERTABLE_REPLY") == 0)
+            {
+                Console.WriteLine("ChordProxyNode::notifyTwoWayReplyReceived GET_FINGERTABLE_RECEIVED");
+
+                String strPredecessorIP = split[1];
+                IChordNode[] fingerTable = new IChordNode[split.Length - 1];
+                for (int i = 1; i < split.Length; i++)
+                    fingerTable[i-1] = (IChordNode)(proxyController.getProxyNode(UtilityMethod.convertStrToIP(split[i].ToString())));
+                
+                ChordCommon.IChordNodeArray_Object iNodeArray_Object = new ChordCommon.IChordNodeArray_Object();
+                iNodeArray_Object.nodeArray = fingerTable;
+                iNodeArray_Object.obj = originalAppState;
+                
+                Tashjik.Common.ObjectAsyncResult objectAsyncResult = new Tashjik.Common.ObjectAsyncResult(iNodeArray_Object, false, false);
+                if (originalRequestCallBack != null)
+                    originalRequestCallBack(objectAsyncResult);
+            }
 		}
 
 		//need to make this asynchronous
@@ -319,8 +350,17 @@ namespace Tashjik.Tier2
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor before sendMsg to proxyController");
 			proxyController.sendMsgTwoWayRelay(this, compositeMsg, 0, compositeMsg.Length, findSuccessorCallBack, appState, relayTicket);
 		}
-		
 
+        public void beginGetFingerTable(AsyncCallback getFingerTableCallBack, Object appState)
+        {
+            Console.WriteLine("ChordProxyNode::beginGetFingerTable ENTER");
+
+            byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "GET_FINGERTABLE");
+
+            Console.WriteLine("ChordProxyNode::beginGetFingerTable before sendMsg to proxyController");
+            proxyController.sendMsgTwoWay(this, compositeMsg, 0, compositeMsg.Length, getFingerTableCallBack, appState);
+
+        }
 		public void beginGetPredecessor(AsyncCallback getPredecessorCallBack, Object appState)
 		{
 			Console.WriteLine("ChordProxyNode::beginGetPredecessor ENTER");

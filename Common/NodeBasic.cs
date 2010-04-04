@@ -58,7 +58,7 @@ namespace Tashjik.Common
 		private readonly Object nodeBasicLock;
 		private IPAddress IP;
 		private byte[] hashedIP;
-
+        
 		//WARNING: there is a return inside locks
 		public byte[] getHashedIP()
 		{

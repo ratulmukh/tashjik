@@ -63,19 +63,15 @@ namespace Tashjik.Tier2
 	
 		public override Guid getGuid()
 		{
-			return new Guid(guid.ToByteArray());
+            return guid; //new Guid(guid.ToByteArray());
 		}
 
 		public override void shutdown()
 		{
 			
 		}
-		public ChordServer() : this(System.Guid.NewGuid()) //: base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode), guid = System.Guid.NewGuid())
-		{
 		
-		}
-		
-		private ChordServer(Guid overlayInstanceGuid) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode), overlayInstanceGuid)
+		public ChordServer(Guid overlayInstanceGuid) : base(new  ProxyNodeController.CreateProxyNodeDelegate(createChordProxyNode), overlayInstanceGuid)
 		{
 			Console.WriteLine("ChordServer::ChordServer ENTER");
 			guid = overlayInstanceGuid;
@@ -86,16 +82,17 @@ namespace Tashjik.Tier2
 		{
 			Console.WriteLine("ChordServer::ChordServer ENTER");
 			guid = bootStrapGuid;
-			thisNode = new ChordRealNode();
+			//thisNode = new ChordRealNode();
 			ChordProxyNode.thisNode = thisNode;
 			IChordNode bootStrapNode = getChordProxyNode(bootStrapIP);
-			thisNode.beginJoin(bootStrapNode, null, null);
+            thisNode = new ChordRealNode(bootStrapNode, null, null);
+			//thisNode.beginJoin(bootStrapNode, null, null);
 		}
 		
-		private void init(IChordNode bootStrapNode)
-		{
-			thisNode.beginJoin(bootStrapNode, null, null);
-		}
+		//private void init(IChordNode bootStrapNode)
+		//{
+	   	//	thisNode.beginJoin(bootStrapNode, null, null);
+		//}
 
 		private static ProxyNode createChordProxyNode(IPAddress IP, ProxyNodeController proxyNodeController)
 		{

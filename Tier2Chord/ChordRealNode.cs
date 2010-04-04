@@ -224,18 +224,49 @@ namespace Tashjik.Tier2
 			// finger[i+1]>finger [i]
 			class Engine
 			{
-	
+                private volatile bool readyForOperation;
+                public const short identifierLength = 160; // because we are using SHA1, and it hashes to a 160 bit identifier
 				private readonly Tashjik.Common.NodeBasic selfNodeBasic;
 		
 				//private readonly static Engine singleton = null;
-				private readonly ChordRealNode self;
-				private IChordNode predecessor;
-				private IChordNode successor;
 
-				//the 1st node will be an Node
-				//need to take care of that
-				private readonly IChordNode[] finger = new IChordNode[160];
+                //the 1st node will be an Node
+                //need to take care of that
+                private readonly IChordNode[] finger = new IChordNode[identifierLength];
+
+                private readonly ChordRealNode self;
+				private IChordNode predecessor;
+                private IChordNode successor;
+
 				private int fingerNext = -1;
+
+                public Engine(ChordRealNode encapsulatingNode)
+                {
+                    readyForOperation = false;
+
+                    selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+                    self = encapsulatingNode;
+                    predecessor = null;
+                    successor = self;
+                    for (int i = 159; i >= 0; i--)
+                        finger[i] = null;
+
+                    readyForOperation = true;
+
+
+
+                }
+
+                public Engine(ChordRealNode encapsulatingNode, IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+                {
+                    readyForOperation = false;
+
+                    selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+                    beginJoin(joinNode, joinCallBack, appState);
+
+
+                }
+
 	
 				/*public void stabilize()
 				{
@@ -409,46 +440,128 @@ namespace Tashjik.Tier2
 
 
 	
-				//this is the method that the node uses to 
-				//initilize its own state based on a supplied bootstrap node
-				//here, it has been suppied with a bootstrap node
-				//which will be used to initilize itself
-				//as well as tell other nodes in n/w of its existence
-				public void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+				/* This is the method that the node uses to initilize its own state based on a supplied 
+                 * bootstrap node here, it has been suppied with a bootstrap node which will be used to
+                 * initilize itself as well as tell other nodes in n/w of its existence
+                 * ALGO(from Chord TR):   n.join(n′)
+                 *                        predecessor = nil;
+                 *                        s = n′.find successor(n);
+                 *                        build fingers(s);
+                 *                        successor = s;
+				 */
+                private void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 				{
 					Console.WriteLine("ChordRealNode::Engine::beginJoin ENTER");
+
+                    predecessor = null;
+
 					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = joinCallBack;
 					thisAppState.obj = appState;
-					
-					predecessor = null;
-					
-					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForJoin);
+										
 					Console.WriteLine("ChordRealNode::Engine::beginJoin before calling beginFindSuccessor");
-					joinNode.beginFindSuccessor(self.getHashedIP(), self, findSuccessorCallBack, thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
+					joinNode.beginFindSuccessor(self.getHashedIP(), self, new AsyncCallback(processFindSuccessorForJoin), thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 
 				}
 
 				void processFindSuccessorForJoin(IAsyncResult result)
 				{
 					Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin ENTER");
-					
-					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
-					Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
-					IChordNode retrievedSuccessor = iNode_Object.node;
-					Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin successor has been set");
-					
-					successor = retrievedSuccessor;
-					AsyncCallback callBack = thisAppState.callBack;
-					Object appState1 = thisAppState.obj;
 
-					if(!(callBack==null))
-					{
-						IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState1, true, true);
-						
-						callBack(res);
-					}
+                    ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+                    Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
+                    successor = iNode_Object.node;
+                    //Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin successor has been set");
+
+                    successor.beginGetFingerTable(new AsyncCallback(processGetFingerTableForJoin), thisAppState);
+                    
+                    
+                    
+                    //we have found the successor, and a request has been made for its finger table
+                    //once the finger table comes in, a findSiccessor call will be made to each of them
+                    //do we need to wait till all of them respond? wat if a few of them go down
+                    // we can't hang forever... better to return back, and allow the client to query
+                    // if the queries happen immediately, tey will fail because the finger table is still empty
+                    // as the finger table starts filling up, the queries will get answered better
+                    //
+                    // other possible solutions: wait for some time (and not indefinitely), and then allow
+                    // the client to query. But how long should we wait? In the literature do we have any such 
+                    // approximate times by which quesries will come back? totally unpredictable I feel... depends
+                    // on whether the n/w is the intyernet or a LAN, etc,.
+                    //
+                    // maybe we could wait till a certain number of entries inthe finger table get filled up ... 
+                    // maybe 60% .... but how do we decide on this number ... perhaps ChordCylinder will have
+                    // data on Churn rates and can set this. Will require significant chanes to the architecture,
+                    // because here the client is deciding on how long we should wait
+
+
+                    AsyncCallback callBack = thisAppState.callBack;
+                    Object appState1 = thisAppState.obj;
+
+                    if (!(callBack == null))
+                    {
+                        IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState1, true, true);
+
+                        callBack(res);
+                    }
+                     
+                      
+
 				}
+
+                struct ObjectInt
+                {
+                    public Object appState;
+                    public int i;
+                }
+
+                void processGetFingerTableForJoin(IAsyncResult result)
+                {
+                    Console.WriteLine("ChordRealNode::Engine::processFindFingerTableForJoin ENTER");
+
+                    ChordCommon.IChordNodeArray_Object iNodeArray_Object = (ChordCommon.IChordNodeArray_Object)(result.AsyncState);
+                    Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNodeArray_Object.obj);
+                    IChordNode[] successorFingerTable = iNodeArray_Object.nodeArray;
+
+                    for(int i = 0; i<successorFingerTable.Length; i++)
+                    {
+                        IChordNode chordNode = successorFingerTable[i];
+                        ObjectInt fingerState = new ObjectInt();
+                        fingerState.appState = thisAppState;
+                        fingerState.i = i;
+                        
+                        byte[] jumpVal = new byte[20];
+                        int remainder;
+                        int quotient = Math.DivRem(i, 8, out remainder);
+                        byte impByte = (byte)(1 << remainder);
+                        jumpVal[quotient] = impByte;
+ 
+                        successorFingerTable[i].beginFindSuccessor(Common.UtilityMethod.moduloAdd(self.getHashedIP(), jumpVal), self, new AsyncCallback(processFingerTableFindSuccessorForJoin), fingerState, new Guid("00000000-0000-0000-0000-000000000000"));
+
+
+                    }
+                    
+
+
+                }
+
+                void processFingerTableFindSuccessorForJoin(IAsyncResult result)
+                {
+                    Console.WriteLine("ChordRealNode::Engine::processFingerTableFindSuccessorForJoin ENTER");
+                    
+                    ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+                    Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
+                   
+                    finger[((ObjectInt)(thisAppState.obj)).i] = iNode_Object.node;
+                }
+
+                void buildFingers(IAsyncResult result)
+                {
+
+                    
+
+
+                }
 				
 				private int leave()
 				{
@@ -570,55 +683,12 @@ namespace Tashjik.Tier2
 				return predecessor;
 			}
 
-			public Engine(ChordRealNode encapsulatingNode)
-			{
-				try
-				{
-					selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
-				}
-				catch (Tashjik.Common.Exception.LocalHostIPNotFoundException)
-				{
-					//local ip could not be found :O :O
-					//crash the system
-					//dunno how to do it though :(
-				}
+            public IChordNode[] getFingerTable()
+            {
+                return finger;
+            }
 
-//				self = encapsulatingNode;
-//				
-//				for(int i=159; i>=0; i--)
-//					finger[i] = self;
-//				predecessor = self;
-//				successor = finger[0];
-//		
-//				fingerNext = -1;
-				
-				self = encapsulatingNode;
-                                predecessor = null;
-                                successor = self;
-
-                                for(int i=159; i>=0; i--)
-                                        finger[i] = null;
-                
-                                fingerNext = -1;
-
-			}
-
-			//should never be called
-			//reference to self is required
-			//so call the constructor that requires it
-			private Engine()
-			{
-			}
-	
-			//singleton creator
-			/* public static Engine createEngine(Node encapsulatingNode)
-			{
-				//have to correct singleton call
-				if(singleton==null)
-					singleton = new Engine(encapsulatingNode);
-				return singleton;
-			}
-			*/
+					
 		}	
 		
 		private class EngineMgr
@@ -772,7 +842,14 @@ namespace Tashjik.Tier2
 
 		private readonly Engine engine;
 		private readonly EngineMgr engineMgr;
-	
+
+        public ChordRealNode(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+        {
+            engine = new Engine(this, joinNode, joinCallBack, appState);
+            engineMgr = EngineMgr.createEngineMgr(10000, engine);
+            ChordDataStore dataStore = new ChordDataStore();
+        }
+
 		public ChordRealNode()
 		{
 			engine = new Engine(this);
@@ -829,8 +906,21 @@ namespace Tashjik.Tier2
 			engine.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
 		}
 
+        public void beginGetFingerTable(AsyncCallback getFingerTableCallBack, Object appState)
+        {
+            Console.WriteLine("ChordRealNode::beginGetFingerTable ENTER");
+            
+            ChordCommon.IChordNodeArray_Object iNodeArray_Object = new ChordCommon.IChordNodeArray_Object();
+            iNodeArray_Object.nodeArray = engine.getFingerTable();
+            iNodeArray_Object.obj = appState;
 
+            if (!(getFingerTableCallBack == null))
+            {
+                IAsyncResult res = new ChordCommon.IChordNodeArray_ObjectAsyncResult(iNodeArray_Object, false, true);
+                getFingerTableCallBack(res);
+            }
 
+        }
 		/* public Node getPredecessor()
 		{
 			return engine.getPredecessor();
@@ -861,16 +951,25 @@ namespace Tashjik.Tier2
 			Console.WriteLine("ChordRealNode::getPredecessor ENTER");
 			return engine.getPredecessor();
 		}
+
+        public IChordNode[] getFingerTable()
+        {
+            Console.WriteLine("ChordRealNode::getFingerTable ENTER");
+            return engine.getFingerTable();
+        }
+
 		/* public void notify(Node possiblePred)
 		{
 			engine.notify(possiblePred);
 		
 		}
-		*/
-		internal void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+		
+		private void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 		{
 			engine.beginJoin(joinNode, joinCallBack, appState);
 		}
+        */
+ 
 		public void beginPredecessorNotify(IChordNode possiblePred, AsyncCallback notifyCallBack, Object appState)
 		{
 	
