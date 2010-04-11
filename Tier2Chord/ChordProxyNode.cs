@@ -208,9 +208,14 @@ namespace Tashjik.Tier2
                 str[0] = "GET_FINGERTABLE_REPLY";
                 int i = 1;
                 foreach (IChordNode chordNode in fingerTable)
-                    str[i++] = chordNode.getIP().ToString();
-                
-                Console.Write("ChordProxyNode::notifyTwoWayMsg FingerTable = .... well some other day");
+                {
+                    Console.WriteLine("ChordProxyNode::notifyTwoWayMsg addong fingertable entry");
+                    if (chordNode == null)
+                        str[i++] = "NULL";
+                    else
+                        str[i++] = chordNode.getIP().ToString();
+                }
+                Console.WriteLine("ChordProxyNode::notifyTwoWayMsg FingerTable = .... well some other day");
                 compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true,  str);
                 return new Tashjik.Tier0.TransportLayerCommunicator.Data(compositeMsg, 0, compositeMsg.Length);
             }
@@ -314,9 +319,13 @@ namespace Tashjik.Tier2
 
                 String strPredecessorIP = split[1];
                 IChordNode[] fingerTable = new IChordNode[split.Length - 1];
-                for (int i = 1; i < split.Length; i++)
-                    fingerTable[i-1] = (IChordNode)(proxyController.getProxyNode(UtilityMethod.convertStrToIP(split[i].ToString())));
-                
+                for (int i = 1; i < 161; i++)
+                {
+                    if (split[i] == "NULL")
+                        fingerTable[i - 1] = null;
+                    else
+                      fingerTable[i - 1] = (IChordNode)(proxyController.getProxyNode(UtilityMethod.convertStrToIP(split[i].ToString())));
+                }
                 ChordCommon.IChordNodeArray_Object iNodeArray_Object = new ChordCommon.IChordNodeArray_Object();
                 iNodeArray_Object.nodeArray = fingerTable;
                 iNodeArray_Object.obj = originalAppState;
@@ -344,6 +353,10 @@ namespace Tashjik.Tier2
 
 		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
+            //querying node is not necessary as of now, cause it doesn't matter as 
+            //to who raised the query....the result is being sent back to the 
+            //called via the callback and stateApp .. this petty knowledge is being
+            //used in joinNode(queryingNode is passed as null) to overcome a deep design problem
 			Console.WriteLine("ChordProxyNode::beginFindSuccessor ENTER");
 
 			byte[] compositeMsg = UtilityMethod.convertToTabSeparatedByteArray(true, "FIND_SUCCESSOR", Encoding.ASCII.GetString(queryHashedKey));
@@ -455,7 +468,7 @@ namespace Tashjik.Tier2
 			getDataRegistry.Add(byteKey, asyncCallback_Object);
 			Msg msg = new Msg(Msg.TypeEnum.GET_DATA, (Object)byteKey, null);
 			List<Msg> msgList = new List<Msg>();
-			msgList.Add(msg);
+			msgList.Add(msg); 
 			proxyController.sendMsg((Object)msgList, this);
 	*/	}
 		

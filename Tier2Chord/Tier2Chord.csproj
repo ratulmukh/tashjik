@@ -57,6 +57,7 @@
     <Compile Include="ChordCommon\IChordNodeAsyncResult.cs" />
     <Compile Include="ChordCommon\IChordNode_Object.cs" />
     <Compile Include="ChordCommon\IChordNode_ObjectAsyncResult.cs" />
+    <Compile Include="ChordCommon\IP_Object.cs" />
     <Compile Include="ChordCommon\MessageCapsule.cs" />
     <Compile Include="ChordCommon\Node.cs" />
     <Compile Include="ChordCommon\PendingLookUpRequest.cs" />
@@ -71,5 +72,6 @@
     <Compile Include="ChordRealNode.cs" />
     <Compile Include="ChordServer.cs" />
     <Compile Include="IChordNode.cs" />
+    <Compile Include="ChordCommon\IP_ObjectAyncResult.cs" />
   </ItemGroup>
 </Project>

@@ -234,10 +234,10 @@ namespace Tashjik.Tier2
                 //need to take care of that
                 private readonly IChordNode[] finger = new IChordNode[identifierLength];
 
-                private readonly ChordRealNode self;
+                private  ChordRealNode self;
 				private IChordNode predecessor;
                 private IChordNode successor;
-
+                private Object successorLock = new Object();
 				private int fingerNext = -1;
 
                 public Engine(ChordRealNode encapsulatingNode)
@@ -247,11 +247,15 @@ namespace Tashjik.Tier2
                     selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
                     self = encapsulatingNode;
                     predecessor = null;
-                    successor = self;
+                    lock (successorLock)
+                    {
+                        successor = self;
+                    }
+                    
                     for (int i = 159; i >= 0; i--)
                         finger[i] = null;
 
-                    readyForOperation = true;
+                    //readyForOperation = true;
 
 
 
@@ -259,9 +263,14 @@ namespace Tashjik.Tier2
 
                 public Engine(ChordRealNode encapsulatingNode, IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
                 {
+                    
                     readyForOperation = false;
 
                     selfNodeBasic = new Tashjik.Common.NodeBasic(Tashjik.Common.UtilityMethod.GetLocalHostIP());
+                    self = encapsulatingNode;
+                    for (int i = 159; i >= 0; i--)
+                        finger[i] = null;
+
                     beginJoin(joinNode, joinCallBack, appState);
 
 
@@ -282,17 +291,19 @@ namespace Tashjik.Tier2
 				public void beginStabilize(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
 					Console.WriteLine("Chord::Engine::beginStabilize ENTER");
-
-					if(successor == self)
-					{
-						if(beginStabilizeCallBack!=null)
-						{
-							IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState, true, true);
-							beginStabilizeCallBack(res);
-						}
-						else
-							return;
-					}
+                    lock (successorLock)
+                    {
+                        if (successor == self)
+                        {
+                            if (beginStabilizeCallBack != null)
+                            {
+                                IAsyncResult res = new Tashjik.Common.ObjectAsyncResult(appState, true, true);
+                                beginStabilizeCallBack(res);
+                            }
+                            else
+                                return;
+                        }
+                    }
 					
 					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = beginStabilizeCallBack;
@@ -300,8 +311,11 @@ namespace Tashjik.Tier2
 					
 					Console.WriteLine("Chord::Engine::beginStabilize successor != self");
 					AsyncCallback getPredecessorCallBack = new AsyncCallback(processGetPredecessorForStabilize);
-					successor.beginGetPredecessor(getPredecessorCallBack, thisAppState);
-	
+                    lock (successorLock)
+                    {
+                        successor.beginGetPredecessor(getPredecessorCallBack, thisAppState);
+                    }
+
 					Console.WriteLine("Chord::Engine::beginStabilize EXIT");
 
 				}
@@ -333,14 +347,20 @@ namespace Tashjik.Tier2
 					{
 					
 						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before condition check");
-						if((self<(ChordRealNode)x) && ((ChordRealNode)x<(successor)))
-							successor = x;
-						Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
+                        lock (successorLock)
+                        {
+                            if ((self < (IChordNode)x) && ((ChordRealNode)x/*.getHashedIP()*/ < (successor)))
+                                successor = x;
+                        }
+                        Console.WriteLine("Chord::Engine::processGetPredecessorForStabilize before calling beginNotify on successor");
 						
 
-					}		
-					successor.beginPredecessorNotify(self, callBack, appState1);
-				}
+					}
+                    lock (successorLock)
+                    {
+                        successor.beginPredecessorNotify(self, callBack, appState1);
+                    }
+                }
 				
 				public void beginFixFingers(AsyncCallback beginStabilizeCallBack, Object appState)
 				{
@@ -351,22 +371,30 @@ namespace Tashjik.Tier2
 						fingerNext = 0;
 					//bit wise addition is required
 					//will require some effort
-					byte[] C = new byte[20];
+
+                    byte[] byteVal = getByteArrayOfValue(fingerNext);
+
+			/*		byte[] C = new byte[20];
 
 
 					int bitPos = Int32.MaxValue;
 					int bytePos = Math.DivRem(fingerNext - 1,8, out bitPos);
 
 					C[19-bytePos] = (byte) (1 << bitPos);
+*/
+					
+                    ObjectInt fingerState = new ObjectInt();
+                    fingerState.appState = appState;
+                    fingerState.i = fingerNext;
 
-					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
-					thisAppState.callBack = beginStabilizeCallBack;
-					thisAppState.obj = appState;
+                    Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
+                    thisAppState.callBack = beginStabilizeCallBack;
+                    thisAppState.obj = fingerState;
 
 
 	
 					AsyncCallback findSuccessorCallBack = new AsyncCallback(processFindSuccessorForFixFingers);
-					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd(selfNodeBasic.getHashedIP(), C), self, findSuccessorCallBack, thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
+					beginFindSuccessor(Tashjik.Common.UtilityMethod.moduloAdd1(selfNodeBasic.getHashedIP(), byteVal), null, findSuccessorCallBack, thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 				}
 
 
@@ -374,13 +402,14 @@ namespace Tashjik.Tier2
 				{
 					Console.WriteLine("Chord::ChordRealNode::Engine processFindSuccessorForFixFingers ENTER");
 					ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object) (result.AsyncState);
-		
-					Tashjik.Common.AsyncCallback_Object fixFingersAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
-					
-					this.finger[fingerNext] = iNode_Object.node;
 
-					AsyncCallback callBack = fixFingersAppState.callBack;
-					Object origAppState = fixFingersAppState.obj;
+                    Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
+                    ObjectInt fingerState = (ObjectInt)(thisAppState.obj);
+					
+					finger[fingerState.i] = iNode_Object.node;
+
+                    AsyncCallback callBack = thisAppState.callBack;
+                    Object origAppState = fingerState.appState;
 
 					if(!(callBack==null))
 					{
@@ -449,7 +478,7 @@ namespace Tashjik.Tier2
                  *                        build fingers(s);
                  *                        successor = s;
 				 */
-                private void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
+                internal void beginJoin(IChordNode joinNode, AsyncCallback joinCallBack, Object appState)
 				{
 					Console.WriteLine("ChordRealNode::Engine::beginJoin ENTER");
 
@@ -458,9 +487,31 @@ namespace Tashjik.Tier2
 					Tashjik.Common.AsyncCallback_Object thisAppState = new Tashjik.Common.AsyncCallback_Object();
 					thisAppState.callBack = joinCallBack;
 					thisAppState.obj = appState;
-										
-					Console.WriteLine("ChordRealNode::Engine::beginJoin before calling beginFindSuccessor");
-					joinNode.beginFindSuccessor(self.getHashedIP(), self, new AsyncCallback(processFindSuccessorForJoin), thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
+										 
+					Console.WriteLine("ChordRealNode::Engine::beginJoin before calling beginFindSuccessor ahem ahem");
+                    if (joinNode == null)
+                        Console.WriteLine("ChordRealNode::Engine::beginJoin joinNode ==null");
+   
+                    //queryingNode is passed as null, because it is of no use to beginFindSuccessor
+                    //if we were to pass 'self', then the system would hang. This is because Engine is part of
+                    //ChordRealNode. We haven't yet constructed ChordRealNode fully, and are in the process
+                    //of constructing Engine, and we want to send the partially constructed ChordRealNode 
+                    // on a call to beginFindSuccessor 
+                    //
+                    //What are the alternatives? 
+                    //1. Make JoinNode as a public method tht needs to be called after construction of ChordRealNode
+                    //This may lead to maintainance issues of the calling code. What if at some later stage, someone 
+                    //constructs the object, but forgets to call joinNode(..). This is typical of init(..) methods 
+                    //which are supposed to be called by the user after constructor. Many a times, coders forget to do it.
+                    //2.Have a flag internal to ChordRealNode that will signal whether the object is ready for operation.
+                    //This would mean joinNode(..) has been called after construction. If this is not the case, throw an 
+                    //excetion. This will easily be caught during basic testing. However, it may be a maintainance problem 
+                    //for the maintainers of ChordRealNode itself> What if a new operation is added, and the engineer
+                    //forgets to check the flag before proceeding?
+                    //
+                    //We are fortunate here to have a hack (a nifty solution for me), that solves a larger design problem.
+
+                   joinNode.beginFindSuccessor(selfNodeBasic.getHashedIP(), null, new AsyncCallback(processFindSuccessorForJoin), thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
 
 				}
 
@@ -470,11 +521,16 @@ namespace Tashjik.Tier2
 
                     ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
                     Tashjik.Common.AsyncCallback_Object thisAppState = (Tashjik.Common.AsyncCallback_Object)(iNode_Object.obj);
-                    successor = iNode_Object.node;
-                    //Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin successor has been set");
+                    lock (successorLock)
+                    {
+                        successor = iNode_Object.node;
+                    }
+                    Console.WriteLine("ChordRealNode::Engine::processFindSuccessorForJoin successor has been set");
 
-                    successor.beginGetFingerTable(new AsyncCallback(processGetFingerTableForJoin), thisAppState);
-                    
+                    lock (successorLock)
+                    {
+                        successor.beginGetFingerTable(new AsyncCallback(processGetFingerTableForJoin), thisAppState);
+                    }
                     
                     
                     //we have found the successor, and a request has been made for its finger table
@@ -515,6 +571,21 @@ namespace Tashjik.Tier2
                     public int i;
                 }
 
+                byte[] getByteArrayOfValue(int val)
+                {
+                    if(val>159 || val<0)
+                        throw new Exception();
+
+                    byte[] jumpVal = new byte[20];
+                    int remainder;
+                    int quotient = Math.DivRem(val, 8, out remainder);
+                    byte impByte = (byte)(1 << remainder);
+                    jumpVal[quotient] = impByte;
+
+                    return jumpVal;
+
+                }
+
                 void processGetFingerTableForJoin(IAsyncResult result)
                 {
                     Console.WriteLine("ChordRealNode::Engine::processFindFingerTableForJoin ENTER");
@@ -526,23 +597,19 @@ namespace Tashjik.Tier2
                     for(int i = 0; i<successorFingerTable.Length; i++)
                     {
                         IChordNode chordNode = successorFingerTable[i];
-                        ObjectInt fingerState = new ObjectInt();
-                        fingerState.appState = thisAppState;
-                        fingerState.i = i;
-                        
-                        byte[] jumpVal = new byte[20];
-                        int remainder;
-                        int quotient = Math.DivRem(i, 8, out remainder);
-                        byte impByte = (byte)(1 << remainder);
-                        jumpVal[quotient] = impByte;
- 
-                        successorFingerTable[i].beginFindSuccessor(Common.UtilityMethod.moduloAdd(self.getHashedIP(), jumpVal), self, new AsyncCallback(processFingerTableFindSuccessorForJoin), fingerState, new Guid("00000000-0000-0000-0000-000000000000"));
+                        if (chordNode != null)
+                        {
+                            ObjectInt fingerState = new ObjectInt();
+                            fingerState.appState = thisAppState;
+                            fingerState.i = i;
 
+                            byte[] jumpVal = getByteArrayOfValue(i);
+                            
+                            successorFingerTable[i].beginFindSuccessor(Common.UtilityMethod.moduloAdd1(self.getHashedIP(), jumpVal), self, new AsyncCallback(processFingerTableFindSuccessorForJoin), fingerState, new Guid("00000000-0000-0000-0000-000000000000"));
+                        }
 
                     }
                     
-
-
                 }
 
                 void processFingerTableFindSuccessorForJoin(IAsyncResult result)
@@ -569,11 +636,14 @@ namespace Tashjik.Tier2
 				}
 
 				//DONE
-				private void create()
-				{
-					predecessor.setIP(null);
-					successor.setIP(selfNodeBasic.getIP());
-				}
+                private void create()
+                {
+                    predecessor.setIP(null);
+                    lock (successorLock)
+                    {
+                        successor.setIP(selfNodeBasic.getIP());
+                    }
+                }
 
 				public IPAddress getIP()
 				{
@@ -621,46 +691,56 @@ namespace Tashjik.Tier2
 			{
 				Console.WriteLine("Chord::engine::beginFindSuccessor ENTER");
 				ChordCommon.IChordNode_Object iNode_Object;
-				if((ChordRealNode)self<queryHashedKey && queryHashedKey<(ChordRealNode)successor)
-				{
-					Console.WriteLine("Chord::engine::beginFindSuccessor query falls inbetween node and successor");
-					if(!(findSuccessorCallBack==null))
-					{
-						iNode_Object = new ChordCommon.IChordNode_Object();
-						iNode_Object.node = successor;
-						iNode_Object.obj = appState;
+                lock (successorLock)
+                {
+                    if ((ChordRealNode)self < queryHashedKey && queryHashedKey < (ChordRealNode)successor)
+                    {
+                        Console.WriteLine("Chord::engine::beginFindSuccessor query falls inbetween node and successor");
+                        if (!(findSuccessorCallBack == null))
+                        {
+                            iNode_Object = new ChordCommon.IChordNode_Object();
+                            lock (successorLock)
+                            {
+                                iNode_Object.node = successor;
+                            }
+                            iNode_Object.obj = appState;
 
-						IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
-						findSuccessorCallBack(res);
-					}
-				}
-				else
-				{
-					Console.WriteLine("Chord::engine::beginFindSuccessor query DOES NOT fall inbetween node and successor");
-					IChordNode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
-					if (closestPrecNode==self)
-					{
-						Console.WriteLine("Chord::engine::beginFindSuccessor closestPrecNode==self");
-						if(!(findSuccessorCallBack==null))
-						{
-							Console.WriteLine("Chord::engine::beginFindSuccessor if(!(findSuccessorCallBack==null))");
-							iNode_Object = new ChordCommon.IChordNode_Object();
-							iNode_Object.node = successor;
-							iNode_Object.obj = appState;
-						
-							Console.WriteLine("Chord::engine::beginFindSuccessor before new IChordNode_ObjectAsyncResult");
-							IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
-							Console.WriteLine("Chord::engine::beginFindSuccessor before calling findSuccessorCallBack");
-							findSuccessorCallBack(res);
-						}
-					}		
-					else
-					{
-						Console.WriteLine("Chord::engine::beginFindSuccessor relaying request to closestPrecNode");
-						closestPrecNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
-					}
+                            IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
+                            findSuccessorCallBack(res);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Chord::engine::beginFindSuccessor query DOES NOT fall inbetween node and successor");
+                        IChordNode closestPrecNode = findClosestPreceedingNode(queryHashedKey);
+                        if (closestPrecNode == self)
+                        {
+                            Console.WriteLine("Chord::engine::beginFindSuccessor closestPrecNode==self");
+                            if (!(findSuccessorCallBack == null))
+                            {
+                                Console.WriteLine("Chord::engine::beginFindSuccessor if(!(findSuccessorCallBack==null))");
+                                iNode_Object = new ChordCommon.IChordNode_Object();
+                                lock (successorLock)
+                                {
+                                    iNode_Object.node = successor;
+                                }
+                                iNode_Object.obj = appState;
 
-				}
+                                Console.WriteLine("Chord::engine::beginFindSuccessor before new IChordNode_ObjectAsyncResult");
+                                IAsyncResult res = new ChordCommon.IChordNode_ObjectAsyncResult(iNode_Object, true, true);
+                                Console.WriteLine("Chord::engine::beginFindSuccessor before calling findSuccessorCallBack");
+                                findSuccessorCallBack(res);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Chord::engine::beginFindSuccessor relaying request to closestPrecNode");
+                            closestPrecNode.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
+                        }
+
+                    }
+                }
+
 				Console.WriteLine("Chord::engine::beginFindSuccessor EXIT");
 			}
 
@@ -685,6 +765,7 @@ namespace Tashjik.Tier2
 
             public IChordNode[] getFingerTable()
             {
+                Console.WriteLine("Chord::engine::getFingerTable ENTER");
                 return finger;
             }
 
@@ -898,11 +979,13 @@ namespace Tashjik.Tier2
 		*/
 		public void beginFindSuccessor(IChordNode queryNode, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
+            Console.WriteLine("ChordRealNode::beginFindSuccessor ENTER");
 			engine.beginFindSuccessor(queryNode.getHashedIP(), queryingNode, findSuccessorCallBack, appState, relayTicket);
 		}
 
 		public void beginFindSuccessor(byte[] queryHashedKey, IChordNode queryingNode, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
 		{
+            Console.WriteLine("ChordRealNode::beginFindSuccessor ENTER");
 			engine.beginFindSuccessor(queryHashedKey, queryingNode, findSuccessorCallBack, appState, relayTicket);
 		}
 

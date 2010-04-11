@@ -55,6 +55,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 using Tashjik;
 using Tashjik.Common;
@@ -189,10 +190,11 @@ namespace TashjikClient
 		
 		private ChordServer joinExistingChord(String strBootStrapIP, String strBootStrapChordInstanceGuid)
 		{
+            Console.WriteLine("Client::joinExistingChord ENTER");
 			IPAddress bootStrapIP = UtilityMethod.convertStrToIP(strBootStrapIP);
 				
 			ChordServer chord = (ChordServer)(TashjikServer.joinExisting(bootStrapIP, "Chord", new Guid(strBootStrapChordInstanceGuid)));
-			
+            Console.WriteLine("Client::joinExistingChord CHORD RING JOINED");
 			//testing BeginTransportLayerSendTwoWay
 			//not the appropriate place to test
 		//	String strMsg = "testing BeginTransportLayerSendTwoWay";
@@ -213,13 +215,32 @@ namespace TashjikClient
 		
 		private void exereciseChord(ChordServer chord)
 		{
-		
+            for (int i = 0; i < 16; i++)
+                Thread.Sleep(10000);
+
+            String sg = "PUT DATA TESTING";
+            byte[] byteSg = System.Text.Encoding.ASCII.GetBytes(sg);
+            byte[] byteSgKey = Tashjik.Common.UtilityMethod.sha.ComputeHash(byteSg);
+            chord.beginPutData(byteSgKey, byteSg, 0, byteSg.Length, null, null);
+
+            for (int i = 0; i < 6; i++)
+                Thread.Sleep(10000);
+
+            chord.beginGetData(byteSgKey, new AsyncCallback(processGetDataForExereciseChord), null);
 		}
-			
-		private void initializeChord()
+
+        void processGetDataForExereciseChord(IAsyncResult result)
 		{
-			
-		}
+            Console.WriteLine("TashjikClient::Client::processGetPredecessorForStabilize ENTER");
+
+ /*           ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+            Object appState = iNode_Object.obj;
+            
+            AsyncCallback callBack = ((Tashjik.Common.AsyncCallback_Object)appState).callBack;
+            Object appState1 = ((Tashjik.Common.AsyncCallback_Object)appState).obj;
+
+            IChordNode x = iNode_Object.node;		
+*/		}
 		
 		private void chkChord()
 		{

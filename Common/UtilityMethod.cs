@@ -99,7 +99,82 @@ namespace Tashjik.Common
 #endif
 		}
 
-		public static byte[] moduloAdd(byte[] A, byte[] B)
+        public static byte[] moduloAdd1(byte[] A, byte[] B)
+        {
+            if (A.Length != B.Length)
+                throw new Exception.BytesLengthsNotMatchingException();
+            //int length = A.Length;
+            byte[] C = new byte[A.Length];
+            byte tempA = 0;
+            byte tempB = 0;
+            byte tempC = 0;
+            bool carry = false;
+
+            for (int i = A.Length - 1; i >= 0; i--)
+            {
+
+                C[i] = 0;
+
+                for (int j = 7; j >= 0; j--)
+                {
+                    tempA = (byte)((A[i] & (byte)(1 << 7 - j)) >> (7 - j)); 
+                    tempB = (byte)((A[i] & (byte)(1 << 7 - j)) >> (7 - j));
+
+                    if (carry == false)
+                    {
+                        if (tempA == 0 && tempB == 0)
+                        {
+                            tempC = 0;
+                            carry = false;
+                        }
+                        else if ((tempA == 0 && tempB == 1) || (tempA == 1 && tempB == 0))
+                        {
+                            tempC = 1;
+                            carry = false;
+                        }
+
+                        else if (tempA == 1 && tempB == 1)
+                        {
+                            tempC = 0;
+                            carry = true;
+                        }
+                    }
+                    else if (carry == true)
+                    {
+                        if (tempA == 0 && tempB == 0)
+                        {
+                            tempC = 1;
+                            carry = false;
+                        }
+                        else if ((tempA == 0 && tempB == 1) || (tempA == 1 && tempB == 0))
+                        {
+                            tempC = 0;
+                            carry = true;
+                        }
+                        else if (tempA == 1 && tempB == 1)
+                        {
+                            tempC = 1;
+                            carry = true;
+                        }
+                    }
+
+                    C[i] |= (byte)(tempC << (7 - j));
+                }
+            }
+
+            if (carry == true)
+            {
+                byte[] D = new byte[C.Length];
+                D[C.Length - 1] = 1;
+                return moduloAdd1(C, D);
+            }
+            else return C;
+        }
+
+        
+
+
+        public static byte[] moduloAdd(byte[] A, byte[] B)
 		{
 			if(A.Length != B.Length)
 				throw new Exception.BytesLengthsNotMatchingException();

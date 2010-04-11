@@ -44,9 +44,9 @@
       <HintPath>..\Tier0\obj\Debug\Tier0.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Tier2Chord">
-      <HintPath>..\Tier2Chord\obj\Debug\Tier2Chord.dll</HintPath>
+    <Reference Include="Tier2Chord, Version=1.0.3748.13947, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Tier2Chord\obj\Debug\Tier2Chord.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

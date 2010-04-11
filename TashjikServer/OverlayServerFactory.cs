@@ -73,9 +73,10 @@ namespace Tashjik
 		
 		internal OverlayServer createServer(String strOverlayType)
 		{
-			return createServer(strOverlayType, null, new Guid());
+			return createServer(strOverlayType, null, Guid.NewGuid());
 		}
 		
+
 		internal OverlayServer createServer(String strOverlayType, IPAddress joinOtherIP, Guid joinOtherGuid)
 		{
 			Console.WriteLine("OverlayServerFactory::createServer ENTER");
@@ -108,6 +109,7 @@ namespace Tashjik
 				if(joinOtherIP==null || joinOtherGuid==null)
 				{
 					Console.WriteLine("OverlayServerFactory::createServer joinOtherIP==null || joinOtherGuid==null");
+                    Console.WriteLine("OverlayServerFactory::createServer joinOtherGuid=={0}", joinOtherGuid.ToByteArray());
 					Console.WriteLine("OverlayServerFactory::createServer EXIT ");
                     Object[] constructorArgs = new Object[1] { joinOtherGuid };
                     return (OverlayServer)(Activator.CreateInstance(overlayServerType, constructorArgs));

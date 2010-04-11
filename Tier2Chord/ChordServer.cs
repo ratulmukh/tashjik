@@ -63,7 +63,7 @@ namespace Tashjik.Tier2
 	
 		public override Guid getGuid()
 		{
-            return guid; //new Guid(guid.ToByteArray());
+            return new Guid(guid.ToByteArray());
 		}
 
 		public override void shutdown()
@@ -123,6 +123,43 @@ namespace Tashjik.Tier2
 			successor.putData(byteKey, data);
 		}
 		*/
+
+        //returns IP of successor.... 
+        public void beginFindSuccessor(byte[] hashedKey, AsyncCallback findSuccessorCallBack, Object appState, Guid relayTicket)
+        {
+            Console.WriteLine("ChordServer::beginFindSuccessor ENTER");
+
+            Stack<Object> thisAppState = new Stack<Object>();
+            thisAppState.Push(findSuccessorCallBack);
+            thisAppState.Push(appState);
+            thisNode.beginFindSuccessor(hashedKey, thisNode, new AsyncCallback(processFindSuccessorForFindSuccessor), thisAppState, new Guid("00000000-0000-0000-0000-000000000000"));
+        }
+
+        void processFindSuccessorForFindSuccessor(IAsyncResult result)
+        {
+            Console.WriteLine("ChordServer::processFindSuccessorForFindSuccessor ENTER");
+
+            ChordCommon.IChordNode_Object iNode_Object = (ChordCommon.IChordNode_Object)(result.AsyncState);
+            IChordNode successor = iNode_Object.node;
+            IPAddress IP = successor.getIP();
+
+            Stack<Object> recAppState = (Stack<Object>)(iNode_Object.obj);
+            Object origAppState = recAppState.Pop();
+            AsyncCallback findSuccessorCallBack = (AsyncCallback)(recAppState.Pop());
+
+            if (findSuccessorCallBack != null)
+            {
+                ChordCommon.IP_Object _IP_Object = new ChordCommon.IP_Object();
+
+                _IP_Object.IP = IP;
+                _IP_Object.obj = origAppState;
+
+                IAsyncResult res = new ChordCommon.IP_ObjectAsyncResult(_IP_Object, true, true);
+                findSuccessorCallBack(res);
+            }
+                
+           
+        }
 		public override void beginGetData(byte[] key, AsyncCallback getDataCallBack, Object appState)
 		{
 			Console.WriteLine("ChordServer::beginGetData ENTER");
