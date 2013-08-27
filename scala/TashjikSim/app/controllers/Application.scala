@@ -2,7 +2,7 @@ package controllers
 
 import play.api._
 import play.api.mvc._
-import models.NodeManager
+import models._
 
 object Application extends Controller {
   
@@ -12,10 +12,12 @@ object Application extends Controller {
     Ok(views.html.index())
   }
 
-  def startSim = Action {
-    _root_.globals.nodeManager ! "test"
-    Logger.info("Node Manager spun up")
-    Ok("Sim still being built")
+  def startSim = Action { implicit request =>
+    Logger.info("Received request body = " +request.body)
+    val nodeCount = request.body.asFormUrlEncoded.get("nodeCount")(0).toInt
+    _root_.globals.nodeManager ! StartSimulation(nodeCount)
+    
+    Ok("Simulation request received for " + nodeCount + " node")
   }
 }
 
