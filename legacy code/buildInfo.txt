@@ -1,0 +1,21 @@
+I:\ratul\code\tashjik\ratul-Narada>svn copy https://tashjik.googlecode.com/svn/t
+runk/ https://tashjik.googlecode.com/svn/branches/ratul-Narada -m "Creating a pr
+ivate branch for Narada"
+
+I:\ratul\code\tashjik>svn checkout https://tashjik.googlecode.com/s
+vn/branches/ratul-Narada
+
+
+
+
+
+I:\ratul\code\tashjik\ratul-Narada\Tier2\Streaming>
+C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\Narada.dll  /target:library NaradaNode.cs NaradaBootStrapper.cs INaradaNode.cs
+
+I:\ratul\code\tashjik\ratul-Narada\Tier2Test\StreamingTest\NaradaTest>C:\WINDOWS
+\Microsoft.NET\Framework\v2.0.50727\csc /out:I:\ratul\code\tashjik\Ratul-Narada\
+bin\debug\NaradaTest.dll /r:I:\ratul\code\tashjik\Ratul-Narada\bin\debug\Narada.
+dll  /target:library NaradaNodeTest.cs NaradaBootStrapperTest.cs NaradaTestExerc
+iser.cs
+
+I:\ratul\code\tashjik\ratul-Narada\bin\debug>TashjikServerTest.exe
