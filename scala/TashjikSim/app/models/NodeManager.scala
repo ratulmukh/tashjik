@@ -21,17 +21,17 @@ class NodeManager extends Actor {
     case StartSimulation(nodeCount: Int) => { 
       Logger.info("Received new simulation request: Node count = " + nodeCount)
       
-      var bootstrapNode: ActorRef = null
+      var bootstrapNode= None : Option[ActorRef]
       
       for(a <- 1 to nodeCount)
       {
-        val t: Iterable[ActorRef] = context.children
-          val node: ActorRef = context.actorOf(Props(new Node(bootstrapNode)), name = "myChild"+a ) 
+        //val t: Iterable[ActorRef] = context.children
+          val node: ActorRef = context.actorOf(Props(new Node(bootstrapNode)), name = "Node"+a ) 
         	val future = node.ask("test")(5 seconds)
         	val result = Await.result(future, (5 seconds)).asInstanceOf[String]
         	Logger.info("returned after testing child with status = " + result)
         	
-        	bootstrapNode = node
+        	bootstrapNode = Some(node)
     	  
       } 
     }  

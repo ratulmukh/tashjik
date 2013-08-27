@@ -10,15 +10,23 @@ import scala.concurrent.Await
 case class GetPredecessor()
 case class GetSuccessor()
 
-class Node(bootstrapNode: ActorRef) extends Actor {
+class Node(bootstrapNode: Option[ActorRef]) extends Actor {
   
-  val future1 = bootstrapNode.ask(GetPredecessor())(5 seconds)
-  val predecessor: Node = Await.result(future1, (5 seconds)).asInstanceOf[Node]
+  var predecessor: ActorRef = self
+  var successor:   ActorRef = self
   
-  val future2 = bootstrapNode.ask(GetSuccessor())(5 seconds)
-  val successor: Node = Await.result(future2, (5 seconds)).asInstanceOf[Node]
-  
-  val log = Logging(context.system, this)
+  bootstrapNode match {
+    case None => Logger.info("No bootstrap node available")
+    case Some(value) => {
+       val future1 = value.ask(GetPredecessor())(5 seconds)
+       predecessor = Await.result(future1, (5 seconds)).asInstanceOf[ActorRef]
+       
+       
+       val future2 = value.ask(GetSuccessor())(5 seconds)
+       successor = Await.result(future1, (5 seconds)).asInstanceOf[ActorRef]
+    }
+  }
+ 
   def receive = {
     case "test" => {
       Logger.info("received test")
