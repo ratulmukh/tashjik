@@ -30,7 +30,7 @@ class NodeManager extends Actor {
       {
         implicit val timeout = Timeout(5 seconds)
         //val t: Iterable[ActorRef] = context.children
-          val node: ActorRef = context.actorOf(Props(new Node(bootstrapNode)), name = "Node"+a ) 
+          val node: ActorRef = context.actorOf(Props(new Node(bootstrapNode))/*, name = "Node"+a */) 
         	val future = node ? "test"
         	val result = Await.result(future, (5 seconds)).asInstanceOf[String]
         	Logger.info("returned after testing child with status = " + result)
