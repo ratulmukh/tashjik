@@ -28,14 +28,14 @@ class NodeManager extends Actor {
       
       for(a <- 1 to nodeCount)
       {
-        implicit val timeout = Timeout(5 seconds)
+        implicit val timeout = Timeout(35 seconds)
         //val t: Iterable[ActorRef] = context.children
           val node: ActorRef = context.actorOf(Props(new Node(bootstrapNode))/*, name = "Node"+a */) 
-        	val future = node ? "test"
-        	val result = Await.result(future, (5 seconds)).asInstanceOf[String]
-        	Logger.info("returned after testing child with status = " + result)
+        	//val future = node ? "test"
+        	//val result = Await.result(future, (35 seconds)).asInstanceOf[String]
+        	//Logger.info("returned after testing child with status = " + result)
         	
-        	bootstrapNode = Some(NodeRep(node, Await.result(node.ask(GetId())(5 seconds), (5 seconds)).asInstanceOf[String]))
+        	bootstrapNode = Some(NodeRep(node, Await.result(node.ask(GetId())(335 seconds), (335 seconds)).asInstanceOf[String]))
     	  
       }
     }  
