@@ -8,6 +8,8 @@ import scala.concurrent.duration._
 import akka.util.Timeout
 import akka.pattern.ask
 import scala.concurrent.Await
+import java.util.UUID
+import org.apache.commons.codec.digest.DigestUtils
 
 case class StartSimulation(nodeCount: Int)
 
@@ -25,7 +27,7 @@ class NodeManager extends Actor {
       Logger.info("Received new simulation request: Node count = " + nodeCount)
       
       var bootstrapNode= None : Option[NodeRep]
-      
+      var nodeList = List[NodeRep]()
       for(a <- 1 to nodeCount)
       {
         implicit val timeout = Timeout(35 seconds)
@@ -36,8 +38,34 @@ class NodeManager extends Actor {
         	//Logger.info("returned after testing child with status = " + result)
         	
         	bootstrapNode = Some(NodeRep(node, Await.result(node.ask(GetId())(335 seconds), (335 seconds)).asInstanceOf[String]))
-    	  
+        	bootstrapNode match {
+          case None => Logger.info("BootastrapNode is None: Unable to send any message to it")
+          case Some(bootstrapnode) => nodeList = bootstrapnode :: nodeList
+        }
+        Logger.info("NODE COUNT = " + a)
+        	
+/*        	bootstrapNode match {
+          case None => 
+          case Some(g) => nodeList + g
+  */  	  
       }
+      Thread.sleep(10000)
+  /*    val dataStoreCount = 100
+      for(a <- 1 to dataStoreCount)
+      {
+        Logger.info("Random val = " +  (Math.random()*nodeCount).round.toInt.toString())
+    */    
+        for(node <- nodeList) {
+          val key = DigestUtils.sha(UUID.randomUUID().toString()).toString()
+          Logger.info("Random val = " +  (Math.random()*nodeCount).round.toInt.toString() + " Key=" + key)
+          node.node ! Store(key, "howdy")
+          
+  /*      node match {
+          case None => Logger.info("BootastrapNode is None: Unable to send any message to it")
+          case Some(bootstrapnode) => bootstrapnode.node ! Store(DigestUtils.sha(UUID.randomUUID().toString()).toString(), "howdy")
+        }*/
+        }
+   //   }
     }  
     case _      => Logger.info("received unknown message")
   }
