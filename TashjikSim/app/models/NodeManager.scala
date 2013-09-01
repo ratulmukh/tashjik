@@ -32,7 +32,8 @@ class NodeManager extends Actor {
       {
         implicit val timeout = Timeout(35 seconds)
         //val t: Iterable[ActorRef] = context.children
-          val node: ActorRef = context.actorOf(Props(new Node(bootstrapNode))/*, name = "Node"+a */) 
+        val id: String = DigestUtils.sha512(UUID.randomUUID().toString()).toString()
+          val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)), name = "Node-"+id.substring(3) ) 
         	//val future = node ? "test"
         	//val result = Await.result(future, (35 seconds)).asInstanceOf[String]
         	//Logger.info("returned after testing child with status = " + result)
@@ -41,8 +42,10 @@ class NodeManager extends Actor {
         	bootstrapNode match {
           case None => Logger.info("BootastrapNode is None: Unable to send any message to it")
           case Some(bootstrapnode) => nodeList = bootstrapnode :: nodeList
+          Thread.sleep(1000)
         }
         Logger.info("NODE COUNT = " + a)
+        Logger.info("Nodelist = " + nodeList)
         	
 /*        	bootstrapNode match {
           case None => 
@@ -56,10 +59,11 @@ class NodeManager extends Actor {
         Logger.info("Random val = " +  (Math.random()*nodeCount).round.toInt.toString())
     */    
         for(node <- nodeList) {
-          val key = DigestUtils.sha(UUID.randomUUID().toString()).toString()
-          Logger.info("Random val = " +  (Math.random()*nodeCount).round.toInt.toString() + " Key=" + key)
-          node.node ! Store(key, "howdy")
           
+          val key = DigestUtils.sha512(UUID.randomUUID().toString()).toString()
+          //Logger.info("Random val = " +  (Math.random()*nodeCount).round.toInt.toString() + " Key=" + key)
+          node.node ! Store(key, "howdy")
+          //Thread.sleep(1000)
   /*      node match {
           case None => Logger.info("BootastrapNode is None: Unable to send any message to it")
           case Some(bootstrapnode) => bootstrapnode.node ! Store(DigestUtils.sha(UUID.randomUUID().toString()).toString(), "howdy")
