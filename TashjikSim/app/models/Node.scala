@@ -43,14 +43,22 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     case None => Logger.info("[Node-" + id + "::constructor()]: No bootstrap node available")
     case Some(bootstrapNode) => {
        
-       implicit val timeout = Timeout(35 seconds)
+       implicit val timeout = Timeout(65 seconds)
        
-       successor =   Await.result((bootstrapNode.node ? GetSuccessorOfId(id)), (35 seconds)).asInstanceOf[NodeRep]
-       predecessor = Await.result((successor.node ? GetPredecessor()), (35 seconds)).asInstanceOf[NodeRep]
+       try {
+         successor =   Await.result((bootstrapNode.node ? GetSuccessorOfId(id)), (65 seconds)).asInstanceOf[NodeRep]
+       }
+       catch {
+              case e: Exception => {
+                Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + id + ")]: TIMEOUT EXCEPTION HAPPENED .... RETRYING AGAIN")
+                sender ! Await.result((bootstrapNode.node ? GetSuccessorOfId(id)), (65 seconds)).asInstanceOf[NodeRep]
+              }
+            }  
+       predecessor = Await.result((successor.node ? GetPredecessor()), (65 seconds)).asInstanceOf[NodeRep]
        Logger.info("[Node-" + id + "::constructor()]: successor and predecessor received")
        
-       Await.result(successor.node ? SetNewPredecessor(NodeRep(context.self, id)), (35 seconds))
-       Await.result(predecessor.node ? SetNewSuccessor(NodeRep(context.self, id)), (35 seconds))
+       Await.result(successor.node ? SetNewPredecessor(NodeRep(context.self, id)), (65 seconds))
+       Await.result(predecessor.node ? SetNewSuccessor(NodeRep(context.self, id)), (65 seconds))
        Logger.info("[Node-" + id + "::constructor()]: Notified successor(" + successor + ") of new predecessor(" + id + ")")
        Logger.info("[Node-" + id + "::constructor()]: Notified predecessor(" + predecessor + ") of new successor(" + id + ")")
     }
@@ -86,7 +94,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     }
     case GetSuccessorOfId(queryId) => {
       Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: Entering GetSuccessorOfId msg handler - queryID=" + queryId)
-      implicit val timeout = Timeout(35 seconds)
+      implicit val timeout = Timeout(65 seconds)
        
       (id.compareTo(successor.id) < 0) match {
         case true => {
@@ -98,7 +106,15 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
             }
             case false => {
               Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is NOT inbetween ID(" + id + ") and successor.id(" + successor.id + ")")
-              sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
+              try {
+                sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (65 seconds)).asInstanceOf[NodeRep]
+              }
+              catch {
+              case e: Exception => {
+                Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: TIMEOUT EXCEPTION HAPPENED .... RETRYING AGAIN")
+                sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (65 seconds)).asInstanceOf[NodeRep]
+              }
+            }
             }
           }
         }
@@ -112,7 +128,15 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
           }
           case false => {
             Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is NOT inbetween ID(" + id + ") and successor.id(" + successor.id + ") BUT ULTA PULTA")
-            sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
+            try {
+              sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (65 seconds)).asInstanceOf[NodeRep]
+            }
+            catch {
+              case e: Exception => {
+                Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: TIMEOUT EXCEPTION HAPPENED .... RETRYING AGAIN")
+                sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (65 seconds)).asInstanceOf[NodeRep]
+              }
+            }
           }
           }
         }
@@ -121,7 +145,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     }
     /*case Store(key: String, value: String) => {
       Logger.info("[Node-" + id + "::receive()->Store]: Entering Store msg handler - key=" + key)
-      implicit val timeout = Timeout(35 seconds)
+      implicit val timeout = Timeout(65 seconds)
       
       val retrievedSuccessorFuture = (context.self ? (GetSuccessorOfId(key))).mapTo[NodeRep]
       val f2 = retrievedSuccessorFuture map { retrievedSuccessor =>
@@ -135,7 +159,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     
     case Store(key: String, value: String) => {
       Logger.info("[Node-" + id + "::receive()->Store]: Entering Store msg handler - key=" + key + " predecessor=" + predecessor + " id="+ id + " successor=" + successor)
-      implicit val timeout = Timeout(35 seconds)
+      implicit val timeout = Timeout(65 seconds)
       (predecessor.id.compareTo(id) <= 0) match {
         case true => {
           Logger.info("Node-" + id + "::receive()->Store]: key(" + key + ") predecessor(" + predecessor + ") is less than id(" + id + ")")
