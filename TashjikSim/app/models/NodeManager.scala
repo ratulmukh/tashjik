@@ -30,15 +30,15 @@ class NodeManager extends Actor {
       var nodeList = List[NodeRep]()
       for(a <- 1 to nodeCount)
       {
-        implicit val timeout = Timeout(65 seconds)
+        implicit val timeout = Timeout(35 seconds)
         //val t: Iterable[ActorRef] = context.children
         val id: String = DigestUtils.sha512(UUID.randomUUID().toString()).toString()
-          val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)), name = "Node-"+id.substring(3) ) 
+          val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher"), name = "Node-"+id.substring(3) ) 
         	//val future = node ? "test"
-        	//val result = Await.result(future, (65 seconds)).asInstanceOf[String]
+        	//val result = Await.result(future, (35 seconds)).asInstanceOf[String]
         	//Logger.info("returned after testing child with status = " + result)
         	
-        	bootstrapNode = Some(NodeRep(node, Await.result(node.ask(GetId())(365 seconds), (365 seconds)).asInstanceOf[String]))
+        	bootstrapNode = Some(NodeRep(node, Await.result(node.ask(GetId())(335 seconds), (335 seconds)).asInstanceOf[String]))
         	bootstrapNode match {
           case None => Logger.info("BootastrapNode is None: Unable to send any message to it")
           case Some(bootstrapnode) => nodeList = bootstrapnode :: nodeList
