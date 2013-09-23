@@ -1,3 +1,4 @@
 #!/bin/sh
 
-cd TashjikSim; sbt start
+cd TashjikSim
+sbt start
