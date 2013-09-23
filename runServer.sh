@@ -1,0 +1,1 @@
+cd TashjikSim; sbt start

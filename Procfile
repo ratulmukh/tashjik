@@ -1,1 +1,1 @@
-web: TashjikSim/target/start -Dhttp.port=${PORT} ${JAVA_OPTS}
+web: runServer.sh -Dhttp.port=${PORT} ${JAVA_OPTS}
