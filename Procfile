@@ -1,1 +1,0 @@
-web: runServer.sh -Dhttp.port=${PORT} ${JAVA_OPTS}
