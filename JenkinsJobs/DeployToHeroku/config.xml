@@ -55,12 +55,33 @@
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
-      <command>cd TashjikSim
-pwd
-git init
-git add .
-git commit -m &quot;init&quot;
-git push git@heroku.com:tashjik.git master</command>
+      <command>
+#if [ -d ../lastBuiltRepo]
+#  then 
+#    echo &quot;Deleting previous lastBuiltRepo&quot;
+#    rm -rf ../lastBuiltRepo
+#fi
+#cp -r TashjikSim ../lastBuiltRepo
+
+OUTPUT=$(diff -r ../lastBuiltRepo TashjikSim | wc -c | sed &apos;s/^ *//g&apos;)
+echo &quot;Diff executed&quot;
+echo $OUTPUT
+if [ $OUTPUT -eq 0 ] 
+  then
+     echo &quot;Both directories match - no need to push to Heroku&quot;
+  else	 
+    echo &quot;Saving build repo&quot;
+    rm -rf ../lastBuiltRepo
+    cp -r TashjikSim ../lastBuiltRepo
+    echo &quot;New Tashjik changes need to be pushed to Heroku&quot;
+     echo $OUTPUT
+    
+    cd TashjikSim
+    git init
+    git add .
+    git commit -m &quot;init&quot;
+    git push git@heroku.com:tashjik.git master
+fi</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
