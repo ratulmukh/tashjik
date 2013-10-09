@@ -69,6 +69,8 @@ echo $OUTPUT
 if [ $OUTPUT -eq 0 ] 
   then
      echo &quot;Both directories match - no need to push to Heroku&quot;
+     rm -rf ../lastBuiltRepo
+     cp -r TashjikSim ../lastBuiltRepo
   else	 
     echo &quot;Saving build repo&quot;
     rm -rf ../lastBuiltRepo
