@@ -69,6 +69,7 @@ class NodeManager extends Actor {
           case Some(bootstrapnode) => bootstrapnode.node ! Store(DigestUtils.sha(UUID.randomUUID().toString()).toString(), "howdy")
         }*/
         }
+      Thread.sleep(10000)
    //   }
     }  
     case _      => Logger.info("received unknown message")
