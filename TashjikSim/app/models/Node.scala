@@ -31,14 +31,14 @@ case class NodeRep(node: ActorRef, id: String)
 
 class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
   
-  
-  Logger.info("[Node-" + id + "::constructor()]: Hash of UUID of newly created node = " + id)
+ 
+  //Logger.info("[Node-" + id + "::constructor()]: Hash of UUID of newly created node = " + id)
    
   val keyValueStore: Map[String, String] = Map[String, String]() 
   
   var predecessor = NodeRep(context.self, id)
   var successor   = NodeRep(context.self, id)
-  
+ /* 
   bootstrapNode match {
     case None => Logger.info("[Node-" + id + "::constructor()]: No bootstrap node available")
     case Some(bootstrapNode) => {
@@ -68,7 +68,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
   Logger.info("Predecessor: " + predecessor)
   Logger.info("Successor: " + successor)
   Logger.info("-----------------------------------------------------------------")
- 
+*/ 
   def receive = {
     case "test" => {
       Logger.info("received test")
