@@ -38,9 +38,10 @@ class NodeManager extends Actor {
       {
         implicit val timeout = Timeout(35 seconds)
         //val t: Iterable[ActorRef] = context.children
-        val id: String = (new HexBinaryAdapter()).marshal(DigestUtils.sha512(UUID.randomUUID().toString())) //.toString()
+        val id: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
           val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
-        	//val future = node ? "test"
+           Await.result(node.ask(Init())(335 seconds), (335 seconds))
+          //val future = node ? "test"
         	//val result = Await.result(future, (35 seconds)).asInstanceOf[String]
         	//Logger.info("returned after testing child with status = " + result)
         	
@@ -49,7 +50,7 @@ class NodeManager extends Actor {
           bootstrapNode match {
           case None => Logger.info("BootstrapNode is None: Unable to send any message to it")
           case Some(bootstrapnode) => nodeList = bootstrapnode :: nodeList
-  //        Thread.sleep(1000)
+          //Thread.sleep(1000)
         }
         Logger.info("NODE COUNT = " + a)
         //Logger.info("Nodelist = " + nodeList)
@@ -67,7 +68,7 @@ class NodeManager extends Actor {
     */    
 /*        for(node <- nodeList) {
           
-          val key = (new HexBinaryAdapter()).marshal(DigestUtils.sha512(UUID.randomUUID().toString()))
+          val key = DigestUtils.sha1Hex(UUID.randomUUID().toString())
           //Logger.info("Random val = " +  (Math.random()*nodeCount).round.toInt.toString() + " Key=" + key)
           node.node ! Store(key, "howdy")
           //Thread.sleep(1000)

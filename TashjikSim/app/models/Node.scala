@@ -26,7 +26,8 @@ case class Store(key: String, value: String)
 case class StoreLocal(key: String, value: String)
 case class Retrieve(key: String)
 case class RtrievedData(key: String, value: String)
-
+case class Init()
+case class Success()
 case class NodeRep(node: ActorRef, id: String)
 
 class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
@@ -38,22 +39,26 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
   
   var predecessor = NodeRep(context.self, id)
   var successor   = NodeRep(context.self, id)
- /* 
+ 
+ def init() {
+  
   bootstrapNode match {
     case None => Logger.info("[Node-" + id + "::constructor()]: No bootstrap node available")
     case Some(bootstrapNode) => {
        
        implicit val timeout = Timeout(35 seconds)
        
-       try {
+ //      try {
          successor =   Await.result((bootstrapNode.node ? GetSuccessorOfId(id)), (35 seconds)).asInstanceOf[NodeRep]
-       }
+   /*    }
        catch {
               case e: Exception => {
                 Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + id + ")]: TIMEOUT EXCEPTION HAPPENED .... RETRYING AGAIN")
                 sender ! Await.result((bootstrapNode.node ? GetSuccessorOfId(id)), (35 seconds)).asInstanceOf[NodeRep]
               }
             }  
+
+*/     
        predecessor = Await.result((successor.node ? GetPredecessor()), (35 seconds)).asInstanceOf[NodeRep]
        Logger.info("[Node-" + id + "::constructor()]: successor and predecessor received")
        
@@ -68,8 +73,13 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
   Logger.info("Predecessor: " + predecessor)
   Logger.info("Successor: " + successor)
   Logger.info("-----------------------------------------------------------------")
-*/ 
+}
+
   def receive = {
+    case Init() => {
+      init()
+      sender ! Success()
+    }
     case "test" => {
       Logger.info("received test")
       sender ! "All Ok"
