@@ -16,11 +16,10 @@ import akka.dispatch.OnSuccess
 case class GetPredecessor()
 case class GetSuccessor()
 case class GetSuccessorOfId(queryId: String)
+case class GetSuccessorOfId1(queryId: String)
 case class GetId()
 case class SetNewSuccessor(successor: NodeRep)
 case class SetNewPredecessor(predecessor: NodeRep)
-case class NewSuccessorSuccessfullySet()
-case class NewPredecessorSuccessfullySet()
 
 case class Store(key: String, value: String)
 case class StoreLocal(key: String, value: String)
@@ -41,7 +40,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
   var successor   = NodeRep(context.self, id)
  
  def init() {
-  
+  Logger.info("[Node-" + id + "::init()]: ENTER")
   bootstrapNode match {
     case None => Logger.info("[Node-" + id + "::constructor()]: No bootstrap node available")
     case Some(bootstrapNode) => {
@@ -64,16 +63,35 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
        
        Await.result(successor.node ? SetNewPredecessor(NodeRep(context.self, id)), (35 seconds))
        Await.result(predecessor.node ? SetNewSuccessor(NodeRep(context.self, id)), (35 seconds))
-       Logger.info("[Node-" + id + "::constructor()]: Notified successor(" + successor + ") of new predecessor(" + id + ")")
-       Logger.info("[Node-" + id + "::constructor()]: Notified predecessor(" + predecessor + ") of new successor(" + id + ")")
+       Logger.debug("[Node-" + id + "::constructor()]: Notified successor(" + successor + ") of new predecessor(" + id + ")")
+       Logger.debug("[Node-" + id + "::constructor()]: Notified predecessor(" + predecessor + ") of new successor(" + id + ")")
     }
   }
   
-  Logger.info("------------------------ Node " + id + " ------------------------")
+  Logger.info("-----------------------------------------------------------------")
+  Logger.info("Node: " + id)
   Logger.info("Predecessor: " + predecessor)
   Logger.info("Successor: " + successor)
   Logger.info("-----------------------------------------------------------------")
+  
 }
+  
+  def isSuccessorSameFor(queryId: String): Boolean = {
+    Logger.info("[Node-" + id + "::isSuccessorSameFor(" + queryId + ")]: ENTER")
+    
+    if(this.id.compareTo(successor.id) < 0 ) {
+      if(queryId.compareTo(successor.id) < 0)
+        true
+      else
+        false
+    }
+    else {
+      if(this.id.compareTo(queryId) < 0 || queryId.compareTo(successor.id) < 0)
+        true
+      else
+          false
+    }
+  }
 
   def receive = {
     case Init() => {
@@ -95,14 +113,37 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     }
     case SetNewSuccessor(successor: NodeRep) => {
       this.successor = successor 
-      sender ! NewSuccessorSuccessfullySet()
+      sender ! Success()
     }
     
     case SetNewPredecessor(predecessor: NodeRep) => {
       this.predecessor = predecessor  
-      sender ! NewPredecessorSuccessfullySet()
+      sender ! Success()
     }
+    
     case GetSuccessorOfId(queryId) => {
+      Logger.info("[Node-" + id + "::receive()->GetSuccessorOfId(" + queryId + ")]: ENTER")
+      if((this.id.compareTo(successor.id) == 0) && (this.id.compareTo(predecessor.id) == 0))
+      {
+         Logger.debug("this.id =" + this.id)
+         Logger.debug("successor.id =" + successor.id)
+         Logger.debug("predecessor.id =" + predecessor.id)
+         Logger.debug(this.id.compareTo(successor.id) + "+" + this.id.compareTo(predecessor.id))
+        sender ! successor
+      }
+      else
+      {
+        isSuccessorSameFor(queryId) match {
+          case true  => sender ! successor
+          case false => {
+            implicit val timeout = Timeout(35 seconds)
+            sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
+          }
+        }
+      }
+    }  
+    
+    case GetSuccessorOfId1(queryId) => {
       Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: Entering GetSuccessorOfId msg handler - queryID=" + queryId)
       implicit val timeout = Timeout(35 seconds)
        
@@ -133,7 +174,8 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
           ((queryId.compareTo(id) > 0 && queryId.compareTo("[B@ffffffff") <= 0) ||
             (queryId.compareTo("[B@00000000") >= 0 && queryId.compareTo(successor.id) <= 0) ) match {
           case true => {
-            Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is inbetween ID(" + id + ") and successor.id(" + successor.id + ") BUT ULTA PULTA")
+            Logger.info(
+                "[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is inbetween ID(" + id + ") and successor.id(" + successor.id + ") BUT ULTA PULTA")
             sender ! successor
           }
           case false => {
