@@ -80,10 +80,11 @@ class NodeManager extends Actor {
       jumper = successor  
    }  
       
-   val dataStoreCount = 1
+   val dataStoreCount = 500
    for(a <- 1 to dataStoreCount)
    {
-      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))
+//      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))
+        jumper.node ! Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")
    }     
       
  //     Thread.sleep(10000)

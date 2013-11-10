@@ -17,13 +17,17 @@ case class GetPredecessor()
 case class GetSuccessor()
 case class GetSuccessorOfId(queryId: String)
 case class GetSuccessorOfId1(queryId: String)
+case class GetSuccessorOfIdAsync(originalRequestor: ActorRef, storeRequest: Store)
 case class GetId()
 case class SetNewSuccessor(successor: NodeRep)
 case class SetNewPredecessor(predecessor: NodeRep)
 
 case class Store(key: String, value: String)
+case class StoreSync(key: String, value: String)
 case class Store1(key: String, value: String)
+case class StoreDestinationFound(destinationNodeRep: NodeRep, storeRequest: Store)
 case class StoreLocal(key: String, value: String)
+case class StoreLocalSync(key: String, value: String)
 case class Retrieve(key: String)
 case class RtrievedData(key: String, value: String)
 case class Init()
@@ -116,6 +120,65 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
       }
   }
   
+   def GetSuccessorOfIdAsyncFunc_next2(originalRequestor: ActorRef, storeRequest: Store) = {
+    Logger.info("[Node-" + id + "::GetSuccessorOfIdAsyncFunc_next2(" + storeRequest.key + ")]: ENTER")
+    val queryId = storeRequest.key
+    
+      if((this.id.compareTo(successor.id) == 0) && (this.id.compareTo(predecessor.id) == 0))
+      {
+         Logger.debug("this.id =" + this.id)
+         Logger.debug("successor.id =" + successor.id)
+         Logger.debug("predecessor.id =" + predecessor.id)
+         Logger.debug(this.id.compareTo(successor.id) + "+" + this.id.compareTo(predecessor.id))
+         originalRequestor ! StoreDestinationFound(successor, storeRequest)
+      }
+      else
+      {
+        isSuccessorSameFor(queryId) match {
+          case true  => originalRequestor ! StoreDestinationFound(successor, storeRequest)
+          case false => {
+            implicit val timeout = Timeout(35 seconds)
+            successor.node ! GetSuccessorOfIdAsync(originalRequestor, storeRequest)
+            
+            
+          }  
+        }
+      }
+  }
+  def GetSuccessorOfIdAsyncFunc(requestor: ActorRef, storeRequest: Store, queryId: String) = {
+    Logger.info("[Node-" + id + "::GetSuccessorOfIdAsyncFunc(" + queryId + ")]: ENTER")
+      if((this.id.compareTo(successor.id) == 0) && (this.id.compareTo(predecessor.id) == 0))
+      {
+         Logger.debug("this.id =" + this.id)
+         Logger.debug("successor.id =" + successor.id)
+         Logger.debug("predecessor.id =" + predecessor.id)
+         Logger.debug(this.id.compareTo(successor.id) + "+" + this.id.compareTo(predecessor.id))
+        requestor ! StoreDestinationFound(successor, storeRequest)
+      }
+      else
+      {
+        isSuccessorSameFor(queryId) match {
+          case true  => requestor ! StoreDestinationFound(successor, storeRequest)
+          case false => {
+            implicit val timeout = Timeout(35 seconds)
+            val future = successor.node ? GetSuccessorOfIdAsyncFunc_next2(self, storeRequest)
+            future onSuccess {
+              case destinationNode: NodeRep => requestor ! StoreDestinationFound(destinationNode, storeRequest)
+              case _ => throw new Exception()
+            }
+            
+            future onFailure {
+              case ise: IllegalStateException if ise.getMessage == "OHNOES" =>
+              //OHNOES! We are in deep trouble, do something!
+              case e: Exception => throw e
+              //Do something else
+            }
+            
+          }  
+        }
+      }
+  }
+  
   def receive = {
     case Init() => {
       init()
@@ -148,58 +211,11 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
       sender ! GetSuccessorOfIdFunc(queryId)
     }  
     
-    case GetSuccessorOfId1(queryId: String) => {
-      Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: Entering GetSuccessorOfId msg handler - queryID=" + queryId)
-      implicit val timeout = Timeout(35 seconds)
-       
-      (id.compareTo(successor.id) < 0) match {
-        case true => {
-          Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: ID(" + id + ") is less than successor.id(" + successor.id + ")")
-          (queryId.compareTo(id) > 0 && queryId.compareTo(successor.id) <= 0 ) match {
-            case true => {
-              Logger.info("[Node-" + id + "::receive()->GetSuccessorOfId]: query ID(" + queryId + ") is inbetween ID(" + id + ") and successor.id(" + successor.id + ")")
-              sender ! successor
-            }
-            case false => {
-              Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is NOT inbetween ID(" + id + ") and successor.id(" + successor.id + ")")
-              try {
-                sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
-              }
-              catch {
-              case e: Exception => {
-                Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: TIMEOUT EXCEPTION HAPPENED .... RETRYING AGAIN")
-                sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
-              }
-            }
-            }
-          }
-        }
-        case false => {
-          Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: Id(" + id + ") is NOT less than successor.id(" + successor.id + ")")
-          ((queryId.compareTo(id) > 0 && queryId.compareTo("[B@ffffffff") <= 0) ||
-            (queryId.compareTo("[B@00000000") >= 0 && queryId.compareTo(successor.id) <= 0) ) match {
-          case true => {
-            Logger.info(
-                "[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is inbetween ID(" + id + ") and successor.id(" + successor.id + ") BUT ULTA PULTA")
-            sender ! successor
-          }
-          case false => {
-            Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: query ID(" + queryId + ") is NOT inbetween ID(" + id + ") and successor.id(" + successor.id + ") BUT ULTA PULTA")
-            try {
-              sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
-            }
-            catch {
-              case e: Exception => {
-                Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: TIMEOUT EXCEPTION HAPPENED .... RETRYING AGAIN")
-                sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
-              }
-            }
-          }
-          }
-        }
-      }
+    case GetSuccessorOfIdAsync(originalRequestor: ActorRef, storeRequest: Store) => {
+       GetSuccessorOfIdAsyncFunc_next2(originalRequestor, storeRequest)
+    } 
     
-    }
+
     /*case Store(key: String, value: String) => {
       Logger.info("[Node-" + id + "::receive()->Store]: Entering Store msg handler - key=" + key)
       implicit val timeout = Timeout(35 seconds)
@@ -209,9 +225,24 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
         retrievedSuccessor.asInstanceOf[NodeRep].node ! StoreLocal(key, value)
       }
     }*/
+    case StoreLocalSync(key: String, value: String) => {
+      Logger.info("Node-" + id + "::receive()->StoreLocal]: Home of [" + key + ", " + value + "] found:" + id)
+      keyValueStore + (key->value)
+      sender ! Success()
+    }
+    
     case StoreLocal(key: String, value: String) => {
       Logger.info("Node-" + id + "::receive()->StoreLocal]: Home of [" + key + ", " + value + "] found:" + id)
       keyValueStore + (key->value)
+    }
+    
+    case StoreSync(key: String, value: String) => {
+      Logger.info("[Node-" + id + "::receive()->StoreSync]: ENTER")
+      Logger.info("key = " + key + " && value = " + value )
+      implicit val timeout = Timeout(35 seconds)
+      val keySuccessor =   GetSuccessorOfIdFunc(key)
+      Logger.info("keySuccessor.id = " + keySuccessor.id)
+      Await.result((keySuccessor.node ? StoreLocal(key, value)), (35 seconds))
       sender ! Success()
     }
     
@@ -219,10 +250,16 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
       Logger.info("[Node-" + id + "::receive()->Store]: ENTER")
       Logger.info("key = " + key + " && value = " + value )
       implicit val timeout = Timeout(35 seconds)
-      val keySuccessor =   GetSuccessorOfIdFunc(key)
-      Logger.info("keySuccessor.id = " + keySuccessor.id)
-      Await.result((keySuccessor.node ? StoreLocal(key, value)), (35 seconds))
-      sender ! Success()
+      val requestor = sender
+      GetSuccessorOfIdAsyncFunc_next2(self, Store(key, value))
+      
+    }
+    
+    case StoreDestinationFound(destinationNodeRep: NodeRep, storeRequest: Store) => {
+      Logger.info("[Node-" + id + "::receive()->StoreDestinationFound]: ENTER")
+      
+      implicit val timeout = Timeout(35 seconds)
+      destinationNodeRep.node ! StoreLocal(storeRequest.key, storeRequest.value)
     }
     
     case Store1(key: String, value: String) => {
