@@ -22,6 +22,7 @@ case class SetNewSuccessor(successor: NodeRep)
 case class SetNewPredecessor(predecessor: NodeRep)
 
 case class Store(key: String, value: String)
+case class Store1(key: String, value: String)
 case class StoreLocal(key: String, value: String)
 case class Retrieve(key: String)
 case class RtrievedData(key: String, value: String)
@@ -80,19 +81,41 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     Logger.info("[Node-" + id + "::isSuccessorSameFor(" + queryId + ")]: ENTER")
     
     if(this.id.compareTo(successor.id) < 0 ) {
-      if(queryId.compareTo(successor.id) < 0)
+      if(this.id.compareTo(queryId) < 0 && queryId.compareTo(successor.id) <= 0)
         true
       else
         false
     }
     else {
-      if(this.id.compareTo(queryId) < 0 || queryId.compareTo(successor.id) < 0)
+      if(this.id.compareTo(queryId) < 0 || queryId.compareTo(successor.id) <= 0)
         true
       else
           false
     }
   }
 
+  def GetSuccessorOfIdFunc(queryId: String): NodeRep = {
+    Logger.info("[Node-" + id + "::GetSuccessorOfId(" + queryId + ")]: ENTER")
+      if((this.id.compareTo(successor.id) == 0) && (this.id.compareTo(predecessor.id) == 0))
+      {
+         Logger.debug("this.id =" + this.id)
+         Logger.debug("successor.id =" + successor.id)
+         Logger.debug("predecessor.id =" + predecessor.id)
+         Logger.debug(this.id.compareTo(successor.id) + "+" + this.id.compareTo(predecessor.id))
+        successor
+      }
+      else
+      {
+        isSuccessorSameFor(queryId) match {
+          case true  => successor
+          case false => {
+            implicit val timeout = Timeout(35 seconds)
+            Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
+          }
+        }
+      }
+  }
+  
   def receive = {
     case Init() => {
       init()
@@ -121,29 +144,11 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
       sender ! Success()
     }
     
-    case GetSuccessorOfId(queryId) => {
-      Logger.info("[Node-" + id + "::receive()->GetSuccessorOfId(" + queryId + ")]: ENTER")
-      if((this.id.compareTo(successor.id) == 0) && (this.id.compareTo(predecessor.id) == 0))
-      {
-         Logger.debug("this.id =" + this.id)
-         Logger.debug("successor.id =" + successor.id)
-         Logger.debug("predecessor.id =" + predecessor.id)
-         Logger.debug(this.id.compareTo(successor.id) + "+" + this.id.compareTo(predecessor.id))
-        sender ! successor
-      }
-      else
-      {
-        isSuccessorSameFor(queryId) match {
-          case true  => sender ! successor
-          case false => {
-            implicit val timeout = Timeout(35 seconds)
-            sender ! Await.result((successor.node ? GetSuccessorOfId(queryId)), (35 seconds)).asInstanceOf[NodeRep]
-          }
-        }
-      }
+    case GetSuccessorOfId(queryId: String) => {
+      sender ! GetSuccessorOfIdFunc(queryId)
     }  
     
-    case GetSuccessorOfId1(queryId) => {
+    case GetSuccessorOfId1(queryId: String) => {
       Logger.info("[Node-" + id + "::receive()->GetSuccessorOf(" + queryId + ")]: Entering GetSuccessorOfId msg handler - queryID=" + queryId)
       implicit val timeout = Timeout(35 seconds)
        
@@ -205,11 +210,22 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
       }
     }*/
     case StoreLocal(key: String, value: String) => {
+      Logger.info("Node-" + id + "::receive()->StoreLocal]: Home of [" + key + ", " + value + "] found:" + id)
       keyValueStore + (key->value)
-      Logger.info("Node-" + id + "::receive()->Store]: Home of [" + key + ", " + value + "] found:" + id)
+      sender ! Success()
     }
     
     case Store(key: String, value: String) => {
+      Logger.info("[Node-" + id + "::receive()->Store]: ENTER")
+      Logger.info("key = " + key + " && value = " + value )
+      implicit val timeout = Timeout(35 seconds)
+      val keySuccessor =   GetSuccessorOfIdFunc(key)
+      Logger.info("keySuccessor.id = " + keySuccessor.id)
+      Await.result((keySuccessor.node ? StoreLocal(key, value)), (35 seconds))
+      sender ! Success()
+    }
+    
+    case Store1(key: String, value: String) => {
       Logger.info("[Node-" + id + "::receive()->Store]: Entering Store msg handler - key=" + key + " predecessor=" + predecessor + " id="+ id + " successor=" + successor)
       implicit val timeout = Timeout(35 seconds)
       (predecessor.id.compareTo(id) <= 0) match {

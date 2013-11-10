@@ -34,9 +34,10 @@ class NodeManager extends Actor {
       
       var bootstrapNode= None : Option[NodeRep]
       var nodeList = List[NodeRep]()
+      implicit val timeout = Timeout(35 seconds)
       for(a <- 1 to nodeCount)
       {
-        implicit val timeout = Timeout(35 seconds)
+        
         //val t: Iterable[ActorRef] = context.children
         val id: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
           val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
@@ -60,6 +61,31 @@ class NodeManager extends Actor {
           case Some(g) => nodeList + g
   */  	  
       }
+      var jumper = nodeList.head 
+   for(a <- 1 to nodeCount)   
+   {
+     
+      var successor = Await.result((jumper.node ? GetSuccessor()), (35 seconds)).asInstanceOf[NodeRep] 
+      var predecessor = Await.result((successor.node ? GetPredecessor()), (35 seconds)).asInstanceOf[NodeRep]
+      if(jumper.id.compareTo(predecessor.id) == 0)
+        Logger.info("pointing correctly: successor-predeccor: id = " + jumper.id)
+      else
+        Logger.info("ERROR!! - pointing wrongly: WRONG successor-predeccor: id = " + jumper.id)
+        
+      if(jumper.id.compareTo(successor.id) < 0)
+        Logger.info("in sequence: successor-predeccor: id = " + jumper.id)
+      else
+        Logger.info("ERROR!! - NOT in sequence: successor-predeccor: id = " + jumper.id)
+        
+      jumper = successor  
+   }  
+      
+   val dataStoreCount = 1
+   for(a <- 1 to dataStoreCount)
+   {
+      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))
+   }     
+      
  //     Thread.sleep(10000)
   /*    val dataStoreCount = 100
       for(a <- 1 to dataStoreCount)
