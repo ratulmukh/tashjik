@@ -79,7 +79,7 @@ class NodeManager extends Actor {
         
       jumper = successor  
    }  
-        
+         
    val dataStoreCount = 500
    for(a <- 1 to dataStoreCount)
    {
