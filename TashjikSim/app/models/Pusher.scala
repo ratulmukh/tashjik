@@ -5,8 +5,8 @@ import play.api.mvc._
 import models._
 //import com.tindr.pusher.Pusher
 import java.io.IOException
-import play.libs.WS
-import play.libs.WS.WSRequestHolder
+//import play.libs.WS
+//import play.libs.WS.WSRequestHolder
 import play.api.libs.concurrent.Execution.Implicits._
 import java.security.Security
 import java.security.MessageDigest
@@ -19,7 +19,7 @@ import org.apache.commons.codec.binary.Hex
 import java.nio.charset.Charset
 
 class Pusher {
-
+/*
   def push() = {
       // Default channel and events created by Pusher for a new app
 		val channel = "test_channel"
@@ -109,4 +109,6 @@ Logger.info("auth_signature = " + auth_signature)
  //   }  
 
   }
+ */
+
 }

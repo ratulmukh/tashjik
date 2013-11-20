@@ -5,8 +5,6 @@ import play.api.mvc._
 import models._
 //import com.tindr.pusher.Pusher
 import java.io.IOException
-import play.libs.WS
-import play.libs.WS.WSRequestHolder
 import play.api.libs.concurrent.Execution.Implicits._
 import java.security.Security
 import java.security.MessageDigest
