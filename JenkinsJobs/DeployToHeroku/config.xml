@@ -21,7 +21,7 @@
     </userRemoteConfigs>
     <branches>
       <hudson.plugins.git.BranchSpec>
-        <name>master</name>
+        <name>**</name>
       </hudson.plugins.git.BranchSpec>
     </branches>
     <disableSubmodules>false</disableSubmodules>
@@ -61,7 +61,8 @@
 #    rm -rf ../lastBuiltRepo
 #fi
 #cp -r TashjikSim ../lastBuiltRepo
-
+id -u -n
+pwd
 OUTPUT=$(diff -r ../lastBuiltRepo TashjikSim | wc -c | sed &apos;s/^ *//g&apos;)
 echo &quot;Diff executed&quot;
 echo $OUTPUT
@@ -79,7 +80,7 @@ if [ $OUTPUT -eq 0 ]
     
     cd TashjikSim
     git init
-    git add .
+    git add --all .
     git commit -m &quot;init&quot;
     git push git@heroku.com:tashjik.git master
 fi</command>

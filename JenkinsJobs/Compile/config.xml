@@ -63,7 +63,7 @@
       <name>sbt</name>
       <jvmFlags>-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -Xmx512M -Xss2M</jvmFlags>
       <sbtFlags>-Dsbt.log.noformat=true</sbtFlags>
-      <actions>compile package publish-local</actions>
+      <actions>compile package publish-local test</actions>
       <subdirPath>TashjikSim</subdirPath>
     </org.jvnet.hudson.plugins.SbtPluginBuilder>
   </builders>
