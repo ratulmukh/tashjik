@@ -225,7 +225,7 @@ class NodeTest extends FlatSpec with Matchers {
     for (a <- 1 until 500)
     {  
       val idx: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) 
-      val nodex: ActorRef = system.actorOf(Props(new Node(idx, Some(nodeList(r.nextInt(nodeList.length-1))))).withDispatcher("my-dispatcher")) 
+      val nodex: ActorRef = system.actorOf(Props(new Node(idx, Some(nodeList(r.nextInt(nodeList.length-1).abs)))).withDispatcher("my-dispatcher")) 
       nodeList += NodeRep(nodex, idx)
       Await.result(nodex.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
     
