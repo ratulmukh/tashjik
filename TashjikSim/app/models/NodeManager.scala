@@ -41,7 +41,7 @@ class NodeManager extends Actor {
         //val t: Iterable[ActorRef] = context.children
         val id: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
           val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
-           Await.result(node.ask(Init())(335 seconds), (335 seconds))
+           Await.result(node.ask(InitMsg())(335 seconds), (335 seconds))
           //val future = node ? "test"
         	//val result = Await.result(future, (35 seconds)).asInstanceOf[String]
         	//Logger.info("returned after testing child with status = " + result)
@@ -65,8 +65,8 @@ class NodeManager extends Actor {
    for(a <- 1 to nodeCount)   
    {
      
-      var successor = Await.result((jumper.node ? GetSuccessor()), (35 seconds)).asInstanceOf[NodeRep] 
-      var predecessor = Await.result((successor.node ? GetPredecessor()), (35 seconds)).asInstanceOf[NodeRep]
+      var successor = Await.result((jumper.node ? GetSuccessorMsg()), (35 seconds)).asInstanceOf[NodeRep] 
+      var predecessor = Await.result((successor.node ? GetPredecessorMsg()), (35 seconds)).asInstanceOf[NodeRep]
       if(jumper.id.compareTo(predecessor.id) == 0)
         Logger.info("pointing correctly: successor-predeccor: id = " + jumper.id)
       else
@@ -84,7 +84,7 @@ class NodeManager extends Actor {
    for(a <- 1 to dataStoreCount)
    {
 //      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))
-        jumper.node ! Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")
+        jumper.node ! QueryMsg(DigestUtils.sha1Hex(UUID.randomUUID().toString()), Left(Store("howdy")))
    }     
       
  //     Thread.sleep(10000)

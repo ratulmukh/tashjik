@@ -16,7 +16,7 @@ import akka.pattern.ask
 
 class NodeTest extends FlatSpec with Matchers {
 
-  "A Node" should "get initialized and return Success message" in {
+  "A Node" should "get InitMsgialized and return SuccessMsg message" in {
     
     val bootstrapNode= None : Option[NodeRep]
     implicit val timeout = Timeout(35 seconds)
@@ -24,14 +24,14 @@ class NodeTest extends FlatSpec with Matchers {
     val system = ActorSystem.create("MySystem")
     val node: ActorRef = system.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher")) 
 
-    val future = node.ask(Init())(335 seconds)
-    val result = Await.result(future, (35 seconds)).asInstanceOf[Success]
+    val future = node.ask(InitMsg())(335 seconds)
+    val result = Await.result(future, (35 seconds)).asInstanceOf[SuccessMsg]
     
     system.shutdown
-    result should be (Success())
+    result should be (SuccessMsg())
   }
   
-  "Second node" should "point to first node for successor and predecessor and vice versa" in {
+  "Second node" should "point to first node for SuccessMsgor and predecessor and vice versa" in {
     
     val system = ActorSystem.create("MySystem")
     implicit val timeout = Timeout(35 seconds)
@@ -39,18 +39,18 @@ class NodeTest extends FlatSpec with Matchers {
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
 
-    Await.result(node1.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node2.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
-    val result1 = Await.result(node1.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val result2 = Await.result(node1.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val result1 = Await.result(node1.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val result2 = Await.result(node1.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
 
-    val result3 = Await.result(node2.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val result4 = Await.result(node2.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val result3 = Await.result(node2.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val result4 = Await.result(node2.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
         
     system.shutdown
     
@@ -62,7 +62,7 @@ class NodeTest extends FlatSpec with Matchers {
     
   }
  
-  "Three nodes" should "have their successors and precessors pointing in sequence correctly when bootstraps are fed in sequence" in {
+  "Three nodes" should "have their Successors and precessors pointing in sequence correctly when bootstraps are fed in sequence" in {
     
     val system = ActorSystem.create("MySystem")
     implicit val timeout = Timeout(35 seconds)
@@ -70,36 +70,36 @@ class NodeTest extends FlatSpec with Matchers {
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
 
-    Await.result(node1.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node2.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node2, id2)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node3.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     
     
-    val node1Successor = Await.result(node1.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_Node1Successor = Await.result(node1Successor.node.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node1SuccessorMsg = Await.result(node1.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_node1SuccessorMsg = Await.result(node1SuccessorMsg.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
     
-    predecessorOf_Node1Successor should be (NodeRep(node1, id1))
+    predecessorOf_node1SuccessorMsg should be (NodeRep(node1, id1))
     
-    val node2InSeq = node1Successor
-    val node2InSeqSuccessor = Await.result(node2InSeq.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_Node2InSeqSuccessor = Await.result(node2InSeqSuccessor.node.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node2InSeq = node1SuccessorMsg
+    val node2InSeqSuccessMsgor = Await.result(node2InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_Node2InSeqSuccessMsgor = Await.result(node2InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
     
-    predecessorOf_Node2InSeqSuccessor should be (node2InSeq)
+    predecessorOf_Node2InSeqSuccessMsgor should be (node2InSeq)
     
-    val node3InSeq = node2InSeqSuccessor
-    val node3InSeqSuccessor = Await.result(node3InSeq.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_node3InSeqSuccessor = Await.result(node3InSeqSuccessor.node.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node3InSeq = node2InSeqSuccessMsgor
+    val node3InSeqSuccessMsgor = Await.result(node3InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_node3InSeqSuccessMsgor = Await.result(node3InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
     
-    predecessorOf_node3InSeqSuccessor should be (node3InSeq)
+    predecessorOf_node3InSeqSuccessMsgor should be (node3InSeq)
     
     
         
@@ -108,7 +108,7 @@ class NodeTest extends FlatSpec with Matchers {
        
   }
   
-  "Three nodes" should "have their successors and precessors pointing in sequence correctly when bootstraps are NOT fed in sequence" in {
+  "Three nodes" should "have their Successors and precessors pointing in sequence correctly when bootstraps are NOT fed in sequence" in {
     
     val system = ActorSystem.create("MySystem")
     implicit val timeout = Timeout(35 seconds)
@@ -116,36 +116,36 @@ class NodeTest extends FlatSpec with Matchers {
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
 
-    Await.result(node1.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node2.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node3.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     
     
-    val node1Successor = Await.result(node1.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_Node1Successor = Await.result(node1Successor.node.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node1SuccessorMsg = Await.result(node1.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_node1SuccessorMsg = Await.result(node1SuccessorMsg.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
     
-    predecessorOf_Node1Successor should be (NodeRep(node1, id1))
+    predecessorOf_node1SuccessorMsg should be (NodeRep(node1, id1))
     
-    val node2InSeq = node1Successor
-    val node2InSeqSuccessor = Await.result(node2InSeq.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_Node2InSeqSuccessor = Await.result(node2InSeqSuccessor.node.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node2InSeq = node1SuccessorMsg
+    val node2InSeqSuccessMsgor = Await.result(node2InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_Node2InSeqSuccessMsgor = Await.result(node2InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
     
-    predecessorOf_Node2InSeqSuccessor should be (node2InSeq)
+    predecessorOf_Node2InSeqSuccessMsgor should be (node2InSeq)
     
-    val node3InSeq = node2InSeqSuccessor
-    val node3InSeqSuccessor = Await.result(node3InSeq.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_node3InSeqSuccessor = Await.result(node3InSeqSuccessor.node.ask(GetPredecessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node3InSeq = node2InSeqSuccessMsgor
+    val node3InSeqSuccessMsgor = Await.result(node3InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_node3InSeqSuccessMsgor = Await.result(node3InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
     
-    predecessorOf_node3InSeqSuccessor should be (node3InSeq)
+    predecessorOf_node3InSeqSuccessMsgor should be (node3InSeq)
     
     
         
@@ -165,40 +165,40 @@ class NodeTest extends FlatSpec with Matchers {
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
 
-    Await.result(node1.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node2.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
 
-    Await.result(node3.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     
     
-    val node1Id = Await.result(node1.ask(GetId())(335 seconds), (35 seconds)).asInstanceOf[String]
+    val node1Id = Await.result(node1.ask(GetIdMsg())(335 seconds), (35 seconds)).asInstanceOf[String]
     
-    val node1Successor = Await.result(node1.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val node1SuccessorId = Await.result(node1Successor.node.ask(GetId())(335 seconds), (35 seconds)).asInstanceOf[String]
+    val node1SuccessorMsg = Await.result(node1.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node1SuccessorMsgId = Await.result(node1SuccessorMsg.node.ask(GetIdMsg())(335 seconds), (35 seconds)).asInstanceOf[String]
     
-    if(node1Id > node1SuccessorId)
+    if(node1Id > node1SuccessorMsgId)
       unOrderedCount += 1
         
-    val node2InSeq = node1Successor
-    val node2InSeqSuccessor = Await.result(node2InSeq.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val node2SuccessorId = Await.result(node2InSeqSuccessor.node.ask(GetId())(335 seconds), (35 seconds)).asInstanceOf[String]
+    val node2InSeq = node1SuccessorMsg
+    val node2InSeqSuccessMsgor = Await.result(node2InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node2SuccessMsgorId = Await.result(node2InSeqSuccessMsgor.node.ask(GetIdMsg())(335 seconds), (35 seconds)).asInstanceOf[String]
     
-    if(node1SuccessorId > node2SuccessorId)
+    if(node1SuccessorMsgId > node2SuccessMsgorId)
       unOrderedCount += 1
     
-    val node3InSeq = node2InSeq
-    val node3InSeqSuccessor = Await.result(node3InSeq.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val node3SuccessorId = Await.result(node3InSeqSuccessor.node.ask(GetId())(335 seconds), (35 seconds)).asInstanceOf[String]
+    val node3InSeq = node2InSeqSuccessMsgor
+    val node3InSeqSuccessMsgor = Await.result(node3InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val node3SuccessMsgorId = Await.result(node3InSeqSuccessMsgor.node.ask(GetIdMsg())(335 seconds), (35 seconds)).asInstanceOf[String]
     
-    if(node2SuccessorId > node3SuccessorId)
+    if(node2SuccessMsgorId > node3SuccessMsgorId)
       unOrderedCount += 1
       
     unOrderedCount should be (1)
@@ -220,14 +220,14 @@ class NodeTest extends FlatSpec with Matchers {
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) 
     val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
     nodeList += NodeRep(node1, id1)
-    Await.result(node1.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+    Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     for (a <- 1 until 500)
     {  
       val idx: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) 
       val nodex: ActorRef = system.actorOf(Props(new Node(idx, Some(nodeList(r.nextInt(nodeList.length-1).abs)))).withDispatcher("my-dispatcher")) 
       nodeList += NodeRep(nodex, idx)
-      Await.result(nodex.ask(Init())(335 seconds), (35 seconds)).asInstanceOf[Success]
+      Await.result(nodex.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     }
     
@@ -235,15 +235,15 @@ class NodeTest extends FlatSpec with Matchers {
     
     for (a <- 1 until nodeList.length)
     {
-    val nodeId = Await.result(node.node.ask(GetId())(335 seconds), (35 seconds)).asInstanceOf[String]
+    val nodeId = Await.result(node.node.ask(GetIdMsg())(335 seconds), (35 seconds)).asInstanceOf[String]
     
-    val nodeSuccessor = Await.result(node.node.ask(GetSuccessor())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val nodeSuccessorId = Await.result(nodeSuccessor.node.ask(GetId())(335 seconds), (35 seconds)).asInstanceOf[String]
+    val nodeSuccessMsgor = Await.result(node.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val nodeSuccessMsgorId = Await.result(nodeSuccessMsgor.node.ask(GetIdMsg())(335 seconds), (35 seconds)).asInstanceOf[String]
     
-    if(nodeId > nodeSuccessorId)
+    if(nodeId > nodeSuccessMsgorId)
       unOrderedCount += 1
       
-    node = nodeSuccessor
+    node = nodeSuccessMsgor
     }
       
     unOrderedCount should be (1)
@@ -252,4 +252,52 @@ class NodeTest extends FlatSpec with Matchers {
     
        
   }
+  
+  /*
+  "Data stored on 3 nodes" should "should be retrievable" in {
+    
+    val system = ActorSystem.create("MySystem")
+    implicit val timeout = Timeout(35 seconds)
+    
+    val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+
+    Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
+    
+    val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
+    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+
+    Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
+    
+    val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
+    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node2, id2)))).withDispatcher("my-dispatcher")) 
+
+    Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
+    
+    
+    
+    val node1SuccessorMsg = Await.result(node1.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_node1SuccessorMsg = Await.result(node1SuccessorMsg.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    
+    predecessorOf_node1SuccessorMsg should be (NodeRep(node1, id1))
+    
+    val node2InSeq = node1SuccessorMsg
+    val node2InSeqSuccessMsgor = Await.result(node2InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_Node2InSeqSuccessMsgor = Await.result(node2InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    
+    predecessorOf_Node2InSeqSuccessMsgor should be (node2InSeq)
+    
+    val node3InSeq = node2InSeqSuccessMsgor
+    val node3InSeqSuccessMsgor = Await.result(node3InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    val predecessorOf_node3InSeqSuccessMsgor = Await.result(node3InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    
+    predecessorOf_node3InSeqSuccessMsgor should be (node3InSeq)
+    
+    
+        
+    system.shutdown
+    
+       
+  }*/
+  
 }
