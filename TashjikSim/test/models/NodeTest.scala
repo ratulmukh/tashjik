@@ -207,7 +207,7 @@ class NodeTest extends FlatSpec with Matchers {
     
        
   }
-    
+     
   /*
   "500 nodes" should "be ordered by their ids when bootstraps are NOT fed in sequence" in {
     
