@@ -9,7 +9,17 @@
     <artifactNumToKeep>-1</artifactNumToKeep>
   </logRotator>
   <keepDependencies>false</keepDependencies>
-  <properties/>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>VERSION_NUMBER</name>
+          <description></description>
+          <defaultValue>0.0.0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@1.5.0">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
@@ -76,8 +86,10 @@ if [ $OUTPUT -eq 0 ]
     rm -rf ../lastBuiltRepo
     cp -r TashjikSim ../lastBuiltRepo
     echo &quot;New Tashjik changes need to be pushed to Heroku&quot;
-     echo $OUTPUT
-    
+    echo $OUTPUT
+    echo &quot;Creating tag&quot;
+    git tag v$VERSION_NUMBER-$BUILD_NUMBER
+    git push https://ratulmukh:<PASSWORD>@github.com/ratulmukh/tashjik.git v$VERSION_NUMBER-$BUILD_NUMBER
     cd TashjikSim
     git init
     git add --all .
