@@ -254,7 +254,7 @@ class NodeTest extends FlatSpec with Matchers {
   }
   
   /*
-  "Data stored on 3 nodes" should "should be retrievable" in {
+  "Data stored on a 3 node network" should "should be retrievable" in {
     
     val system = ActorSystem.create("MySystem")
     implicit val timeout = Timeout(35 seconds)
@@ -275,9 +275,10 @@ class NodeTest extends FlatSpec with Matchers {
     Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     
-    
-    val node1SuccessorMsg = Await.result(node1.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_node1SuccessorMsg = Await.result(node1SuccessorMsg.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
+    //case QueryMsg(key: String, queryType: Either[Store, Retrieve])
+    val key = DigestUtils.sha1Hex(UUID.randomUUID().toString())
+    val value = "some-value"
+    node1 ! QueryMsg(key, Left(Store(value)))
     
     predecessorOf_node1SuccessorMsg should be (NodeRep(node1, id1))
     

@@ -62,24 +62,7 @@ class NodeManager extends Actor {
   */  	  
       }
       var jumper = nodeList.head 
-   for(a <- 1 to nodeCount)   
-   {
-     
-      var successor = Await.result((jumper.node ? GetSuccessorMsg()), (35 seconds)).asInstanceOf[NodeRep] 
-      var predecessor = Await.result((successor.node ? GetPredecessorMsg()), (35 seconds)).asInstanceOf[NodeRep]
-      if(jumper.id.compareTo(predecessor.id) == 0)
-        Logger.info("pointing correctly: successor-predeccor: id = " + jumper.id)
-      else
-        Logger.info("ERROR!! - pointing wrongly: WRONG successor-predeccor: id = " + jumper.id)
-        
-      if(jumper.id.compareTo(successor.id) < 0)
-        Logger.info("in sequence: successor-predeccor: id = " + jumper.id)
-      else
-        Logger.info("ERROR!! - NOT in sequence: successor-predeccor: id = " + jumper.id)
-        
-      jumper = successor  
-   }  
-            
+               
    val dataStoreCount = 500
    for(a <- 1 to dataStoreCount)
    {
