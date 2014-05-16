@@ -1,7 +1,7 @@
 import play.api._
 import play.libs.Akka
 import akka.actor.Props
-import models.NodeManager
+import tashjik.chord.NodeManager
 
 object Global extends GlobalSettings {
 

@@ -208,7 +208,7 @@ class NodeTest extends FlatSpec with Matchers {
        
   }
        
-  /*
+  
   "500 nodes" should "be ordered by their ids when bootstraps are NOT fed in sequence" in {
     
     val system = ActorSystem.create("MySystem")
@@ -253,7 +253,7 @@ class NodeTest extends FlatSpec with Matchers {
     
        
   }
-  */
+  
   /*
   "Data stored on a 3 node network" should "should be retrievable" in {
     

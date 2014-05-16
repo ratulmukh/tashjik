@@ -8,10 +8,6 @@ crossPaths := false
 
 organization := "tashjik"
 
-artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-  artifact.name + "_" + System.getProperty("version") + "." + artifact.extension
-}
-
 libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.8",
   "junit" % "junit" % "4.8.1" % "test",

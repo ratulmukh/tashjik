@@ -12,10 +12,7 @@ object ApplicationBuild extends Build {
     organization := "tashjik",
     crossPaths := false,
     version := System.getProperty("version"),
-    scalaVersion := "2.10.3",
-    artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
-       artifact.name + "_" + System.getProperty("version") + "." + artifact.extension
-    })
+    scalaVersion := "2.10.3")
     
     
   val appDependencies = Seq(
