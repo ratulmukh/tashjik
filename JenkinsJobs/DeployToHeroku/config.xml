@@ -9,17 +9,7 @@
     <artifactNumToKeep>-1</artifactNumToKeep>
   </logRotator>
   <keepDependencies>false</keepDependencies>
-  <properties>
-    <hudson.model.ParametersDefinitionProperty>
-      <parameterDefinitions>
-        <hudson.model.StringParameterDefinition>
-          <name>VERSION_NUMBER</name>
-          <description></description>
-          <defaultValue>0.0.0</defaultValue>
-        </hudson.model.StringParameterDefinition>
-      </parameterDefinitions>
-    </hudson.model.ParametersDefinitionProperty>
-  </properties>
+  <properties/>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@1.5.0">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
@@ -81,6 +71,9 @@ if [ $OUTPUT -eq 0 ]
      echo &quot;Both directories match - no need to push to Heroku&quot;
      rm -rf ../lastBuiltRepo
      cp -r TashjikSim ../lastBuiltRepo
+     echo &quot;Creating tag&quot;
+     git tag v$VERSION_NUMBER-$BUILD_NUMBER
+     git push https://user:password@github.com/ratulmukh/tashjik.git v$VERSION_NUMBER-$BUILD_NUMBER
   else	 
     echo &quot;Saving build repo&quot;
     rm -rf ../lastBuiltRepo
@@ -89,7 +82,7 @@ if [ $OUTPUT -eq 0 ]
     echo $OUTPUT
     echo &quot;Creating tag&quot;
     git tag v$VERSION_NUMBER-$BUILD_NUMBER
-    git push https://ratulmukh:<PASSWORD>@github.com/ratulmukh/tashjik.git v$VERSION_NUMBER-$BUILD_NUMBER
+    git push https://user:password@github.com/ratulmukh/tashjik.git v$VERSION_NUMBER-$BUILD_NUMBER
     cd TashjikSim
     git init
     git add --all .
@@ -99,11 +92,12 @@ fi</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
-    <hudson.tasks.Mailer plugin="mailer@1.5">
-      <recipients>ratul.mukh@gmail.com</recipients>
-      <dontNotifyEveryUnstableBuild>false</dontNotifyEveryUnstableBuild>
-      <sendToIndividuals>false</sendToIndividuals>
-    </hudson.tasks.Mailer>
+    <hudson.plugins.descriptionsetter.DescriptionSetterPublisher plugin="description-setter@1.8">
+      <regexp></regexp>
+      <regexpForFailed></regexpForFailed>
+      <description>$VERSION-$BUILD_NUMBER</description>
+      <setForMatrix>false</setForMatrix>
+    </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
   </publishers>
   <buildWrappers/>
 </project>
