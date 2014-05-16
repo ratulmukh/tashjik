@@ -75,7 +75,14 @@
   <builders>
     <org.jvnet.hudson.plugins.SbtPluginBuilder plugin="sbt@1.4">
       <name>sbt</name>
-      <jvmFlags>-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -Xmx512M -Xss2M</jvmFlags>
+      <jvmFlags>-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -Xmx512M -Xss2M -Dversion=$VERSION-$BUILD_NUMBER</jvmFlags>
+      <sbtFlags>-Dsbt.log.noformat=true</sbtFlags>
+      <actions>compile package publish-local test</actions>
+      <subdirPath>TashjikCore</subdirPath>
+    </org.jvnet.hudson.plugins.SbtPluginBuilder>
+    <org.jvnet.hudson.plugins.SbtPluginBuilder plugin="sbt@1.4">
+      <name>sbt</name>
+      <jvmFlags>-XX:+CMSClassUnloadingEnabled -XX:MaxPermSize=256m -Xmx512M -Xss2M -Dversion=$VERSION-$BUILD_NUMBER</jvmFlags>
       <sbtFlags>-Dsbt.log.noformat=true</sbtFlags>
       <actions>compile package publish-local test</actions>
       <subdirPath>TashjikSim</subdirPath>
