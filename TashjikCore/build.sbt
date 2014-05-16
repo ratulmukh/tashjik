@@ -1,8 +1,12 @@
 name := "TashjikCore"
 
-version := "0.0.0"
+version := System.getProperty("version")
 
 scalaVersion := "2.10.3"
+
+crossPaths := false
+
+organization := "tashjik"
 
 artifactName := { (sv: ScalaVersion, module: ModuleID, artifact: Artifact) =>
   artifact.name + "_" + System.getProperty("version") + "." + artifact.extension
