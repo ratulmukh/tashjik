@@ -254,7 +254,7 @@ class NodeTest extends FlatSpec with Matchers {
        
   }
   
-  /*
+  
   "Data stored on a 3 node network" should "should be retrievable" in {
     
     val system = ActorSystem.create("MySystem")
@@ -278,28 +278,17 @@ class NodeTest extends FlatSpec with Matchers {
     
     //case QueryMsg(key: String, queryType: Either[Store, Retrieve])
     val key = DigestUtils.sha1Hex(UUID.randomUUID().toString())
-    val value = "some-value"
+    val value = "value-of-" + key
     node1 ! QueryMsg(key, Left(Store(value)))
+    Thread.sleep(10000)
+    node1 ! QueryMsg(key, Right(Retrieve(node3)))
+
     
-    predecessorOf_node1SuccessorMsg should be (NodeRep(node1, id1))
-    
-    val node2InSeq = node1SuccessorMsg
-    val node2InSeqSuccessMsgor = Await.result(node2InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_Node2InSeqSuccessMsgor = Await.result(node2InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    
-    predecessorOf_Node2InSeqSuccessMsgor should be (node2InSeq)
-    
-    val node3InSeq = node2InSeqSuccessMsgor
-    val node3InSeqSuccessMsgor = Await.result(node3InSeq.node.ask(GetSuccessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    val predecessorOf_node3InSeqSuccessMsgor = Await.result(node3InSeqSuccessMsgor.node.ask(GetPredecessorMsg())(335 seconds), (35 seconds)).asInstanceOf[NodeRep]
-    
-    predecessorOf_node3InSeqSuccessMsgor should be (node3InSeq)
-    
-    
+    Thread.sleep(10000)
         
     system.shutdown
     
        
-  }*/
+  }
   
 }

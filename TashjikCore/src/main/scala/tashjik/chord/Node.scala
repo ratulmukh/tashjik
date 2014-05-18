@@ -44,7 +44,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
   val log = Logging(context.system, this)
   //log.info("[Node-" + id + "::constructor()]: Hash of UUID of newly created node = " + id)
    
-  val keyValueStore: Map[String, String] = Map[String, String]() 
+  var keyValueStore: Map[String, String] = Map[String, String]() 
   
   var predecessor = NodeRep(context.self, id)
   var successor   = NodeRep(context.self, id)
@@ -176,20 +176,22 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
 
     case StoreLocalSyncMsg(key: String, value: String) => {
       log.info("Node-" + id + "::receive()->StoreLocal]: Home of [" + key + ", " + value + "] found:" + id)
-      keyValueStore + (key->value)
+      keyValueStore += (key->value)
       sender ! SuccessMsg()
     }
     
     case StoreLocalMsg(key: String, value: String) => {
       log.info("Node-" + id + "::receive()->StoreLocal]: Home of [" + key + ", " + value + "] found:" + id)
-      keyValueStore + (key->value)
+      keyValueStore += (key->value)
+      
     }
     
     case RetrieveLocalMsg(requestor: ActorRef, key: String) => {
-      log.info("Node-" + id + "::receive()->RetrieveLocal]: Request for key[" + key)
+      log.info("Node-" + id + "::receive()->RetrieveLocal]: Home of [" + key + "] found:" + id)
+      log.info(keyValueStore.toString)
       keyValueStore.contains(key) match {
-        case true  => requestor ! RetrieveResultMsg(key, Some(keyValueStore(key)))
-        case false => requestor ! RetrieveResultMsg(key, None)
+        case true  => log.info("KEY FOUND "); requestor ! RetrieveResultMsg(key, Some(keyValueStore(key)))
+        case false => log.info("KEY NOT FOUND "); requestor ! RetrieveResultMsg(key, None)
       }  
     }
     
@@ -206,7 +208,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
     }
     
     case QueryMsg(key: String, queryType: Either[Store, Retrieve]) => {
-      log.info("[Node-" + id + "::receive()->QueryMsg]: ENTER")
+      log.info("[Node-" + id + "::receive()->QueryMsg    " + queryType.left + queryType.right + "]: ENTER")
       //log.info("key = " + key + " && value = " + value )
       implicit val timeout = Timeout(35 seconds)
       val requestor = sender
