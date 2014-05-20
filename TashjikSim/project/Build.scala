@@ -21,8 +21,6 @@ object ApplicationBuild extends Build {
     anorm,
 	"commons-codec" % "commons-codec" % "1.8",
 	"junit" % "junit" % "4.8.1" % "test",
-	"com.typesafe.akka" %% "akka-actor"    % "2.2.3",
-	"com.typesafe.akka" %% "akka-testkit"  % "2.2.3" % "test",
 	"org.scalatest" % "scalatest_2.10" % "2.0" % "test",
 	"tashjik" % "tashjikcore" % System.getProperty("version")
 	//"tindr" % "play2pusher_2.9.1" % "1.0.1" // exclude("play", "play_2.9.1")
