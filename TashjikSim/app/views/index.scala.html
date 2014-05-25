@@ -1,3 +1,4 @@
+@(logCount: Int, logStatement: String)
 
 <!DOCTYPE HTML>
 <html>
@@ -20,5 +21,6 @@
 				</tr>
 			</table>
 		</form>
+		@views.html.logBody(logCount, logStatement)
 	</body>
 </html>    

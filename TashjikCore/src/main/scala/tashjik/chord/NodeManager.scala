@@ -10,7 +10,7 @@ import java.util.UUID
 import org.apache.commons.codec.digest.DigestUtils
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter
 
-case class StartSimulation(nodeCount: Int)
+case class StartSimulation(nodeCount: Int, dataStoreCount: Int)
 
 object NodeManager {
   var sessionCount = 0
@@ -26,7 +26,7 @@ class NodeManager extends Actor {
  // val log = Logging(context.system, this)
   
   def receive = {
-    case StartSimulation(nodeCount: Int) => { 
+    case StartSimulation(nodeCount: Int, dataStoreCount: Int) => { 
       log.info("Received new simulation request: Node count = " + nodeCount)
       
       NodeManager.sessionCount = NodeManager.sessionCount + 1
@@ -62,7 +62,7 @@ class NodeManager extends Actor {
       }
       var jumper = nodeList.head 
                
-   val dataStoreCount = 500
+   //val dataStoreCount = 500
    for(a <- 1 to dataStoreCount)
    {
 //      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))

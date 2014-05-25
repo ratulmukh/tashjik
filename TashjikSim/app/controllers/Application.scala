@@ -10,7 +10,7 @@ object Application extends Controller {
   
   def index = Action {
     val version = Play.current.configuration.getString("tashjik.version")
-    Ok(views.html.index())
+    Ok(views.html.index(20, "Logs"))
     //Ok(views.html.main("Tashjik", version))
   }
 
@@ -21,7 +21,7 @@ object Application extends Controller {
     
     val nodeCount = request.body.asFormUrlEncoded.get("nodeCount")(0).toInt
     val dataObjectsCount = request.body.asFormUrlEncoded.get("dataObjectsCount")(0).toInt
-    _root_.globals.nodeManager ! StartSimulation(nodeCount)
+    _root_.globals.nodeManager ! StartSimulation(nodeCount, dataObjectsCount)
     
     Ok("Simulation request received for " + nodeCount + " node")
   }
