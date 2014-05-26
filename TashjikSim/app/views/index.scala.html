@@ -12,13 +12,13 @@
     </head>
 	<body>
 		<h1>Tashjik simulator</h1>
-		<form id=simConfigForm" action=@routes.Application.startSim method="post" >
+		<form id=simConfigForm" action="#" method="post" >
 			<table>
 				<tr>
-					<td>Node count: <input type="text" name="nodeCount" value=20 ></td>
-					<td>Data objects count: <input type="text" name="dataObjectsCount" value=20 ></td>
-					<td><input type="submit" class="btn primary" name="submitNodeCountConfig" ><td>
-					
+					<td>Node count: <input id="nodeCount" type="text" name="nodeCount" value=20 ></td>
+					<td>Data objects count: <input id="dataObjectsCount" type="text" name="dataObjectsCount" value=20 ></td>
+					<td><button type="button" id="startButton">Start</button></td>
+					<td><button type="button" id="cancelButton">Cancel</button></td>
 				</tr>
 			</table>
 		</form>
@@ -30,7 +30,113 @@
 			<!--  -->circle cx="483.12" cy="401.5" r="10" fill="red" --/>
 		</svg>
 		
-		<script language="javascript" type="text/javascript">  var wsUri = "ws://localhost:9000/websocket"; var output;  function init() { output = document.getElementById("output"); testWebSocket(); }  function testWebSocket() { websocket = new WebSocket(wsUri); websocket.onopen = function(evt) { onOpen(evt) }; websocket.onclose = function(evt) { onClose(evt) }; websocket.onmessage = function(evt) { onMessage(evt) }; websocket.onerror = function(evt) { onError(evt) }; }  function onOpen(evt) { writeToScreen("CONNECTED"); doSend("WebSocket rocks"); var svg = d3.select("body").selectAll("svg").attr("width", 1250).attr("height", 1250);svg.selectAll("circle").data([32, 57, 112, 293]).enter().append("circle").attr("cy", 401.5).attr("cx", 483.12).attr("r", 10).attr("fill", "red");}  function onClose(evt) { writeToScreen("DISCONNECTED"); }  function onMessage(evt) { writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');  }  function onError(evt) { writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data); }  function doSend(message) { writeToScreen("SENT: " + message);  websocket.send(message); }  function writeToScreen(message) { var pre = document.createElement("p"); pre.style.wordWrap = "break-word"; pre.innerHTML = message; output.appendChild(pre); }  window.addEventListener("load", init, false);  </script>
+		<script language="javascript" type="text/javascript"> 
+		
+			
+			var wsUri = "ws://localhost:9000/websocket"; 
+			var output; 
+			var websocket;
+			//var form;
+			//form = document.getElementById('simConfigForm');
+			
+				
+			window.onload = function(){ 
+				output = document.getElementById("output"); 
+				
+				var form = document.getElementById('simConfigForm');
+				var startButton = document.getElementById('startButton');
+				var cancelButton = document.getElementById('cancelButton');
+				var nodeCountField = document.getElementById('nodeCount');
+				var dataObjectsCountField = document.getElementById('dataObjectsCount');
+				
+				setupWebSocket();
+/*				websocket = new WebSocket(wsUri); 
+				websocket.onopen = function(evt) { onOpen(evt) };
+				websocket.onclose = function(evt) { onClose(evt) };
+				websocket.onmessage = function(evt) { onMessage(evt) };
+				websocket.onerror = function(evt) { onError(evt) };
+*/				
+				startButton.onclick = function(e) {
+					e.preventDefault();
+
+					  var nodeCount = nodeCountField.value;
+					  var dataObjectsCount = dataObjectsCountField.value;
+					  var submitData = "{\"nodeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
+					  doSend(submitData);
+
+					  return false;
+				  };
+				  
+				//form.onsubmit = function(e) { onsubmit(e) };
+			};
+			
+/*			function onsubmit(e) {
+				  e.preventDefault();
+
+				  var nodeCount = nodeCountField.value;
+				  var dataObjectsCount = dataObjectsCountField.value;
+				  var submitData = "{\"noeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
+
+				  websocket.doSend(submitData);
+
+				  return false;
+			}
+*/			
+     		function setupWebSocket() { 
+				websocket = new WebSocket(wsUri); 
+				websocket.onopen = function(evt) { onOpen(evt) };
+				websocket.onclose = function(evt) { onClose(evt) };
+				websocket.onmessage = function(evt) { onMessage(evt) };
+				websocket.onerror = function(evt) { onError(evt) };
+			}
+			
+			function onOpen(evt) { 
+				writeToScreen("CONNECTED"); 
+				var json = '{"result":true,"count":1}', obj = JSON.parse(json);
+				writeToScreen(obj.count);
+				doSend("WebSocket rocks"); 
+				var svg = d3.select("body")
+					.selectAll("svg")
+					.attr("width", 1250)
+					.attr("height", 1250);
+				
+				svg.selectAll("circle")
+					.data([32, 57, 112, 293])
+					.enter().append("circle")
+					.attr("cy", 401.5)
+					.attr("cx", 483.12)
+					.attr("r", 10)
+					.attr("fill", "red");
+			}
+			
+			function onClose(evt) {
+				writeToScreen("DISCONNECTED");
+			}
+			
+			function onMessage(evt) { 
+				writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
+				obj = JSON.parse(evt.data);
+				writeToScreen(obj.svgType);
+			}
+			
+			function onError(evt) { 
+				writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data); 
+			}
+			
+			function doSend(message) { 
+				writeToScreen("SENT: " + message);
+				websocket.send(message);
+			}
+			
+			function writeToScreen(message) {
+				var pre = document.createElement("p"); 
+				pre.style.wordWrap = "break-word";
+				pre.innerHTML = message; 
+				output.appendChild(pre);
+			}
+			
+			//window.addEventListener("load", init, false); 
+		</script>
         <h2>WebSocket Test</h2>  <div id="output"></div>
 		
 				
