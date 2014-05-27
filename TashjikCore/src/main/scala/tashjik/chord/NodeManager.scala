@@ -9,8 +9,16 @@ import scala.concurrent.Await
 import java.util.UUID
 import org.apache.commons.codec.digest.DigestUtils
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter
+import play.api.libs.iteratee.Enumerator
+import play.api.libs.iteratee.Iteratee
+import play.api.libs.iteratee.Concurrent
+import play.api.libs.concurrent.Execution.Implicits._
+
 
 case class StartSimulation(nodeCount: Int, dataStoreCount: Int)
+case class GetIterateeAndEnumerator
+case class IterateeAndEnumerator(in: Iteratee[String,Unit], out: Enumerator[String])
+case class WebsocketMsg(msg: String)
 
 object NodeManager {
   var sessionCount = 0
@@ -21,11 +29,28 @@ class NodeManager extends Actor {
   
    val log = Logging(context.system, this)
   //val myActor1: ActorRef = Akka.system().actorOf(Props[Node]);
-  
+   val (out,channel) = Concurrent.broadcast[String]
 
- // val log = Logging(context.system, this)
-  
+   val in = Iteratee.foreach[String] {
+      msg => println(msg)
+             //the Enumerator returned by Concurrent.broadcast subscribes to the channel and will 
+             //receive the pushed messages
+             log.info("Entered Iteratee closure")
+      		 context.self ! WebsocketMsg(msg)
+      		 channel push("RESPONSE: " + msg)
+    }
+
+ 
   def receive = {
+     case GetIterateeAndEnumerator => {
+       sender ! IterateeAndEnumerator(in, out)
+
+     } 
+     case WebsocketMsg(msg: String) => {
+       context.self ! StartSimulation(20, 20)
+       
+     }
+     
     case StartSimulation(nodeCount: Int, dataStoreCount: Int) => { 
       log.info("Received new simulation request: Node count = " + nodeCount)
       

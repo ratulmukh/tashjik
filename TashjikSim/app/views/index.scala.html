@@ -36,9 +36,7 @@
 			var wsUri = "ws://localhost:9000/websocket"; 
 			var output; 
 			var websocket;
-			//var form;
-			//form = document.getElementById('simConfigForm');
-			
+		
 				
 			window.onload = function(){ 
 				output = document.getElementById("output"); 
@@ -50,47 +48,42 @@
 				var dataObjectsCountField = document.getElementById('dataObjectsCount');
 				
 				setupWebSocket();
-/*				websocket = new WebSocket(wsUri); 
-				websocket.onopen = function(evt) { onOpen(evt) };
-				websocket.onclose = function(evt) { onClose(evt) };
-				websocket.onmessage = function(evt) { onMessage(evt) };
-				websocket.onerror = function(evt) { onError(evt) };
-*/				
-				startButton.onclick = function(e) {
-					e.preventDefault();
 
-					  var nodeCount = nodeCountField.value;
-					  var dataObjectsCount = dataObjectsCountField.value;
-					  var submitData = "{\"nodeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
-					  doSend(submitData);
-
-					  return false;
-				  };
+				startButton.onclick = function(evt) { onStartButtonClick(evt) };
+				cancelButton.onclick = function(evt) { onCancelButtonClick(evt) };
 				  
-				//form.onsubmit = function(e) { onsubmit(e) };
+				
 			};
 			
-/*			function onsubmit(e) {
-				  e.preventDefault();
+			function onStartButtonClick(e) { 
+				e.preventDefault();
 
-				  var nodeCount = nodeCountField.value;
-				  var dataObjectsCount = dataObjectsCountField.value;
-				  var submitData = "{\"noeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
-
-				  websocket.doSend(submitData);
+				  var nodeCount = document.getElementById('nodeCount').value;
+				  var dataObjectsCount =document.getElementById('dataObjectsCount').value;
+				  var submitData = "{\"requestType\" : \"startSim\", \"nodeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
+				  doSend(submitData);
 
 				  return false;
 			}
-*/			
-     		function setupWebSocket() { 
-				websocket = new WebSocket(wsUri); 
-				websocket.onopen = function(evt) { onOpen(evt) };
-				websocket.onclose = function(evt) { onClose(evt) };
-				websocket.onmessage = function(evt) { onMessage(evt) };
-				websocket.onerror = function(evt) { onError(evt) };
+			
+			function onCancelButtonClick(e) { 
+				e.preventDefault();
+    			var submitData = "{\"requestType\" : \"cancelSim\"}";	
+				doSend(submitData);
+
+				  return false;
 			}
 			
-			function onOpen(evt) { 
+
+     		function setupWebSocket() { 
+				websocket = new WebSocket(wsUri); 
+				websocket.onopen = function(evt) { onWebSocketOpen(evt) };
+				websocket.onclose = function(evt) { onWebSocketClose(evt) };
+				websocket.onmessage = function(evt) { onWebSocketMessage(evt) };
+				websocket.onerror = function(evt) { onWebSocketError(evt) };
+			}
+			
+			function onWebSocketOpen(evt) { 
 				writeToScreen("CONNECTED"); 
 				var json = '{"result":true,"count":1}', obj = JSON.parse(json);
 				writeToScreen(obj.count);
@@ -109,17 +102,17 @@
 					.attr("fill", "red");
 			}
 			
-			function onClose(evt) {
+			function onWebSocketClose(evt) {
 				writeToScreen("DISCONNECTED");
 			}
 			
-			function onMessage(evt) { 
+			function onWebSocketMessage(evt) { 
 				writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
-				obj = JSON.parse(evt.data);
+				var obj = JSON.parse(evt.data);
 				writeToScreen(obj.svgType);
 			}
 			
-			function onError(evt) { 
+			function onWebSocketError(evt) { 
 				writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data); 
 			}
 			

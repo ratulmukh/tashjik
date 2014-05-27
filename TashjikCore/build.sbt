@@ -14,5 +14,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.3.2",
   "com.typesafe.akka" %% "akka-contrib" % "2.3.2",
   "com.typesafe.akka" %% "akka-testkit" % "2.3.2" % "test",
+  "com.typesafe.play" %% "play" % "2.2.3",
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test")
   

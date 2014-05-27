@@ -9,33 +9,39 @@ import play.api.libs.iteratee.Enumerator
 import play.api.libs.iteratee.Iteratee
 import play.api.libs.concurrent.Promise
 import play.api.libs.iteratee.Concurrent
+import akka.actor._
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.duration._
+import play.libs.Akka
 
 object Application extends Controller {
   
     
   def index = Action {
     val version = Play.current.configuration.getString("tashjik.version")
-    Ok(views.html.index0(20, "Logs"))
+    Ok(views.html.index(20, "Logs"))
     //Ok(views.html.main("Tashjik", version))
   }
 
-  def startSim = Action { implicit request =>
+/*  def startSim = Action { implicit request =>
     Logger.info("Received request body = " +request.body)
     
       
       
     val nodeCount = request.body.asFormUrlEncoded.get("nodeCount")(0).toInt
     val dataObjectsCount = request.body.asFormUrlEncoded.get("dataObjectsCount")(0).toInt
-    _root_.globals.nodeManager ! StartSimulation(nodeCount, dataObjectsCount)
+    //_root_.globals.nodeManager ! StartSimulation(nodeCount, dataObjectsCount)
     
     Ok(views.html.index(20, "Logs"))
   }
-  
+*/ 
   
   def dynamicCount = Action {
     Ok.chunked(Enumerator("2"))
   }
-  
+
+ /* 
   def websocket = WebSocket.using[String] { request => 
   
   	// Just consume and ignore the input
@@ -64,6 +70,23 @@ object Application extends Controller {
              channel push("RESPONSE: " + msg)
     }
   	(in, out)
+  }
+*/
+  
+  
+  def websocket = WebSocket.async[String] { request =>
+	Logger.info("Inside of websocket controller")
+    implicit val timeout = Timeout(1 second)
+    
+    val nodeManager = Akka.system.actorOf(Props[NodeManager]/*, name = "someActor"*/)
+    
+    //val future = (nodeManager ?  StartSimulation(1, 1)).mapTo
+    
+	(nodeManager ?  GetIterateeAndEnumerator) map {
+	  case IterateeAndEnumerator(in, out) =>
+		Logger.info("Got a websocket response to initialize websocket: " + in.toString + " " + out.toString)
+		(in, out)
+	}
   }
 }
 
