@@ -24,10 +24,12 @@
 		</form>
 		<!--@views.html.logBody(logCount, logStatement)-->
 
-		<svg width="1250" height="1250">
+		<svg id=chordCircle width="1250" height="1250">
 			<circle cx="290" cy="290" r="225" fill="purple" />
 			<circle cx="290" cy="290" r="221" fill="white" />
 			<!--  -->circle cx="483.12" cy="401.5" r="10" fill="red" --/>
+		</svg>
+		<svg id=chordNodes width="1250" height="1250">
 		</svg>
 		
 		<script language="javascript" type="text/javascript"> 
@@ -60,7 +62,7 @@
 
 				  var nodeCount = document.getElementById('nodeCount').value;
 				  var dataObjectsCount =document.getElementById('dataObjectsCount').value;
-				  var submitData = "{\"requestType\" : \"startSim\", \"nodeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
+				  var submitData = "{\"msgType\" : \"startSim\", \"nodeCount\" : " + nodeCount + ", \"dataObjectsCount\" : " + dataObjectsCount + "}";	
 				  doSend(submitData);
 
 				  return false;
@@ -68,7 +70,7 @@
 			
 			function onCancelButtonClick(e) { 
 				e.preventDefault();
-    			var submitData = "{\"requestType\" : \"cancelSim\"}";	
+    			var submitData = "{\"msgType\" : \"cancelSim\"}";	
 				doSend(submitData);
 
 				  return false;
@@ -85,21 +87,7 @@
 			
 			function onWebSocketOpen(evt) { 
 				writeToScreen("CONNECTED"); 
-				var json = '{"result":true,"count":1}', obj = JSON.parse(json);
-				writeToScreen(obj.count);
-				doSend("WebSocket rocks"); 
-				var svg = d3.select("body")
-					.selectAll("svg")
-					.attr("width", 1250)
-					.attr("height", 1250);
 				
-				svg.selectAll("circle")
-					.data([32, 57, 112, 293])
-					.enter().append("circle")
-					.attr("cy", 401.5)
-					.attr("cx", 483.12)
-					.attr("r", 10)
-					.attr("fill", "red");
 			}
 			
 			function onWebSocketClose(evt) {
@@ -108,8 +96,22 @@
 			
 			function onWebSocketMessage(evt) { 
 				writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
-				var obj = JSON.parse(evt.data);
-				writeToScreen(obj.svgType);
+								var svg = d3.select("body")
+									.select("#chordNodes")
+									.attr("width", 1250)
+									.attr("height", 1250);
+								
+								var enter = svg.selectAll("circle")
+									.data(JSON.parse(evt.data))
+									.enter().append("circle");
+									
+									enter.attr("cx", function(d) { return d.cx; })
+									.attr("cy", function(d) { return d.cy; })
+									.attr("r", 10)
+									.attr("fill", "red");
+
+
+
 			}
 			
 			function onWebSocketError(evt) { 
