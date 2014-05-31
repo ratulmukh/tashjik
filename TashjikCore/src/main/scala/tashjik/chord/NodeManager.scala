@@ -21,7 +21,7 @@ case class CancelSimulation
 case class GetIterateeAndEnumerator
 case class IterateeAndEnumerator(in: Iteratee[String,Unit], out: Enumerator[String])
 case class WebsocketMsg(msg: String)
-case class Circle(cx: Double, cy: Double, r: Double)
+case class Circle(cx: Double, cy: Double)
 case class Circles(circleList: List[Circle])
 
 
@@ -59,17 +59,9 @@ class NodeManager extends Actor {
 }
   implicit val circleWrites: Writes[Circle] = (
      (__ \ "cx").write[Double] and
-     (__ \ "cy").write[Double] and
-     (__ \ "r").write[Double]  
+     (__ \ "cy").write[Double]
  )(unlift(Circle.unapply))
  
- //implicit val circlesWrites: Writes[Circles] = (
-   //  (__ \ "circleList").write[Array[Circle]]
- //)(unlift(Circle.unapply))
- //val writes: Writes[Circles] = (
- // (__ \ "circleList").writeNullableIterable[List[Circle]]
-//)(unlift(Something.unapply))
-
    val log = Logging(context.system, this)
   //val myActor1: ActorRef = Akka.system().actorOf(Props[Node]);
    val (out,channel) = Concurrent.broadcast[String]
@@ -82,7 +74,13 @@ class NodeManager extends Actor {
       		 context.self ! WebsocketMsg(msg)
     }
 
- 
+  	
+    def hex2dec(hex: String): BigInt = {
+  hex.toLowerCase().toList.map(
+    "0123456789abcdef".indexOf(_)).map(
+    BigInt(_)).reduceLeft( _ * 16 + _)
+    }
+    
     def receive = {
      case GetIterateeAndEnumerator => {
        sender ! IterateeAndEnumerator(in, out)
@@ -94,9 +92,8 @@ class NodeManager extends Actor {
        
        messageType match {
          case "startSim" => 
-           channel push(Json.toJson(List(Circle(483.12, 401.5, 10), Circle(483.12, 402.5, 10))).toString)
-           //channel push(Json.toJson(Circles(List(Circle(483.12, 401.5, 10), Circle(483.12, 402.5, 10)))).toString)
-           //channel push(Json.toJson(Circle(483.12, 401.5, 10)).toString)
+           //channel push(Json.toJson(List(Circle(483.12, 401.5), Circle(483.12, 402.5))).toString)
+
            
            
            context.self ! StartSimulation((msgJson \ "nodeCount").as[Int], (msgJson \ "dataObjectsCount").as[Int])
@@ -114,14 +111,25 @@ class NodeManager extends Actor {
       
       NodeManager.sessionCount = NodeManager.sessionCount + 1
       
-      var bootstrapNode= None : Option[NodeRep]
+      var bootstrapNode = None : Option[NodeRep]
       var nodeList = List[NodeRep]()
+      var circleList = List[Circle]()
+      
+            
       implicit val timeout = Timeout(35 seconds)
       for(a <- 1 to nodeCount)
       {
         
         //val t: Iterable[ActorRef] = context.children
         val id: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
+        log.info("03cedf84011dd11e38ff0800200c9a66".toList.map("0123456789abcdef".indexOf(_)).map(BigInt(_)).reduceLeft( _ * 16 + _).toString)
+        val currentPointInCircle = hex2dec(id)
+        val fullCircle = hex2dec("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") //FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+        val degrees =  ((currentPointInCircle*100/fullCircle).doubleValue)*360/100
+        val cx = 223 * math.cos(degrees)
+        val cy = 223 * math.sin(degrees)
+        circleList = Circle(cx+290, cy+290) :: circleList 
+        
           val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
            Await.result(node.ask(InitMsg())(335 seconds), (335 seconds))
           //val future = node ? "test"
@@ -143,15 +151,26 @@ class NodeManager extends Actor {
           case Some(g) => nodeList + g
   */  	  
       }
+      circleList = Circle(0,0) :: circleList
+      circleList = Circle(0,0) :: circleList
+      channel push(Json.toJson(circleList).toString)
+      
+        val z0 = hex2dec("0000000000000000000000000000000000000000")
+        val z =  hex2dec("F222FFFFFF55555FFFFFFFFFFFFFFFFFFFFFFFFF")
+        val z1 = hex2dec("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") //FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
+        val distance = z1 - z 
+        log.info("NEW distance is " + (z1-z0));
+      log.info("NEW distance is " + (z1-z));
+      log.info("NEW distance is " + ((z*100/z1).doubleValue)*360/100);
       var jumper = nodeList.head 
                
    //val dataStoreCount = 500
-   for(a <- 1 to dataStoreCount)
+/*   for(a <- 1 to dataStoreCount)
    {
 //      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))
         jumper.node ! QueryMsg(DigestUtils.sha1Hex(UUID.randomUUID().toString()), Left(Store("howdy")))
    }     
-      
+  */    
  //     Thread.sleep(10000)
   /*    val dataStoreCount = 100
       for(a <- 1 to dataStoreCount)

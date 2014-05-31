@@ -24,12 +24,12 @@
 		</form>
 		<!--@views.html.logBody(logCount, logStatement)-->
 
-		<svg id=chordCircle width="1250" height="1250">
+		<svg id=chordCircle width="1250" height="1250" x="200" y="200" >
 			<circle cx="290" cy="290" r="225" fill="purple" />
 			<circle cx="290" cy="290" r="221" fill="white" />
 			<!--  -->circle cx="483.12" cy="401.5" r="10" fill="red" --/>
 		</svg>
-		<svg id=chordNodes width="1250" height="1250">
+		<svg id=chordNodes width="1250" height="1250" x="200" y="200">
 		</svg>
 		
 		<script language="javascript" type="text/javascript"> 
@@ -97,7 +97,7 @@
 			function onWebSocketMessage(evt) { 
 				writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
 								var svg = d3.select("body")
-									.select("#chordNodes")
+									.select("#chordCircle")
 									.attr("width", 1250)
 									.attr("height", 1250);
 								
