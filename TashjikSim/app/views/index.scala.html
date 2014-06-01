@@ -39,6 +39,7 @@
 			var output; 
 			var websocket;
 			var circleData = [];
+			var lineData = [];
 		
 				
 			window.onload = function(){ 
@@ -97,8 +98,10 @@
 			
 			function onWebSocketMessage(evt) { 
 				writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
-				
-				circleData.push(JSON.parse(evt.data));
+
+				if((JSON.parse(evt.data)).SVGType == "circle")
+				{	
+								circleData.push(JSON.parse(evt.data));
 				
 								var svg = d3.select("body")
 									.select("#chordCircle")
@@ -114,8 +117,28 @@
 									.attr("r", 10)
 									.attr("fill", "red");
 
+				}
+				else if((JSON.parse(evt.data)).SVGType == "line")
+				{	
+					lineData.push(JSON.parse(evt.data));
+	
+					var svg = d3.select("body")
+						.select("#chordCircle")
+						.attr("width", 1250)
+						.attr("height", 1250);
+					
+					var enter = svg.selectAll("line")
+						.data(lineData)
+						.enter().append("line");
+						
+						enter.attr("x1", function(d) { return d.x1; })
+						.attr("y1", function(d) { return d.y1; })
+						.attr("x2", function(d) { return d.x2; })
+						.attr("y2", function(d) { return d.y2; })
+						.attr("style", "stroke:rgb(22, 116, 50);stroke-width:2");
+						//.attr("fill", "black");
 
-
+				}	
 			}
 			
 			function onWebSocketError(evt) { 

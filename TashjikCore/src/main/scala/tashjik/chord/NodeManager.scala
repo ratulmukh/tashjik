@@ -21,8 +21,10 @@ case class CancelSimulation
 case class GetIterateeAndEnumerator
 case class IterateeAndEnumerator(in: Iteratee[String,Unit], out: Enumerator[String])
 case class WebsocketMsg(msg: String)
-case class Circle(cx: Double, cy: Double)
+case class Circle(SVGType: String, cx: Double, cy: Double)
+case class Line(SVGType: String, x1: Double, y1: Double, x2: Double, y2: Double)
 case class Circles(circleList: List[Circle])
+
 
 case class ChordMsgSent(sender: NodeRep, receiever: NodeRep)
 
@@ -63,9 +65,19 @@ class NodeManager extends Actor {
 
 }
   implicit val circleWrites: Writes[Circle] = (
+     (__ \ "SVGType").write[String] and      
      (__ \ "cx").write[Double] and
      (__ \ "cy").write[Double]
  )(unlift(Circle.unapply))
+ 
+ implicit val lineWrites: Writes[Line] = (
+     (__ \ "SVGType").write[String] and 
+     (__ \ "x1").write[Double] and
+     (__ \ "y1").write[Double] and
+     (__ \ "x2").write[Double] and
+     (__ \ "y2").write[Double]
+ )(unlift(Line.unapply))
+ 
  
    val log = Logging(context.system, this)
   //val myActor1: ActorRef = Akka.system().actorOf(Props[Node]);
@@ -112,11 +124,15 @@ class NodeManager extends Actor {
      }
      
     case ChordMsgSent(sender: NodeRep, receiever: NodeRep) => {
+      log.info("ChordMsgSent received by NodeMgr") 
       val senderCircle = nodeMap(sender)
+      log.info("senderCircle cx=" + senderCircle.cx + "cy=" + senderCircle.cy) 
       val receieverCircle = nodeMap(receiever)
-      
+      log.info("receieverCircle cx=" + receieverCircle.cx + "cy=" + receieverCircle.cy) 
+      channel push Json.toJson(Line("line", senderCircle.cx, senderCircle.cy, receieverCircle.cx, receieverCircle.cy)).toString
       
     } 
+    
     case StartSimulation(nodeCount: Int, dataStoreCount: Int) => { 
       log.info("Received new simulation request: Node count = " + nodeCount)
       
@@ -125,8 +141,10 @@ class NodeManager extends Actor {
       var bootstrapNode = None : Option[NodeRep]
       
       
-      channel push Json.toJson(Circle(0,0)).toString      
-      channel push Json.toJson(Circle(0,0)).toString
+      channel push Json.toJson(Circle("circle", 0,0)).toString      
+      channel push Json.toJson(Circle("circle", 0,0)).toString
+      
+      
       
       implicit val timeout = Timeout(35 seconds)
       for(a <- 1 to nodeCount)
@@ -140,8 +158,8 @@ class NodeManager extends Actor {
         val degrees =  ((currentPointInCircle*100/fullCircle).doubleValue)*360/100
         val cx = 223 * math.cos(degrees)
         val cy = 223 * math.sin(degrees)
-        circleList = Circle(cx+290, cy+290) :: circleList 
-        channel push Json.toJson(Circle(cx+290, cy+290)).toString
+        circleList = Circle("circle", cx+290, cy+290) :: circleList 
+        channel push Json.toJson(Circle("circle", cx+290, cy+290)).toString
         
           val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode, context.self)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
            Await.result(node.ask(InitMsg())(335 seconds), (335 seconds))
@@ -153,7 +171,7 @@ class NodeManager extends Actor {
           bootstrapNode = Some(NodeRep(node, id))
           bootstrapNode match {
           case None => log.info("BootstrapNode is None: Unable to send any message to it")
-          case Some(bootstrapnode) => nodeMap += (bootstrapnode -> Circle(cx+290, cy+290))
+          case Some(bootstrapnode) => nodeMap += (bootstrapnode -> Circle("circle", cx+290, cy+290))
           //Thread.sleep(1000)
         }
         log.info("NODE COUNT = " + a)
@@ -164,8 +182,8 @@ class NodeManager extends Actor {
           case Some(g) => nodeList + g
   */  	  
       }
-      circleList = Circle(0,0) :: circleList
-      circleList = Circle(0,0) :: circleList
+      circleList = Circle("circle", 0,0) :: circleList
+      circleList = Circle("circle", 0,0) :: circleList
       //channel push(Json.toJson(circleList).toString)
       
       //var jumper = nodeMap..head 
