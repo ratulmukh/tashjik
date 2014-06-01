@@ -38,6 +38,7 @@
 			var wsUri = "ws://localhost:9000/websocket"; 
 			var output; 
 			var websocket;
+			var circleData = [];
 		
 				
 			window.onload = function(){ 
@@ -96,13 +97,16 @@
 			
 			function onWebSocketMessage(evt) { 
 				writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>'); 
+				
+				circleData.push(JSON.parse(evt.data));
+				
 								var svg = d3.select("body")
 									.select("#chordCircle")
 									.attr("width", 1250)
 									.attr("height", 1250);
 								
 								var enter = svg.selectAll("circle")
-									.data(JSON.parse(evt.data))
+									.data(circleData)
 									.enter().append("circle");
 									
 									enter.attr("cx", function(d) { return d.cx; })

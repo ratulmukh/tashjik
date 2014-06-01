@@ -24,6 +24,7 @@ case class WebsocketMsg(msg: String)
 case class Circle(cx: Double, cy: Double)
 case class Circles(circleList: List[Circle])
 
+case class ChordMsgSent(sender: NodeRep, receiever: NodeRep)
 
 object NodeManager {
   var sessionCount = 0
@@ -32,6 +33,10 @@ object NodeManager {
 
 
 class NodeManager extends Actor {
+  
+  var nodeMap = Map[NodeRep, Circle]()
+  var circleList = List[Circle]()
+      
   implicit class PathAdditions(path: JsPath) {
 
   def readNullableIterable[A <: Iterable[_]](implicit reads: Reads[A]): Reads[A] =
@@ -106,16 +111,23 @@ class NodeManager extends Actor {
        
      }
      
+    case ChordMsgSent(sender: NodeRep, receiever: NodeRep) => {
+      val senderCircle = nodeMap(sender)
+      val receieverCircle = nodeMap(receiever)
+      
+      
+    } 
     case StartSimulation(nodeCount: Int, dataStoreCount: Int) => { 
       log.info("Received new simulation request: Node count = " + nodeCount)
       
       NodeManager.sessionCount = NodeManager.sessionCount + 1
       
       var bootstrapNode = None : Option[NodeRep]
-      var nodeList = List[NodeRep]()
-      var circleList = List[Circle]()
       
-            
+      
+      channel push Json.toJson(Circle(0,0)).toString      
+      channel push Json.toJson(Circle(0,0)).toString
+      
       implicit val timeout = Timeout(35 seconds)
       for(a <- 1 to nodeCount)
       {
@@ -129,8 +141,9 @@ class NodeManager extends Actor {
         val cx = 223 * math.cos(degrees)
         val cy = 223 * math.sin(degrees)
         circleList = Circle(cx+290, cy+290) :: circleList 
+        channel push Json.toJson(Circle(cx+290, cy+290)).toString
         
-          val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
+          val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode, context.self)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
            Await.result(node.ask(InitMsg())(335 seconds), (335 seconds))
           //val future = node ? "test"
         	//val result = Await.result(future, (35 seconds)).asInstanceOf[String]
@@ -140,7 +153,7 @@ class NodeManager extends Actor {
           bootstrapNode = Some(NodeRep(node, id))
           bootstrapNode match {
           case None => log.info("BootstrapNode is None: Unable to send any message to it")
-          case Some(bootstrapnode) => nodeList = bootstrapnode :: nodeList
+          case Some(bootstrapnode) => nodeMap += (bootstrapnode -> Circle(cx+290, cy+290))
           //Thread.sleep(1000)
         }
         log.info("NODE COUNT = " + a)
@@ -153,24 +166,20 @@ class NodeManager extends Actor {
       }
       circleList = Circle(0,0) :: circleList
       circleList = Circle(0,0) :: circleList
-      channel push(Json.toJson(circleList).toString)
+      //channel push(Json.toJson(circleList).toString)
       
-        val z0 = hex2dec("0000000000000000000000000000000000000000")
-        val z =  hex2dec("F222FFFFFF55555FFFFFFFFFFFFFFFFFFFFFFFFF")
-        val z1 = hex2dec("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") //FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
-        val distance = z1 - z 
-        log.info("NEW distance is " + (z1-z0));
-      log.info("NEW distance is " + (z1-z));
-      log.info("NEW distance is " + ((z*100/z1).doubleValue)*360/100);
-      var jumper = nodeList.head 
+      //var jumper = nodeMap..head 
                
    //val dataStoreCount = 500
-/*   for(a <- 1 to dataStoreCount)
+   for(a <- 1 to dataStoreCount)
    {
+        bootstrapNode match {
+          case None => log.info("BootstrapNode is None: Unable to send any message to it")
+          case Some(bootstrapnode) => bootstrapnode.node ! QueryMsg(DigestUtils.sha1Hex(UUID.randomUUID().toString()), Left(Store("howdy")))
 //      Await.result((jumper.node ? Store(DigestUtils.sha1Hex(UUID.randomUUID().toString()), "howdy")), (35 seconds))
-        jumper.node ! QueryMsg(DigestUtils.sha1Hex(UUID.randomUUID().toString()), Left(Store("howdy")))
+        }
    }     
-  */    
+      
  //     Thread.sleep(10000)
   /*    val dataStoreCount = 100
       for(a <- 1 to dataStoreCount)

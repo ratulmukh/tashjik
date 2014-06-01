@@ -39,7 +39,7 @@ import akka.dispatch.OnSuccess
 	case class Retrieve(originalRequestor: ActorRef)
 
 
-class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
+class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extends Actor {
   
   val log = Logging(context.system, this)
   //log.info("[Node-" + id + "::constructor()]: Hash of UUID of newly created node = " + id)
@@ -222,8 +222,12 @@ class Node(id: String, bootstrapNode: Option[NodeRep]) extends Actor {
       
       implicit val timeout = Timeout(35 seconds)
       query.queryType match {
-        case Left(storeQuery)     => destinationNodeRep.node ! StoreLocalMsg(query.key, storeQuery.value)
-        case Right(retrieveQuery) => destinationNodeRep.node ! RetrieveLocalMsg(retrieveQuery.originalRequestor, query.key)
+        case Left(storeQuery)     => 
+          destinationNodeRep.node ! StoreLocalMsg(query.key, storeQuery.value)
+          nodeMgr ! ChordMsgSent(NodeRep(context.self, id), destinationNodeRep )
+        case Right(retrieveQuery) => 
+          destinationNodeRep.node ! RetrieveLocalMsg(retrieveQuery.originalRequestor, query.key)
+          nodeMgr ! ChordMsgSent(NodeRep(context.self, id), destinationNodeRep )
         
       }
     }
