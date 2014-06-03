@@ -22,7 +22,7 @@ class NodeTest extends FlatSpec with Matchers {
     implicit val timeout = Timeout(35 seconds)
     val id: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
     val system = ActorSystem.create("MySystem")
-    val node: ActorRef = system.actorOf(Props(new Node(id, bootstrapNode)).withDispatcher("my-dispatcher")) 
+    val node: ActorRef = system.actorOf(Props(new Node(id, bootstrapNode, null)).withDispatcher("my-dispatcher")) 
 
     val future = node.ask(InitMsg())(335 seconds)
     val result = Await.result(future, (35 seconds)).asInstanceOf[SuccessMsg]
@@ -37,12 +37,12 @@ class NodeTest extends FlatSpec with Matchers {
     implicit val timeout = Timeout(35 seconds)
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None, null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
@@ -68,17 +68,17 @@ class NodeTest extends FlatSpec with Matchers {
     implicit val timeout = Timeout(35 seconds)
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None, null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node2, id2)))).withDispatcher("my-dispatcher")) 
+    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node2, id2)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
@@ -114,17 +114,17 @@ class NodeTest extends FlatSpec with Matchers {
     implicit val timeout = Timeout(35 seconds)
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None, null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
@@ -163,17 +163,17 @@ class NodeTest extends FlatSpec with Matchers {
     
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None, null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
@@ -219,14 +219,14 @@ class NodeTest extends FlatSpec with Matchers {
     val nodeList = ListBuffer[NodeRep]()
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) 
-    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None, null)).withDispatcher("my-dispatcher")) 
     nodeList += NodeRep(node1, id1)
     Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     for (a <- 1 until 500)
     {  
       val idx: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) 
-      val nodex: ActorRef = system.actorOf(Props(new Node(idx, Some(nodeList(math.abs(r.nextInt(nodeList.length-1)))))).withDispatcher("my-dispatcher")) 
+      val nodex: ActorRef = system.actorOf(Props(new Node(idx, Some(nodeList(math.abs(r.nextInt(nodeList.length-1)))), null)).withDispatcher("my-dispatcher")) 
       nodeList += NodeRep(nodex, idx)
       Await.result(nodex.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
@@ -261,17 +261,17 @@ class NodeTest extends FlatSpec with Matchers {
     implicit val timeout = Timeout(35 seconds)
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node1: ActorRef = system.actorOf(Props(new Node(id1, None)).withDispatcher("my-dispatcher")) 
+    val node1: ActorRef = system.actorOf(Props(new Node(id1, None, null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node1.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id2: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)))).withDispatcher("my-dispatcher")) 
+    val node2: ActorRef = system.actorOf(Props(new Node(id2, Some(NodeRep(node1, id1)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node2.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     
     val id3: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) //.toString()
-    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node2, id2)))).withDispatcher("my-dispatcher")) 
+    val node3: ActorRef = system.actorOf(Props(new Node(id3, Some(NodeRep(node2, id2)), null)).withDispatcher("my-dispatcher")) 
 
     Await.result(node3.ask(InitMsg())(335 seconds), (35 seconds)).asInstanceOf[SuccessMsg]
     

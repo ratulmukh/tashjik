@@ -21,8 +21,8 @@ object ApplicationBuild extends Build {
     // Add your project dependencies here,
 	"commons-codec" % "commons-codec" % "1.8",
 	"junit" % "junit" % "4.8.1" % "test",
-	"org.scalatest" % "scalatest_2.11" % "2.1.7" % "test",
-	"tashjik" %% "tashjikcore" % System.getProperty("version")
+	"org.scalatest" % "scalatest_2.11" % "2.1.7" % "test"
+	//"tashjik" %% "tashjikcore" % System.getProperty("version")
 	//"tindr" % "play2pusher_2.9.1" % "1.0.1" // exclude("play", "play_2.9.1")
 	
   )
