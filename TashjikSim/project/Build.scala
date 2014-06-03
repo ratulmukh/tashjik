@@ -8,12 +8,17 @@ import PlayKeys._
 object ApplicationBuild extends Build {
 
   val appName         = "TashjikSim"
-  val appVersion      = System.getProperty("version")
-
+  //val appVersion      = System.getProperty("version")
+  
+    
+  val appVersion = System.getProperty("version") match {
+    case null => "experimental"
+    case _ => System.getProperty("version")
+  }
   val playCommonSettings = Seq(
     organization := "tashjik",
     crossPaths := false,
-    version := System.getProperty("version"),
+    version := appVersion,
     scalaVersion := "2.11.1")
     
     
