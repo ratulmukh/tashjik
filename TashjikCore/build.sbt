@@ -2,18 +2,20 @@ name := "TashjikCore"
 
 version := System.getProperty("version")
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.1"
 
-crossPaths := false
+crossPaths := true
 
 organization := "tashjik"
 
 libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.8",
   "junit" % "junit" % "4.8.1" % "test",
-  "com.typesafe.akka" %% "akka-actor" % "2.3.2",
-  "com.typesafe.akka" %% "akka-contrib" % "2.3.2",
-  "com.typesafe.akka" %% "akka-testkit" % "2.3.2" % "test",
-  "com.typesafe.play" %% "play" % "2.2.3",
-  "org.scalatest" % "scalatest_2.10" % "2.0" % "test")
+  "com.typesafe.akka" % "akka-actor_2.11" % "2.3.3",
+  "com.typesafe.akka" % "akka-contrib_2.11" % "2.3.3",
+  "com.typesafe.akka" % "akka-testkit_2.11" % "2.3.3" % "test",
+  "com.typesafe.play" %% "play" % "2.3.0",
+  "org.scalatest" %% "scalatest" % "2.1.7" % "test")
+  
+  resolvers += "Typesafe Maven Repository" at "http://repo.typesafe.com/typesafe/maven-releases/"
   

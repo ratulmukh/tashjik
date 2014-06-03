@@ -17,8 +17,8 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.functional.syntax._
 
 case class StartSimulation(nodeCount: Int, dataStoreCount: Int)
-case class CancelSimulation
-case class GetIterateeAndEnumerator
+case class CancelSimulation()
+case class GetIterateeAndEnumerator()
 case class IterateeAndEnumerator(in: Iteratee[String,Unit], out: Enumerator[String])
 case class WebsocketMsg(msg: String)
 case class Circle(SVGType: String, cx: Double, cy: Double)
@@ -129,6 +129,7 @@ class NodeManager extends Actor {
       log.info("senderCircle cx=" + senderCircle.cx + "cy=" + senderCircle.cy) 
       val receieverCircle = nodeMap(receiever)
       log.info("receieverCircle cx=" + receieverCircle.cx + "cy=" + receieverCircle.cy) 
+      Thread.sleep(1000)
       channel push Json.toJson(Line("line", senderCircle.cx, senderCircle.cy, receieverCircle.cx, receieverCircle.cy)).toString
       
     } 
@@ -156,10 +157,34 @@ class NodeManager extends Actor {
         val currentPointInCircle = hex2dec(id)
         val fullCircle = hex2dec("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF") //FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
         val degrees =  ((currentPointInCircle*100/fullCircle).doubleValue)*360/100
-        val cx = 223 * math.cos(degrees)
-        val cy = 223 * math.sin(degrees)
-        circleList = Circle("circle", cx+290, cy+290) :: circleList 
-        channel push Json.toJson(Circle("circle", cx+290, cy+290)).toString
+        var circle = Circle("circle", 0, 0)
+        if(degrees>=0 && degrees<90) {
+        	val cy = 223 * math.cos(degrees)
+        	val cx = 223 * math.sin(degrees)
+        	circle = Circle("circle", cx+290, cy+290)
+        	
+        }
+        else if(degrees>=91 && degrees<180) {
+        	val cy = 223 * math.cos(180-degrees)
+        	val cx = 223 * math.sin(180-degrees)
+        	circle = Circle("circle", cx+290, 290-cy)
+        	
+        }
+        else if(degrees>=180 && degrees<270) {
+        	val cx = 223 * math.cos(270-degrees)
+        	val cy = 223 * math.sin(270-degrees)
+        	circle = Circle("circle", 290-cx, 290-cy)
+        	
+        }
+        else {
+            val cx = 223 * math.cos(360-degrees)
+        	val cy = 223 * math.sin(360-degrees)
+        	circle = Circle("circle", 290-cx, 290+cy)
+        	
+        }
+        channel push Json.toJson(circle).toString
+        //circleList = Circle("circle", cx+290, cy+290) :: circleList 
+        //channel push Json.toJson(Circle("circle", cx+290, cy+290)).toString
         
           val node: ActorRef = context.actorOf(Props(new Node(id, bootstrapNode, context.self)).withDispatcher("my-dispatcher"), name = "Node-"+ NodeManager.sessionCount + "-" + a) 
            Await.result(node.ask(InitMsg())(335 seconds), (335 seconds))
@@ -171,7 +196,7 @@ class NodeManager extends Actor {
           bootstrapNode = Some(NodeRep(node, id))
           bootstrapNode match {
           case None => log.info("BootstrapNode is None: Unable to send any message to it")
-          case Some(bootstrapnode) => nodeMap += (bootstrapnode -> Circle("circle", cx+290, cy+290))
+          case Some(bootstrapnode) => nodeMap += (bootstrapnode -> circle)
           //Thread.sleep(1000)
         }
         log.info("NODE COUNT = " + a)

@@ -132,6 +132,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
           case false => {
             implicit val timeout = Timeout(35 seconds)
             successor.node ! GetSuccessorOfIdMsg(originalRequestor, query)
+            nodeMgr ! ChordMsgSent(NodeRep(context.self, id), successor )
           }  
         }
       }
@@ -224,10 +225,10 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
       query.queryType match {
         case Left(storeQuery)     => 
           destinationNodeRep.node ! StoreLocalMsg(query.key, storeQuery.value)
-          nodeMgr ! ChordMsgSent(NodeRep(context.self, id), destinationNodeRep )
+         // nodeMgr ! ChordMsgSent(NodeRep(context.self, id), destinationNodeRep )
         case Right(retrieveQuery) => 
           destinationNodeRep.node ! RetrieveLocalMsg(retrieveQuery.originalRequestor, query.key)
-          nodeMgr ! ChordMsgSent(NodeRep(context.self, id), destinationNodeRep )
+        //  nodeMgr ! ChordMsgSent(NodeRep(context.self, id), destinationNodeRep )
         
       }
     }
