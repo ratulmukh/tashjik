@@ -216,6 +216,7 @@ class NodeTest extends FlatSpec with Matchers {
     var unOrderedCount = 0
     val r = new scala.util.Random
     
+    
     val nodeList = ListBuffer[NodeRep]()
     
     val id1: String = DigestUtils.sha1Hex(UUID.randomUUID().toString()) 
