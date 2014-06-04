@@ -21,7 +21,7 @@ object Application extends Controller {
   def index = Action {
     val version = Play.current.configuration.getString("tashjik.version")
     Ok(views.html.index(20, "Logs"))
-      
+       
     //Ok(views.html.main("Tashjik", version))
   }
 
