@@ -82,7 +82,7 @@ class NodeManager extends Actor {
  implicit val hopCountDynWrites: Writes[HopCountDyn] = (
      (__ \ "SVGType").write[String] and 
      (__ \ "letter").write[String] and
-     (__ \ "count").write[Int]
+     (__ \ "frequency").write[Int]
  )(unlift(HopCountDyn.unapply))
  
    val log = Logging(context.system, this)
@@ -131,15 +131,16 @@ class NodeManager extends Actor {
      
      case HopCount(count) => {
        log.info("Query found destination: hop count = " + count) 
-       val existingCount = hopCountMap(count)
+       //val existingCount = hopCountMap(count)
        hopCountMap.contains(count) match {
          case false => hopCountMap += (count -> 0)
          case true => hopCountMap += (count -> (hopCountMap(count)+1))
        }
        
        var hopeCountDyList = scala.collection.mutable.MutableList[HopCountDyn]()
-       hopCountMap.keys.foreach{
-    	   key => hopeCountDyList += HopCountDyn("HopCount", key.toString, hopCountMap(key))
+       val ll = hopCountMap.toList.sortBy{_._1}
+       ll.foreach{
+    	   key => hopeCountDyList += HopCountDyn("HopCount", key._1.toString, key._2)
        }
        log.info("HopCountDyn SENT")
        

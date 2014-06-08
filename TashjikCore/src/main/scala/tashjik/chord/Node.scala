@@ -131,7 +131,10 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
       else
       {
         isSuccessorSameFor(query.key) match {
-          case true  => originalRequestor ! QueryDestinationFoundMsg(successor, query)
+          case true  => {
+            originalRequestor ! QueryDestinationFoundMsg(successor, query)
+            nodeMgr ! HopCount(hopCount)
+          }
           case false => {
             implicit val timeout = Timeout(35 seconds)
             successor.node ! GetSuccessorOfIdMsg(originalRequestor, query, hopCount+1)
