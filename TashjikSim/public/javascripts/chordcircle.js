@@ -101,33 +101,19 @@ var wsUri = "ws://localhost:9000/websocket";
 				else
 				{
 					hopData = JSON.parse(evt.data);
-					//hopData = [{"SVGType":"HopCount","letter":"1","frequency":2},{"SVGType":"HopCount","letter":"2","frequency":10}]
+					//hopData = [{"SVGType":"HopCount","letter":"1","frequency":2},{"SVGType":"HopCount","letter":"2","frequency":10}];
 					
-					var svg = d3.select("body").select("#chordCircle")
-				    .append("g")
-				    .attr("transform", "translate(" + 660 + "," + 50 + ")");
+					var svg = d3.select("body").select("#chordCircle");
+
 					
-					x.domain(hopData.map(function(d) { return d.letter; }));
-					  y.domain([0, d3.max(hopData, function(d) { return d.frequency; })]);
-
-					  svg.append("g")
-					      .attr("class", "x axis")
-					      .attr("transform", "translate(0," + height + ")")
-					      .call(xAxis);
-
-					  svg.append("g")
-					      .attr("class", "y axis")
-					      .call(yAxis)
-					    .append("text")
-					      .attr("transform", "rotate(-90)")
-					      .attr("y", 6)
-					      .attr("dy", ".71em")
-					      .style("text-anchor", "end")
-					      .text("Frequency");
+					
+					var hopData11 = [{"SVGType":"HopCount","letter":"1","frequency":5},{"SVGType":"HopCount","letter":"2","frequency":1}, {"SVGType":"HopCount","letter":"3","frequency":1},{"SVGType":"HopCount","letter":"4","frequency":1}, {"SVGType":"HopCount","letter":"5","frequency":1},{"SVGType":"HopCount","letter":"6","frequency":1}, {"SVGType":"HopCount","letter":"7","frequency":1},{"SVGType":"HopCount","letter":"8","frequency":1}, {"SVGType":"HopCount","letter":"9","frequency":1},{"SVGType":"HopCount","letter":"10","frequency":1}, {"SVGType":"HopCount","letter":"11","frequency":1},{"SVGType":"HopCount","letter":"12","frequency":1}, {"SVGType":"HopCount","letter":"13","frequency":1},{"SVGType":"HopCount","letter":"14","frequency":1}];
+					
+					x.domain(hopData11.map(function(d) { return d.letter; }));
+					y.domain([0, d3.max(hopData11, function(d) { return d.frequency; })]);
 					  
-					svg.selectAll(".bar")
+					svg.selectAll("rect")
 				      .data(hopData)
-				    .enter().append("rect")
 				      .attr("class", "bar")
 				      .attr("x", function(d) { return x(d.letter); })
 				      .attr("width", x.rangeBand())

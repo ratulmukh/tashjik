@@ -133,15 +133,22 @@ class NodeManager extends Actor {
        log.info("Query found destination: hop count = " + count) 
        //val existingCount = hopCountMap(count)
        hopCountMap.contains(count) match {
-         case false => hopCountMap += (count -> 0)
+         case false => hopCountMap += (count -> 1)
          case true => hopCountMap += (count -> (hopCountMap(count)+1))
        }
        
        var hopeCountDyList = scala.collection.mutable.MutableList[HopCountDyn]()
-       val ll = hopCountMap.toList.sortBy{_._1}
-       ll.foreach{
-    	   key => hopeCountDyList += HopCountDyn("HopCount", key._1.toString, key._2)
-       }
+       for( a <- 0 to 14){
+         hopCountMap.contains(a) match {
+           case false => hopeCountDyList += HopCountDyn("HopCount", a.toString, 0)
+           case true  => hopeCountDyList += HopCountDyn("HopCount", a.toString, hopCountMap(a))
+         }
+      }
+         
+       //val ll = hopCountMap.toList.sortBy{_._1}
+       //ll.foreach{
+    	//   key => hopeCountDyList += HopCountDyn("HopCount", key._1.toString, key._2)
+       //}
        log.info("HopCountDyn SENT")
        
        channel push Json.toJson(hopeCountDyList).toString

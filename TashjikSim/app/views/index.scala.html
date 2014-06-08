@@ -89,7 +89,7 @@ var svg = d3.select("body").select("#chordCircle")
     .append("g")
     .attr("transform", "translate(" + 660 + "," + 50 + ")");
 
-var hopData = [];
+var hopData = [{"SVGType":"HopCount","letter":"1","frequency":0},{"SVGType":"HopCount","letter":"2","frequency":0}, {"SVGType":"HopCount","letter":"3","frequency":0},{"SVGType":"HopCount","letter":"4","frequency":0}, {"SVGType":"HopCount","letter":"5","frequency":0},{"SVGType":"HopCount","letter":"6","frequency":0}, {"SVGType":"HopCount","letter":"7","frequency":0},{"SVGType":"HopCount","letter":"8","frequency":0}, {"SVGType":"HopCount","letter":"9","frequency":0},{"SVGType":"HopCount","letter":"10","frequency":0}, {"SVGType":"HopCount","letter":"11","frequency":0},{"SVGType":"HopCount","letter":"12","frequency":0}, {"SVGType":"HopCount","letter":"13","frequency":0},{"SVGType":"HopCount","letter":"14","frequency":0}];
 
 
   x.domain(hopData.map(function(d) { return d.letter; }));
