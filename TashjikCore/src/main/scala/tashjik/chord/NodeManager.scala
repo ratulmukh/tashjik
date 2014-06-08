@@ -24,7 +24,7 @@ case class WebsocketMsg(msg: String)
 case class Circle(SVGType: String, cx: Double, cy: Double)
 case class Line(SVGType: String, x1: Double, y1: Double, x2: Double, y2: Double)
 case class Circles(circleList: List[Circle])
-
+case class HopCountDyn(SVGType: String, letter: String, frequency: Int)
 
 case class ChordMsgSent(sender: NodeRep, receiever: NodeRep)
 
@@ -38,6 +38,7 @@ class NodeManager extends Actor {
   
   var nodeMap = Map[NodeRep, Circle]()
   var circleList = List[Circle]()
+  var hopCountMap = Map[Int, Int]()
       
   implicit class PathAdditions(path: JsPath) {
 
@@ -78,6 +79,11 @@ class NodeManager extends Actor {
      (__ \ "y2").write[Double]
  )(unlift(Line.unapply))
  
+ implicit val hopCountDynWrites: Writes[HopCountDyn] = (
+     (__ \ "SVGType").write[String] and 
+     (__ \ "letter").write[String] and
+     (__ \ "count").write[Int]
+ )(unlift(HopCountDyn.unapply))
  
    val log = Logging(context.system, this)
   //val myActor1: ActorRef = Akka.system().actorOf(Props[Node]);
@@ -123,13 +129,31 @@ class NodeManager extends Actor {
        
      }
      
+     case HopCount(count) => {
+       log.info("Query found destination: hop count = " + count) 
+       val existingCount = hopCountMap(count)
+       hopCountMap.contains(count) match {
+         case false => hopCountMap += (count -> 0)
+         case true => hopCountMap += (count -> (hopCountMap(count)+1))
+       }
+       
+       var hopeCountDyList = scala.collection.mutable.MutableList[HopCountDyn]()
+       hopCountMap.keys.foreach{
+    	   key => hopeCountDyList += HopCountDyn("HopCount", key.toString, hopCountMap(key))
+       }
+       log.info("HopCountDyn SENT")
+       
+       channel push Json.toJson(hopeCountDyList).toString
+       
+     }
+     
     case ChordMsgSent(sender: NodeRep, receiever: NodeRep) => {
       log.info("ChordMsgSent received by NodeMgr") 
       val senderCircle = nodeMap(sender)
       log.info("senderCircle cx=" + senderCircle.cx + "cy=" + senderCircle.cy) 
       val receieverCircle = nodeMap(receiever)
       log.info("receieverCircle cx=" + receieverCircle.cx + "cy=" + receieverCircle.cy) 
-      Thread.sleep(1000)
+      //Thread.sleep(1000)
       channel push Json.toJson(Line("line", senderCircle.cx, senderCircle.cy, receieverCircle.cx, receieverCircle.cy)).toString
       
     } 

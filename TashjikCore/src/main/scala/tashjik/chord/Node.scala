@@ -17,7 +17,7 @@ import akka.dispatch.OnSuccess
 	case class GetPredecessorMsg()
 	case class GetSuccessorMsg()
 	case class GetSuccessorOfIdSyncMsg(queryId: String)
-	case class GetSuccessorOfIdMsg(originalRequestor: ActorRef, query: QueryMsg)
+	case class GetSuccessorOfIdMsg(originalRequestor: ActorRef, query: QueryMsg, hopCount: Int)
 	case class GetIdMsg()
 	case class SetNewSuccessorMsg(successor: NodeRep)
 	case class SetNewPredecessorMsg(predecessor: NodeRep)
@@ -37,6 +37,8 @@ import akka.dispatch.OnSuccess
 	case class NodeRep(node: ActorRef, id: String)
 	case class Store(value: String)
 	case class Retrieve(originalRequestor: ActorRef)
+	
+	case class HopCount(count: Int)
 
 
 class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extends Actor {
@@ -114,7 +116,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
       }
   }
   
-   def GetSuccessorOfId(originalRequestor: ActorRef, query: QueryMsg) = {
+   def GetSuccessorOfId(originalRequestor: ActorRef, query: QueryMsg, hopCount: Int) = {
     log.info("[Node-" + id + "::GetSuccessorOfId(" + query.key + ")]: ENTER")
         
       if((this.id.compareTo(successor.id) == 0) && (this.id.compareTo(predecessor.id) == 0))
@@ -124,6 +126,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
          log.debug("predecessor.id =" + predecessor.id)
          log.debug(this.id.compareTo(successor.id) + "+" + this.id.compareTo(predecessor.id))
          originalRequestor ! QueryDestinationFoundMsg(successor, query)
+         nodeMgr ! HopCount(hopCount)
       }
       else
       {
@@ -131,7 +134,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
           case true  => originalRequestor ! QueryDestinationFoundMsg(successor, query)
           case false => {
             implicit val timeout = Timeout(35 seconds)
-            successor.node ! GetSuccessorOfIdMsg(originalRequestor, query)
+            successor.node ! GetSuccessorOfIdMsg(originalRequestor, query, hopCount+1)
             nodeMgr ! ChordMsgSent(NodeRep(context.self, id), successor )
           }  
         }
@@ -170,8 +173,8 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
       sender ! GetSuccessorOfIdSync(queryId)
     }  
     
-    case GetSuccessorOfIdMsg(originalRequestor: ActorRef, query: QueryMsg) => {
-       GetSuccessorOfId(originalRequestor, query)
+    case GetSuccessorOfIdMsg(originalRequestor: ActorRef, query: QueryMsg, hopCount: Int) => {
+       GetSuccessorOfId(originalRequestor, query, hopCount: Int)
     } 
     
 
@@ -214,7 +217,7 @@ class Node(id: String, bootstrapNode: Option[NodeRep], nodeMgr: ActorRef) extend
       implicit val timeout = Timeout(35 seconds)
       val requestor = sender
       
-      GetSuccessorOfId(self, QueryMsg(key, queryType))
+      GetSuccessorOfId(self, QueryMsg(key, queryType), 0)
       
     }
     

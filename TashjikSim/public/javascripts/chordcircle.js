@@ -67,9 +67,7 @@ var wsUri = "ws://localhost:9000/websocket";
 								circleData.push(JSON.parse(evt.data));
 				
 								var svg = d3.select("body")
-									.select("#chordCircle")
-									.attr("width", 1250)
-									.attr("height", 1250);
+									.select("#chordCircle");
 								
 								var enter = svg.selectAll("circle")
 									.data(circleData)
@@ -86,9 +84,7 @@ var wsUri = "ws://localhost:9000/websocket";
 					lineData.push(JSON.parse(evt.data));
 	
 					var svg = d3.select("body")
-						.select("#chordCircle")
-						.attr("width", 1250)
-						.attr("height", 1250);
+						.select("#chordCircle");
 					
 					var enter = svg.selectAll("line")
 						.data(lineData)
@@ -102,6 +98,24 @@ var wsUri = "ws://localhost:9000/websocket";
 						//.attr("fill", "black");
 
 				}	
+				else
+				{
+					hopData = JSON.parse(evt.data);
+					
+					var svg = d3.select("body").select("#chordCircle")
+				    .append("g")
+				    .attr("transform", "translate(" + 660 + "," + 50 + ")");
+					
+					svg.selectAll(".bar")
+				      .data(hopData)
+				    .enter().append("rect")
+				      .attr("class", "bar")
+				      .attr("x", function(d) { return x(d.letter); })
+				      .attr("width", x.rangeBand())
+				      .attr("y", function(d) { return y(d.frequency); })
+				      .attr("height", function(d) { return height - y(d.frequency); })
+				      .attr("fill", "red");
+				}
 			}
 			
 			function onWebSocketError(evt) { 
