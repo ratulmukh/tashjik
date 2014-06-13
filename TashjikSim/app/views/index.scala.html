@@ -89,11 +89,20 @@ var svg = d3.select("body").select("#chordCircle")
     .append("g")
     .attr("transform", "translate(" + 660 + "," + 50 + ")");
 
-var hopData = [{"SVGType":"HopCount","letter":"1","frequency":0},{"SVGType":"HopCount","letter":"2","frequency":0}, {"SVGType":"HopCount","letter":"3","frequency":0},{"SVGType":"HopCount","letter":"4","frequency":0}, {"SVGType":"HopCount","letter":"5","frequency":0},{"SVGType":"HopCount","letter":"6","frequency":0}, {"SVGType":"HopCount","letter":"7","frequency":0},{"SVGType":"HopCount","letter":"8","frequency":0}, {"SVGType":"HopCount","letter":"9","frequency":0},{"SVGType":"HopCount","letter":"10","frequency":0}, {"SVGType":"HopCount","letter":"11","frequency":0},{"SVGType":"HopCount","letter":"12","frequency":0}, {"SVGType":"HopCount","letter":"13","frequency":0},{"SVGType":"HopCount","letter":"14","frequency":0}];
+var hopData1 = [];
+var nodeCountField = document.getElementById('nodeCount').value;
+
+//var jsonStr;
+//var jsonStr = "{\"SVGType\":\"HopCount\",\"letter\":\"1\",\"frequency\":0}";
+for (var i = 0; i < nodeCountField; i++) { 
+var jsonStr = "{\"SVGType\":\"HopCount\",\"letter\":\"" + i + "\",\"frequency\":0}";
+hopData1.push(JSON.parse(jsonStr));
+}
+   //hopData1 = [{"SVGType":"HopCount","letter":"1","frequency":0},{"SVGType":"HopCount","letter":"2","frequency":0}, {"SVGType":"HopCount","letter":"3","frequency":0},{"SVGType":"HopCount","letter":"4","frequency":0}, {"SVGType":"HopCount","letter":"5","frequency":0},{"SVGType":"HopCount","letter":"6","frequency":0}, {"SVGType":"HopCount","letter":"7","frequency":0},{"SVGType":"HopCount","letter":"8","frequency":0}, {"SVGType":"HopCount","letter":"9","frequency":0},{"SVGType":"HopCount","letter":"10","frequency":0}, {"SVGType":"HopCount","letter":"11","frequency":0},{"SVGType":"HopCount","letter":"12","frequency":0}, {"SVGType":"HopCount","letter":"13","frequency":0},{"SVGType":"HopCount","letter":"14","frequency":0}];
 
 
-  x.domain(hopData.map(function(d) { return d.letter; }));
-  y.domain([0, d3.max(hopData, function(d) { return d.frequency; })]);
+  x.domain(hopData1.map(function(d) { return d.letter; }));
+  y.domain([0, d3.max(hopData1, function(d) { return d.frequency; })]);
 
   svg.append("g")
       .attr("class", "x axis")
@@ -111,7 +120,7 @@ var hopData = [{"SVGType":"HopCount","letter":"1","frequency":0},{"SVGType":"Hop
       .text("Frequency");
 
   svg.selectAll(".bar")
-      .data(hopData)
+      .data(hopData1)
     .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return x(d.letter); })

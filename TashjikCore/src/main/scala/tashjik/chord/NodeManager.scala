@@ -36,6 +36,7 @@ object NodeManager {
 
 class NodeManager extends Actor {
   
+  var nodeCount = 0
   var nodeMap = Map[NodeRep, Circle]()
   var circleList = List[Circle]()
   var hopCountMap = Map[Int, Int]()
@@ -138,7 +139,7 @@ class NodeManager extends Actor {
        }
        
        var hopeCountDyList = scala.collection.mutable.MutableList[HopCountDyn]()
-       for( a <- 0 to 14){
+       for( a <- 0 to nodeCount){
          hopCountMap.contains(a) match {
            case false => hopeCountDyList += HopCountDyn("HopCount", a.toString, 0)
            case true  => hopeCountDyList += HopCountDyn("HopCount", a.toString, hopCountMap(a))
@@ -169,6 +170,7 @@ class NodeManager extends Actor {
     case StartSimulation(nodeCount: Int, dataStoreCount: Int) => { 
       log.info("Received new simulation request: Node count = " + nodeCount)
       
+      this.nodeCount = nodeCount
       NodeManager.sessionCount = NodeManager.sessionCount + 1
       
       var bootstrapNode = None : Option[NodeRep]

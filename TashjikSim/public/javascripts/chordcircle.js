@@ -100,7 +100,26 @@ var wsUri = "ws://localhost:9000/websocket";
 				}	
 				else
 				{
-					hopData = JSON.parse(evt.data);
+					var margin = {top: 20, right: 20, bottom: 30, left: 40},
+				    width = 960 - margin.left - margin.right,
+				    height = 500 - margin.top - margin.bottom;
+					
+					var x = d3.scale.ordinal()
+				    .rangeRoundBands([0, width], .1);
+
+				var y = d3.scale.linear()
+				    .range([height, 0]);
+
+				var xAxis = d3.svg.axis()
+				    .scale(x)
+				    .orient("bottom");
+
+				var yAxis = d3.svg.axis()
+				    .scale(y)
+				    .orient("left")
+				    .ticks(10, "%");
+				
+					var hopData = JSON.parse(evt.data);
 					//hopData = [{"SVGType":"HopCount","letter":"1","frequency":2},{"SVGType":"HopCount","letter":"2","frequency":10}];
 					
 					var svg = d3.select("body").select("#chordCircle");
@@ -109,17 +128,33 @@ var wsUri = "ws://localhost:9000/websocket";
 					
 					var hopData11 = [{"SVGType":"HopCount","letter":"1","frequency":5},{"SVGType":"HopCount","letter":"2","frequency":1}, {"SVGType":"HopCount","letter":"3","frequency":1},{"SVGType":"HopCount","letter":"4","frequency":1}, {"SVGType":"HopCount","letter":"5","frequency":1},{"SVGType":"HopCount","letter":"6","frequency":1}, {"SVGType":"HopCount","letter":"7","frequency":1},{"SVGType":"HopCount","letter":"8","frequency":1}, {"SVGType":"HopCount","letter":"9","frequency":1},{"SVGType":"HopCount","letter":"10","frequency":1}, {"SVGType":"HopCount","letter":"11","frequency":1},{"SVGType":"HopCount","letter":"12","frequency":1}, {"SVGType":"HopCount","letter":"13","frequency":1},{"SVGType":"HopCount","letter":"14","frequency":1}];
 					
-					x.domain(hopData11.map(function(d) { return d.letter; }));
-					y.domain([0, d3.max(hopData11, function(d) { return d.frequency; })]);
+					x.domain(hopData.map(function(d) { return d.letter; }));
+					y.domain([0, d3.max(hopData, function(d) { return d.frequency; })]);
 					  
-					svg.selectAll("rect")
-				      .data(hopData)
+					var rects = svg.selectAll("rect")
+				      .data(hopData);
+					
+						rects
 				      .attr("class", "bar")
 				      .attr("x", function(d) { return x(d.letter); })
 				      .attr("width", x.rangeBand())
 				      .attr("y", function(d) { return y(d.frequency); })
 				      .attr("height", function(d) { return height - y(d.frequency); })
 				      .attr("fill", "red");
+				      rects.enter().append("circle")
+					  .attr("class", "bar")
+				      .attr("x", function(d) { return x(d.letter); })
+				      .attr("width", x.rangeBand())
+				      .attr("y", function(d) { return y(d.frequency); })
+				      .attr("height", function(d) { return height - y(d.frequency); })
+				      .attr("fill", "red");
+					
+				      
+				      
+				      function type(d) {
+				    	  d.frequency = +d.frequency;
+				    	  return d;
+				    	}
 				}
 			}
 			
