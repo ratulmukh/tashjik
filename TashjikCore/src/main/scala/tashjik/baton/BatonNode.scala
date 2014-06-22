@@ -19,7 +19,7 @@ case class BatonNodeState(level: Int, number: Int, parent: Option[ActorRef], lef
 case class NewChildCreated(assignedLeftChild: Boolean, child: ActorRef)		
 		
 		
-class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: ActorRef) extends Actor {
+class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) extends Actor {
   implicit val timeout = Timeout(35 seconds)
   val log = Logging(context.system, this)
 
@@ -76,23 +76,30 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: ActorRef) extends Acto
    	  {
    	    //accept new node as child
    	    
-   	    val assignedLeftChild: Boolean = 
-   	    		if(leftChild==None)
-   	    		{
-   	    			leftChild = Some(sender)
-   	    			leftAdjacent = Some(sender)
-   	    			leftAdjacent.get ! NewChildCreated(true, sender)
-   	    			true
-   	    		}
-   	    		else 
-   	    		{
-   	    			rightChild = Some(sender)
-   	    			rightAdjacent = Some(sender)
-   	    			rightAdjacent.get ! NewChildCreated(false, sender)
-   	    			false
-   	    		}  
-   	    sender ! ParentForJoinFound(context.self, assignedLeftChild, BatonNodeState(level, number, parent, leftChild, rightChild, 
+   	    val isLeftChildToBeAssigned: Boolean = leftChild==None
+   	    sender ! ParentForJoinFound(context.self, isLeftChildToBeAssigned, BatonNodeState(level, number, parent, leftChild, rightChild, 
       		leftAdjacent, rightAdjacent, leftRoutingTable.toList, rightRoutingTable.toList))
+      		
+      	isLeftChildToBeAssigned match {
+   	      case true => {
+   	        leftChild = Some(sender)
+   	    	leftAdjacent match {
+   	    		case None =>
+   	    		case Some(batonNode) => batonNode ! NewChildCreated(true, sender)
+   	    	}
+   	    	leftAdjacent = Some(sender)
+   	      }
+   	      case false => {
+   	        rightChild = Some(sender)
+   	    	rightAdjacent match {
+   	    		case None =>
+   	    		case Some(batonNode) => batonNode ! NewChildCreated(true, sender)
+   	    	}
+   	    	rightAdjacent = Some(sender)
+   	      }
+   	    }	
+      		
+   	     
         
    	  }
    	  else 

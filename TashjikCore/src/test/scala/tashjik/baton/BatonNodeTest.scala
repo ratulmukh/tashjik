@@ -21,26 +21,21 @@ abstract class AkkaTestkitSpecs2Support extends TestKit(ActorSystem())
 class ExampleSpec extends Specification with NoTimeConversions {
   sequential // forces all tests to be run sequentially
  
-  "A TestKit" should {
-    /* for every case where you would normally use "in", use 
-       "in new AkkaTestkitSpecs2Support" to create a new 'context'. */
-    "work properly with Specs2 unit tests" in new AkkaTestkitSpecs2Support {
+  "Baton network" should {
+    "have correct state for 1st node" in new AkkaTestkitSpecs2Support {
         within(1 second) {
-          val probe1 = TestProbe()
-          val act = system.actorOf(Props(new Actor {
-            var dest1: ActorRef = _
-            
-            def receive = { 
-              case (d1: ActorRef) => dest1 = d1
-              case x => sender ! x;  dest1 ! x 
-            }
-          })) 
- 
-          act ! ((probe1.ref))
-          act ! "hallo"
-          probe1.expectMsg(500 millis, "hallo")
           
-          expectMsgType[String] must be equalTo "hallo"
+          val batonNode1 = system.actorOf(Props(new BatonNode(None, None)))
+          batonNode1 ! Join()
+
+          expectMsgPF() {
+            case ParentForJoinFound(parentForJoin: ActorRef, assignedLeftChild: Boolean, parentState: BatonNodeState) => 
+              parentState.level==0 && parentState.number==1 && parentState.parent==None && parentState.leftChild==None && parentState.rightChild==None && parentState.leftAdjacent==None && parentState.rightAdjacent==None && parentState.leftRoutingTable.size==0 && parentState.rightRoutingTable.size==0
+            case _ => false  
+          }
+          expectNoMsg(500 millis)
+          //expectMsgType[ParentForJoinFound](500 millis)
+          //expectMsgType[String] must be equalTo "hallo"
         }
       }
   }
