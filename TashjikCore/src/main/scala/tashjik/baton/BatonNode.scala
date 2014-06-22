@@ -21,7 +21,6 @@ case class NewChildCreated(assignedLeftChild: Boolean, child: ActorRef)
 		
 class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: ActorRef) extends Actor {
   implicit val timeout = Timeout(35 seconds)
-  
   val log = Logging(context.system, this)
 
   var parent        = None : Option[ActorRef]
@@ -32,28 +31,29 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: ActorRef) extends Acto
   
   val leftRoutingTable  = MutableList[RoutingTableEntry]()
   val rightRoutingTable = MutableList[RoutingTableEntry]()
+  var (level, number) = (-1, -1)
   
-  var (level, number) = bootstrapNode match {
-    case None => {
-      (0, 1)
-    }
-    case Some(batonNode) => {
+  bootstrapNode match {
+    case None => level = 0; number = 1
+    case Some(batonNode) => 
       val future: Future[ParentForJoinFound] = ask(batonNode, Join()).mapTo[ParentForJoinFound]
-    	future onComplete {
-    		case Success(parentForJoinFound)  => {
-    		  parent = Some(parentForJoinFound.parentForJoin)
-    		  if(parentForJoinFound.assignedLeftChild){
-     			  leftAdjacent = parentForJoinFound.parentState.leftAdjacent
-    		      rightAdjacent = Some(parentForJoinFound.parentForJoin)
-    		  }
-    		  else {
-    			  rightAdjacent = parentForJoinFound.parentState.rightAdjacent
-    			  leftAdjacent = Some(parentForJoinFound.parentForJoin)
-    		  }
+      future onComplete {
+      	case Success(parentForJoinFound)  => {
+      		parent = Some(parentForJoinFound.parentForJoin)
+    		level = parentForJoinFound.parentState.level + 1
+    		  
+    		if(parentForJoinFound.assignedLeftChild) {
+    			leftAdjacent = parentForJoinFound.parentState.leftAdjacent
+    		    rightAdjacent = Some(parentForJoinFound.parentForJoin)
+    		    number = parentForJoinFound.parentState.number*2 - 1
     		}
-    		case Failure(failure) => throw new Exception()
+    		else {
+    		    rightAdjacent = parentForJoinFound.parentState.rightAdjacent
+    			leftAdjacent = Some(parentForJoinFound.parentForJoin)
+    			number = parentForJoinFound.parentState.number*2
+    		}
     	}
-        (-1, -1)
+    	case Failure(failure) => throw new Exception()
     }
   }
   
