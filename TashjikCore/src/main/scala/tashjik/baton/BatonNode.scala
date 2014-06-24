@@ -17,7 +17,7 @@ case class BatonNodeState(level: Int, number: Int, parent: Option[ActorRef], lef
 		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef],
 		leftRoutingTable: Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry])
 case class NewChildCreated(isUdateForAdjacentNodes: Boolean, assignedLeftChild: Boolean, childLevel: Int, childNumber: Int, child: ActorRef)		
-	
+case class GetState()	
 
 class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) extends Actor {
   implicit val timeout = Timeout(35 seconds)
@@ -52,6 +52,19 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
     			leftAdjacent = Some(parentForJoinFound.parentForJoin)
     			number = parentForJoinFound.parentState.number*2
     		}
+      		var a = BigInt(number)
+      		var i = 0
+      		while (a>0)
+      		{
+      			a = a - BigInt(2).pow(i)
+      			i=i+1
+      			val parentLevelRTNodeNumber: Int = (a % 2 == 0) match {
+      			  case true => (a/2).toInt
+      			  case false => ((a+1)/2).toInt
+      			}
+      			  // populate kids as well
+      			  leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(parentLevelRTNodeNumber).batonNode, None, None, -1, -1))
+      		}
     	}
     	case Failure(failure) => throw new Exception()
     }
