@@ -15,7 +15,7 @@ case class Join()
 case class ParentForJoinFound(parentForJoin: ActorRef, assignedLeftChild: Boolean, parentState: BatonNodeState)
 case class BatonNodeState(level: Int, number: Int, parent: Option[ActorRef], leftChild: Option[ActorRef], 
 		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef],
-		leftRoutingTable: List[RoutingTableEntry], rightRoutingTable: List[RoutingTableEntry])
+		leftRoutingTable: Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry])
 case class NewChildCreated(isUdateForAdjacentNodes: Boolean, assignedLeftChild: Boolean, childLevel: Int, childNumber: Int, child: ActorRef)		
 	
 
@@ -92,8 +92,8 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
    	case Join() => {
    	  log.info("Join msg received")
    	  
-   	  val leftRoutingTableFull = leftRoutingTable.filter(_.batonNode==None).size==0
-   	  val rightRoutingTableFull = rightRoutingTable.filter(_.batonNode==None).size==0
+   	  val leftRoutingTableFull = leftRoutingTable.size==0
+   	  val rightRoutingTableFull = rightRoutingTable.size==0
    	  
    	  if(leftRoutingTableFull && rightRoutingTableFull && (leftChild==None || rightChild==None))
    	  {
@@ -101,7 +101,7 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
    	    
    	    val isLeftChildToBeAssigned: Boolean = leftChild==None
    	    sender ! ParentForJoinFound(context.self, isLeftChildToBeAssigned, BatonNodeState(level, number, parent, leftChild, rightChild, 
-      		leftAdjacent, rightAdjacent, leftRoutingTable.toList, rightRoutingTable.toList))
+      		leftAdjacent, rightAdjacent, leftRoutingTable.toMap, rightRoutingTable.toMap))
       		
       	val childNumber = isLeftChildToBeAssigned match {
    	      case true => number*2 - 1
@@ -128,11 +128,11 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
    	    }	
    	    
    	    leftRoutingTable.foreach( leftRoutingTableEntry => {
-   	      sendChildNotificationToRTChildren(leftRoutingTableEntry.leftChild, leftRoutingTableEntry.rightChild, isLeftChildToBeAssigned, level+1, childNumber, sender) 
+   	      sendChildNotificationToRTChildren(leftRoutingTableEntry._2.leftChild, leftRoutingTableEntry._2.rightChild, isLeftChildToBeAssigned, level+1, childNumber, sender) 
    	    })
       	
    	    rightRoutingTable.foreach( rightRoutingTableEntry => {
-   	    	sendChildNotificationToRTChildren(rightRoutingTableEntry.leftChild, rightRoutingTableEntry.rightChild, isLeftChildToBeAssigned, level+1, childNumber, sender) 
+   	    	sendChildNotificationToRTChildren(rightRoutingTableEntry._2.leftChild, rightRoutingTableEntry._2.rightChild, isLeftChildToBeAssigned, level+1, childNumber, sender) 
      	})
 
    	    
@@ -149,11 +149,11 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
    	    }	
    	    else
    	    {
-   	    	var m = leftRoutingTable.find(x => x.leftChild==None || x.rightChild==None)
+   	    	var m = leftRoutingTable.find(x => x._2.leftChild==None || x._2.rightChild==None)
    	    	if(m==None)
-   	    		m = rightRoutingTable.find(x => x.leftChild==None || x.rightChild==None)
+   	    		m = rightRoutingTable.find(x => x._2.leftChild==None || x._2.rightChild==None)
    	    	m match {
-   	    	  case Some(routingTable) => routingTable.batonNode forward Join()
+   	    	  case Some(routingTable) => routingTable._2.batonNode forward Join()
    	    	  case None => if(leftAdjacent!=None)
    	    		  				leftAdjacent.get forward Join()
    	    	  			   else if(rightAdjacent!=None)
