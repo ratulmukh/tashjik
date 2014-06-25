@@ -60,24 +60,26 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       			i=i+1
       			(a % 2 == 0) match {
       			  case true => 
-      			    if(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get!=None)
-      			    {
-      			       val future: Future[BatonNodeState] = ask(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get, GetState()).mapTo[BatonNodeState]
-      			       val rightChildState = future.value.get
-      			      
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get, rightChildState.get.leftChild, rightChildState.get.rightChild, -1, -1))
-      			    }
-      			    case false =>
-      			    if(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).leftChild.get!=None)
-      			    {
-      			       val future: Future[BatonNodeState] = ask(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild.get, GetState()).mapTo[BatonNodeState]
-      			       val rightChildState = future.value.get
-      			      
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild.get, rightChildState.get.leftChild, rightChildState.get.rightChild, -1, -1))
-      			    }  
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get, None, None, -1, -1))
+   			      case false =>
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild.get, None, None, -1, -1))
        			}
-      			  
        		}
+      		
+      		a = BigInt(number)
+      		i = 0
+      		while (a<=BigInt(2).pow(level))
+      		{
+      			a = a + BigInt(2).pow(i)
+      			i=i+1
+      			(a % 2 == 0) match {
+      			  case true => 
+      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable((a/2).toInt).rightChild.get, None, None, -1, -1))
+   			      case false =>
+      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable(((a+1)/2).toInt).leftChild.get, None, None, -1, -1))
+       			}
+       		}
+      		
     	}
     	case Failure(failure) => throw new Exception()
     }
