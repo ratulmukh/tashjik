@@ -58,13 +58,26 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       		{
       			a = a - BigInt(2).pow(i)
       			i=i+1
-      			val parentLevelRTNodeNumber: Int = (a % 2 == 0) match {
-      			  case true => (a/2).toInt
-      			  case false => ((a+1)/2).toInt
-      			}
-      			  // populate kids as well
-      			  leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(parentLevelRTNodeNumber).batonNode, None, None, -1, -1))
-      		}
+      			(a % 2 == 0) match {
+      			  case true => 
+      			    if(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get!=None)
+      			    {
+      			       val future: Future[BatonNodeState] = ask(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get, GetState()).mapTo[BatonNodeState]
+      			       val rightChildState = future.value.get
+      			      
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get, rightChildState.get.leftChild, rightChildState.get.rightChild, -1, -1))
+      			    }
+      			    case false =>
+      			    if(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).leftChild.get!=None)
+      			    {
+      			       val future: Future[BatonNodeState] = ask(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild.get, GetState()).mapTo[BatonNodeState]
+      			       val rightChildState = future.value.get
+      			      
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild.get, rightChildState.get.leftChild, rightChildState.get.rightChild, -1, -1))
+      			    }  
+       			}
+      			  
+       		}
     	}
     	case Failure(failure) => throw new Exception()
     }
@@ -102,6 +115,9 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       
     }	
     
+    case GetState() => sender ! BatonNodeState(level, number, parent, leftChild, rightChild, leftAdjacent, rightAdjacent, leftRoutingTable.toMap, rightRoutingTable.toMap)
+
+
    	case Join() => {
    	  log.info("Join msg received")
    	  
