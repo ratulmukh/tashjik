@@ -21,8 +21,8 @@ abstract class AkkaTestkitSpecs2Support extends TestKit(ActorSystem())
 class ExampleSpec extends Specification with NoTimeConversions {
   sequential // forces all tests to be run sequentially
  
-  "Baton network" should {
-    "have correct state for 1st node" in new AkkaTestkitSpecs2Support {
+  "Baton node" should {
+    "have correct state if it is 1st node in network" in new AkkaTestkitSpecs2Support {
         within(1 second) {
           
           val batonNode1 = system.actorOf(Props(new BatonNode(None, None)))
@@ -37,8 +37,63 @@ class ExampleSpec extends Specification with NoTimeConversions {
           //expectMsgType[ParentForJoinFound](500 millis)
           //expectMsgType[String] must be equalTo "hallo"
         }
-      }
+    }
+    
+    "join network properly when it gets a parent" in new AkkaTestkitSpecs2Support {
+        within(3 second) {
+          
+          val parentProbe = TestProbe()
+          val parentParentProbe = TestProbe()
+          val parentRightChildProbe = TestProbe()
+          val parentLeftAdjacentProbe = TestProbe()
+          val parentRightAdjacentProbe = TestProbe()
+          
+          val childOneProbe = TestProbe()
+          val childTwoProbe = TestProbe()
+          val childThreeProbe = TestProbe()
+          
+          val isLeftChild = true
+          val parentLevel = 3
+          val parentNumber = 4
+          val level = parentLevel + 1
+          val number = isLeftChild match {
+            case true => parentNumber*2-1
+            case false => parentNumber*2
+          }
+          
+          
+          val parentLeftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
+          val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
+          
+          parentLeftRoutingTable += (parentNumber-1 -> RoutingTableEntry(null, None, Some(childOneProbe.ref), -1, -1))
+          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(null, Some(childTwoProbe.ref), None, -1, -1))
+          
+          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(null, None, None, -1, -1))
+          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(null, None, None, -1, -1))
+          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(null, Some(childThreeProbe.ref), None, -1, -1))
+  
+          
+          
+		  val batonNode1 = system.actorOf(Props(new BatonNode(Some(parentProbe.ref), None)))
+          
+          parentProbe.expectMsg(500 millis, Join()) 
+       
+          
+          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(parentParentProbe.ref), None, 
+		Some(parentRightChildProbe.ref), Some(parentLeftAdjacentProbe.ref), Some(parentRightAdjacentProbe.ref),
+		parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
+		
+          parentRightChildProbe.expectNoMsg(500 millis)
+          parentLeftAdjacentProbe.expectNoMsg(500 millis)
+          parentRightAdjacentProbe.expectNoMsg(500 millis)
+          
+		
+          
+        }
+    }
   }
+  
+  
   
   
 }

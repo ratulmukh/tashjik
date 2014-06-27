@@ -10,7 +10,7 @@ import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
-case class RoutingTableEntry(batonNode: ActorRef, leftChild: Option[ActorRef], rightChild: Option[ActorRef], lowerBound: Int, upperBound: Int)
+case class RoutingTableEntry(batonNode: Option[ActorRef], leftChild: Option[ActorRef], rightChild: Option[ActorRef], lowerBound: Int, upperBound: Int)
 case class Join()
 case class ParentForJoinFound(parentForJoin: ActorRef, assignedLeftChild: Boolean, parentState: BatonNodeState)
 case class BatonNodeState(level: Int, number: Int, parent: Option[ActorRef], leftChild: Option[ActorRef], 
@@ -60,9 +60,9 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       			i=i+1
       			(a % 2 == 0) match {
       			  case true => 
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild.get, None, None, -1, -1))
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild.get, None, None, -1, -1))
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
       		
@@ -74,9 +74,9 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       			i=i+1
       			(a % 2 == 0) match {
       			  case true => 
-      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable((a/2).toInt).rightChild.get, None, None, -1, -1))
+      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable((a/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable(((a+1)/2).toInt).leftChild.get, None, None, -1, -1))
+      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable(((a+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
       		
@@ -105,12 +105,12 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
         if(childNumber > number)
         {
         	val j = (math.log(childNumber-number)/math.log(2) + 1).toInt
-        	rightRoutingTable += (j -> RoutingTableEntry(child, None, None, -1, -1))
+        	rightRoutingTable += (j -> RoutingTableEntry(Some(child), None, None, -1, -1))
         }
         else
         {
             val j = (math.log(number-childNumber)/math.log(2) + 1).toInt
-        	leftRoutingTable += (j -> RoutingTableEntry(child, None, None, -1, -1))
+        	leftRoutingTable += (j -> RoutingTableEntry(Some(child), None, None, -1, -1))
         }
         
       }
@@ -184,7 +184,7 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
    	    	if(m==None)
    	    		m = rightRoutingTable.find(x => x._2.leftChild==None || x._2.rightChild==None)
    	    	m match {
-   	    	  case Some(routingTable) => routingTable._2.batonNode forward Join()
+   	    	  case Some(routingTable) => routingTable._2.batonNode.get forward Join()
    	    	  case None => if(leftAdjacent!=None)
    	    		  				leftAdjacent.get forward Join()
    	    	  			   else if(rightAdjacent!=None)
