@@ -47,11 +47,9 @@ class ExampleSpec extends Specification with NoTimeConversions {
         within(3 second) {
           
           val parentProbe = TestProbe()
-          val parentParentProbe = TestProbe()
-          val parentRightChildProbe = TestProbe()
-          val parentLeftAdjacentProbe = TestProbe()
-          val parentRightAdjacentProbe = TestProbe()
-          
+          val expectNothingProbe = TestProbe()
+          val parentsLeftAdjacentProbe = TestProbe()
+              
           val childOneProbe = TestProbe()
           val childTwoProbe = TestProbe()
           val childThreeProbe = TestProbe()
@@ -83,13 +81,22 @@ class ExampleSpec extends Specification with NoTimeConversions {
           parentProbe.expectMsg(500 millis, Join()) 
        
           
-          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(parentParentProbe.ref), None, 
-		Some(parentRightChildProbe.ref), Some(parentLeftAdjacentProbe.ref), Some(parentRightAdjacentProbe.ref),
+          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
+		Some(expectNothingProbe.ref), Some(parentsLeftAdjacentProbe.ref), Some(expectNothingProbe.ref),
 		parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
 		
-          parentRightChildProbe.expectNoMsg(500 millis)
-          parentLeftAdjacentProbe.expectNoMsg(500 millis)
-          parentRightAdjacentProbe.expectNoMsg(500 millis)
+          expectNothingProbe.expectNoMsg(500 millis)
+          
+          batonNode1 ! GetState()
+
+          expectMsgPF() {
+            case BatonNodeState(level1: Int, number1: Int, parent: Option[ActorRef], leftChild: Option[ActorRef], 
+		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef],
+		leftRoutingTable: Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry]) => 
+              level==level1 && number==number1 && parent.get==parentProbe.ref && leftChild==None && rightChild==None && leftAdjacent.get==parentsLeftAdjacentProbe.ref && rightAdjacent.get==parentProbe.ref 
+            case _ => false  
+          }
+          
           
 		
           
