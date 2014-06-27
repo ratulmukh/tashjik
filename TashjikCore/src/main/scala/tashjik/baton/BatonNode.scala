@@ -9,6 +9,7 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
+import scala.util.control.Breaks
 
 case class RoutingTableEntry(batonNode: Option[ActorRef], leftChild: Option[ActorRef], rightChild: Option[ActorRef], lowerBound: Int, upperBound: Int)
 case class Join()
@@ -54,32 +55,38 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
     		}
       		var a = BigInt(number)
       		var i = 0
+      		Breaks.breakable {
       		while (a>0)
       		{
       			a = a - BigInt(2).pow(i)
+      			if(a<=0) Breaks.break
       			i=i+1
       			(a % 2 == 0) match {
       			  case true => 
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild, None, None, -1, -1))
+      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(if((a/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
       			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
+      		}
       		
       		a = BigInt(number)
       		i = 0
-      		while (a<=BigInt(2).pow(level))
+      		val a1 = -1
+      		Breaks.breakable {
+      		while (a1<= BigInt(2).pow(level))
       		{
-      			a = a + BigInt(2).pow(i)
+      			val a1 = a + BigInt(2).pow(i)
+      			if(a1>=BigInt(2).pow(level)) Breaks.break
       			i=i+1
-      			(a % 2 == 0) match {
+      			(a1 % 2 == 0) match {
       			  case true => 
-      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable((a/2).toInt).rightChild, None, None, -1, -1))
+      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	rightRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable(((a+1)/2).toInt).leftChild, None, None, -1, -1))
+      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
-      		
+      		}
     	}
     	case Failure(failure) => throw new Exception()
     }

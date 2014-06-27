@@ -1,8 +1,11 @@
 package tashjik.baton
 
+//import org.specs2._
 import org.specs2.mutable._
 import org.specs2.time.NoTimeConversions
- 
+import org.junit.runner.RunWith
+import org.specs2.runner.JUnitRunner
+
 import akka.actor._
 import akka.testkit._
 import scala.concurrent.duration._
@@ -18,6 +21,7 @@ abstract class AkkaTestkitSpecs2Support extends TestKit(ActorSystem())
 
 /* Both Akka and Specs2 add implicit conversions for adding time-related
    methods to Int. Mix in the Specs2 NoTimeConversions trait to avoid a clash. */
+@RunWith(classOf[JUnitRunner])
 class ExampleSpec extends Specification with NoTimeConversions {
   sequential // forces all tests to be run sequentially
  
