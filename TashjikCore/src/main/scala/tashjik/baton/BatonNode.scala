@@ -6,6 +6,7 @@ import scala.collection.mutable.MutableList
 import scala.concurrent.{ Future, ExecutionContext }
 import akka.pattern.ask
 import akka.util.Timeout 
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
@@ -37,9 +38,8 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
   bootstrapNode match {
     case None => level = 0; number = 1
     case Some(batonNode) => 
-      val future: Future[ParentForJoinFound] = ask(batonNode, Join()).mapTo[ParentForJoinFound]
-      future onComplete {
-      	case Success(parentForJoinFound)  => {
+      val parentForJoinFound =   Await.result((batonNode ? Join()), (35 seconds)).asInstanceOf[ParentForJoinFound]
+
       		parent = Some(parentForJoinFound.parentForJoin)
     		level = parentForJoinFound.parentState.level + 1
     		  
@@ -53,30 +53,30 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
     			leftAdjacent = Some(parentForJoinFound.parentForJoin)
     			number = parentForJoinFound.parentState.number*2
     		}
-      		var a = BigInt(number)
+      		val a = BigInt(number)
       		var i = 0
+      		var a1 = a
       		Breaks.breakable {
-      		while (a>0)
+      		while (a1>0)
       		{
-      			a = a - BigInt(2).pow(i)
-      			if(a<=0) Breaks.break
+      			a1 = a - BigInt(2).pow(i)
+      			if(a1<=0) Breaks.break
       			i=i+1
-      			(a % 2 == 0) match {
+      			(a1 % 2 == 0) match {
       			  case true => 
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(if((a/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable((a/2).toInt).rightChild, None, None, -1, -1))
+      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	leftRoutingTable += (a.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a+1)/2).toInt).leftChild, None, None, -1, -1))
+      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
       		}
       		
-      		a = BigInt(number)
       		i = 0
-      		val a1 = -1
+      		a1 = BigInt(-1)
       		Breaks.breakable {
       		while (a1<= BigInt(2).pow(level))
       		{
-      			val a1 = a + BigInt(2).pow(i)
+      			a1 = a + BigInt(2).pow(i)
       			if(a1>=BigInt(2).pow(level)) Breaks.break
       			i=i+1
       			(a1 % 2 == 0) match {
@@ -87,9 +87,12 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
        			}
        		}
       		}
-    	}
-    	case Failure(failure) => throw new Exception()
-    }
+      		log.debug("Left routing table after joining network:")
+      		leftRoutingTable.foreach (keyVal => log.debug("Number=" + keyVal._1.toString))
+      		
+      		log.debug("Right routing table after joining network:")
+      		rightRoutingTable.foreach (keyVal => log.debug("Number=" + keyVal._1.toString))
+    
   }
   
    
@@ -203,6 +206,8 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
    	  } 
    	  
     }
+   	
+   	
    	
   } 
    
