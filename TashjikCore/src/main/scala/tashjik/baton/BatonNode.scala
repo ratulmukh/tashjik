@@ -56,8 +56,11 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       		val a = BigInt(number)
       		var i = 0
       		var a1 = a
-      		Breaks.breakable {
-      		while (a1>0)
+      		
+    if(parentForJoinFound.assignedLeftChild)
+    {
+    	Breaks.breakable {
+    		while (a1>0)
       		{
       			a1 = a - BigInt(2).pow(i)
       			if(a1<=0) Breaks.break
@@ -66,14 +69,14 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       			  case true => 
       			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(parentForJoinFound.parentState.leftRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
+      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
-      		}
+      	}
       		
-      		i = 0
-      		a1 = BigInt(-1)
-      		Breaks.breakable {
+      	i = 0
+      	a1 = a
+      	Breaks.breakable {
       		while (a1<= BigInt(2).pow(level))
       		{
       			a1 = a + BigInt(2).pow(i)
@@ -83,10 +86,47 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       			  case true => 
       			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
+      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else  parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
-      		}
+      	}
+    }
+    else {
+        i = 0
+      	a1 = a
+    	Breaks.breakable {
+    		while (a1>0)
+      		{
+      			a1 = a - BigInt(2).pow(i)
+      			if(a1<=0) Breaks.break
+      			i=i+1
+      			(a1 % 2 == 0) match {
+      			  case true => 
+      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.leftChild else parentForJoinFound.parentState.leftRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
+   			      case false =>
+      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.leftChild else parentForJoinFound.parentState.leftRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
+       			}
+       		}
+      	}
+      		
+      	i = 0
+      	a1 = BigInt(-1)
+      	Breaks.breakable {
+      		while (a1< BigInt(2).pow(level))
+      		{
+      			a1 = a + BigInt(2).pow(i)
+      			if(a1>BigInt(2).pow(level)) Breaks.break
+      			i=i+1
+      			(a1 % 2 == 0) match {
+      			  case true => 
+      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
+   			      case false =>
+      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.leftChild else parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
+       			}
+       		}
+      	}
+      
+    }
       		log.debug("Left routing table after joining network:")
       		leftRoutingTable.foreach (keyVal => log.debug("Number=" + keyVal._1.toString))
       		
