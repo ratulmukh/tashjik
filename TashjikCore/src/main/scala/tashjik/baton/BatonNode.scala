@@ -121,7 +121,7 @@ class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) exte
       			  case true => 
       			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
    			      case false =>
-      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.leftChild else parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
+      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
        			}
        		}
       	}

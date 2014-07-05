@@ -71,7 +71,7 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
           
           parentLeftRoutingTable += (parentNumber-1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childOneProbe.ref), Some(childTwoProbe.ref), -1, -1))
-          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childThreeProbe.ref), -1, -1))
+          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1))
           
           parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childFiveProbe.ref), None, -1, -1))
           parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childSixProbe.ref), None, -1, -1))
@@ -94,13 +94,13 @@ class ExampleSpec extends Specification with  NoTimeConversions {
             		leftRoutingTable1: Map[Int, RoutingTableEntry], rightRoutingTable1: Map[Int, RoutingTableEntry]) if 
               level==level1 && number==number1 && parent1.get==parentProbe.ref && leftChild1==None && 
              	rightChild1==None && leftAdjacent1.get==parentsLeftAdjacentProbe.ref && rightAdjacent1.get==parentProbe.ref &&
-              leftRoutingTable1(number-1)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
-              leftRoutingTable1(number-2)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(number-1)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(number-2)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
               leftRoutingTable1(number-4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) &&
               rightRoutingTable1(number+1)==RoutingTableEntry(Some(childFourProbe.ref), None, None, -1, -1) &&
               rightRoutingTable1(number+2)==RoutingTableEntry(Some(childFiveProbe.ref), None, None, -1, -1) &&
               rightRoutingTable1(number+4)==RoutingTableEntry(Some(childSixProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+4)==RoutingTableEntry(Some(childSevenProbe.ref), None, None, -1, -1) =>
+              rightRoutingTable1(number+8)==RoutingTableEntry(Some(childSevenProbe.ref), None, None, -1, -1) =>
             
           }
           
@@ -115,11 +115,15 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           
           val parentProbe = TestProbe()
           val expectNothingProbe = TestProbe()
-          val parentsLeftAdjacentProbe = TestProbe()
+          val parentsRightAdjacentProbe = TestProbe()
               
           val childOneProbe = TestProbe()
           val childTwoProbe = TestProbe()
           val childThreeProbe = TestProbe()
+          val childFourProbe = TestProbe()
+          val childFiveProbe = TestProbe()
+          val childSixProbe = TestProbe()
+          val childSevenProbe = TestProbe()
           
           val isLeftChild = false
           val parentLevel = 3
@@ -133,18 +137,18 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           val parentLeftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
           val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
           
-          parentLeftRoutingTable += (parentNumber-1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childOneProbe.ref), Some(childTwoProbe.ref), -1, -1))
-          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1))
+          parentLeftRoutingTable += (parentNumber-1 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childTwoProbe.ref), -1, -1))
+          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childThreeProbe.ref), -1, -1))
           
-          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, None, -1, -1))
-          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, None, -1, -1))
-          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1))
+          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childFourProbe.ref), Some(childFiveProbe.ref), -1, -1))
+          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childSixProbe.ref), -1, -1))
+          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childSevenProbe.ref), -1, -1))
   
           val batonNode1 = system.actorOf(Props(new BatonNode(Some(parentProbe.ref), None)))
           parentProbe.expectMsg(500 millis, Join()) 
          
-          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
-		     Some(expectNothingProbe.ref), Some(parentsLeftAdjacentProbe.ref), Some(expectNothingProbe.ref),
+          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), Some(childOneProbe.ref), 
+		     Some(expectNothingProbe.ref),  Some(expectNothingProbe.ref), Some(parentsRightAdjacentProbe.ref),
 		     parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
 		
           expectNothingProbe.expectNoMsg(500 millis)
@@ -152,16 +156,18 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           batonNode1 ! GetState()
 
           expectMsgPF() {
-            case BatonNodeState(level1: Int, number1: Int, parent: Option[ActorRef], leftChild: Option[ActorRef], 
-            		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef],
-            		leftRoutingTable: Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry]) if
-              level==level1 && number==number1 && parent.get==parentProbe.ref && leftChild==None && 
-             	rightChild==None && leftAdjacent.get==parentsLeftAdjacentProbe.ref && rightAdjacent.get==parentProbe.ref &&
-              leftRoutingTable(number-1)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
-              leftRoutingTable(number-2)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable(number+1)==RoutingTableEntry(None, None, None, -1, -1) &&
-              rightRoutingTable(number+2)==RoutingTableEntry(None, None, None, -1, -1) &&
-              rightRoutingTable(number+4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) =>
+            case BatonNodeState(level1: Int, number1: Int, parent: Option[ActorRef], leftChild1: Option[ActorRef], 
+            		rightChild1: Option[ActorRef], leftAdjacent1: Option[ActorRef], rightAdjacent1: Option[ActorRef],
+            		leftRoutingTable1: Map[Int, RoutingTableEntry], rightRoutingTable1: Map[Int, RoutingTableEntry]) if
+              level==level1 && number==number1 && parent.get==parentProbe.ref && leftChild1==None && 
+             	rightChild1==None && leftAdjacent1.get==parentProbe.ref && rightAdjacent1.get==parentsRightAdjacentProbe.ref &&
+              leftRoutingTable1(number-1)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(number-2)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(number-4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(number+1)==RoutingTableEntry(Some(childFourProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(number+2)==RoutingTableEntry(Some(childFiveProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(number+4)==RoutingTableEntry(Some(childSixProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(number+8)==RoutingTableEntry(Some(childSevenProbe.ref), None, None, -1, -1) =>  
             
           }
           
