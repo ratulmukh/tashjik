@@ -17,7 +17,18 @@ case class Join()
 case class ParentForJoinFound(parentForJoin: ActorRef, assignedLeftChild: Boolean, parentState: BatonNodeState)
 case class BatonNodeState(level: Int, number: Int, parent: Option[ActorRef], leftChild: Option[ActorRef], 
 		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef],
-		leftRoutingTable: Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry])
+		leftRoutingTable:
+
+
+
+
+
+
+
+
+
+
+ Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry])
 case class NewChildCreated(isUdateForAdjacentNodes: Boolean, assignedLeftChild: Boolean, childLevel: Int, childNumber: Int, child: ActorRef)		
 case class GetState()	
 
