@@ -1,1 +1,0 @@
-web: target/universal/stage/bin/tashjiksim  -Dhttp.port=${PORT} -Dversion=exp
