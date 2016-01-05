@@ -11,262 +11,304 @@ import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 import scala.util.control.Breaks
-
-case class RoutingTableEntry(batonNode: Option[ActorRef], leftChild: Option[ActorRef], rightChild: Option[ActorRef], lowerBound: Int, upperBound: Int)
-case class Join()
-case class ParentForJoinFound(parentForJoin: ActorRef, assignedLeftChild: Boolean, parentState: BatonNodeState)
-case class BatonNodeState(level: Int, number: Int, parent: Option[ActorRef], leftChild: Option[ActorRef], 
-		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef],
-		leftRoutingTable:
+import ChildPosition._
+import scala.collection.mutable.ArrayBuffer
 
 
 
+//--------ENUMS-------------------------------------------------------
+sealed trait RoutingTableType
+case object LeftRoutingTable extends RoutingTableType
+case object RightRoutingTable extends RoutingTableType
+//--------------------------------------------------------------------   
 
+case class RoutingTableEntry(index: Integer, batonNode: Option[ActorRef], leftChild: Option[ActorRef], rightChild: Option[ActorRef], lowerBound: Int, upperBound: Int)
 
+case class JoinMsg()
+case class ParentForJoinFoundMsg(parent: ActorRef, assignedChildPosition: ChildPosition, parentState: BatonNodeStateMsg)
+case class BatonNodeStateMsg(level: BigInt, number: BigInt, parent: Option[ActorRef], leftChild: Option[ActorRef], 
+		rightChild: Option[ActorRef], leftAdjacent: Option[ActorRef], rightAdjacent: Option[ActorRef], 
+		leftRoutingTable: ArrayBuffer[RoutingTableEntry], rightRoutingTable: ArrayBuffer[RoutingTableEntry])
+case class ChildCreatedMsg(isUdateForAdjacentNodes: Boolean, assignedChildPosition: ChildPosition, childLevel: BigInt, childNumber: BigInt, child: ActorRef)		
+case class GetStateMsg()	
 
-
-
-
-
- Map[Int, RoutingTableEntry], rightRoutingTable: Map[Int, RoutingTableEntry])
-case class NewChildCreated(isUdateForAdjacentNodes: Boolean, assignedLeftChild: Boolean, childLevel: Int, childNumber: Int, child: ActorRef)		
-case class GetState()	
 
 class BatonNode(bootstrapNode: Option[ActorRef], nodeMgr: Option[ActorRef]) extends Actor {
+
   implicit val timeout = Timeout(35 seconds)
   val log = Logging(context.system, this)
 
+  // ---------BATON node state-------------------------------------------------------
   var parent        = None : Option[ActorRef]
   var leftChild     = None : Option[ActorRef]
   var rightChild    = None : Option[ActorRef]
   var leftAdjacent  = None : Option[ActorRef]
   var rightAdjacent = None : Option[ActorRef]
   
-  val leftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
-  val rightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
-  var (level, number) = (-1, -1)
+  var (level, number) = (BigInt(-1), BigInt(-1))
   
-  bootstrapNode match {
-    case None => level = 0; number = 1
-    case Some(batonNode) => 
-      val parentForJoinFound =   Await.result((batonNode ? Join()), (35 seconds)).asInstanceOf[ParentForJoinFound]
-
-      		parent = Some(parentForJoinFound.parentForJoin)
-    		level = parentForJoinFound.parentState.level + 1
-    		  
-    		if(parentForJoinFound.assignedLeftChild) {
-    			leftAdjacent = parentForJoinFound.parentState.leftAdjacent
-    		    rightAdjacent = Some(parentForJoinFound.parentForJoin)
-    		    number = parentForJoinFound.parentState.number*2 - 1
-    		}
-    		else {
-    		    rightAdjacent = parentForJoinFound.parentState.rightAdjacent
-    			leftAdjacent = Some(parentForJoinFound.parentForJoin)
-    			number = parentForJoinFound.parentState.number*2
-    		}
-      		val a = BigInt(number)
-      		var i = 0
-      		var a1 = a
-      		
-    if(parentForJoinFound.assignedLeftChild)
-    {
-    	Breaks.breakable {
-    		while (a1>0)
-      		{
-      			a1 = a - BigInt(2).pow(i)
-      			if(a1<=0) Breaks.break
-      			i=i+1
-      			(a1 % 2 == 0) match {
-      			  case true => 
-      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
-   			      case false =>
-      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.leftRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
-       			}
-       		}
-      	}
-      		
-      	i = 0
-      	a1 = a
-      	Breaks.breakable {
-      		while (a1<= BigInt(2).pow(level))
-      		{
-      			a1 = a + BigInt(2).pow(i)
-      			if(a1>=BigInt(2).pow(level)) Breaks.break
-      			i=i+1
-      			(a1 % 2 == 0) match {
-      			  case true => 
-      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
-   			      case false =>
-      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else  parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
-       			}
-       		}
-      	}
-    }
-    else {
-        i = 0
-      	a1 = a
-    	Breaks.breakable {
-    		while (a1>0)
-      		{
-      			a1 = a - BigInt(2).pow(i)
-      			if(a1<=0) Breaks.break
-      			i=i+1
-      			(a1 % 2 == 0) match {
-      			  case true => 
-      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.leftChild else parentForJoinFound.parentState.leftRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
-   			      case false =>
-      			  	leftRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.leftChild else parentForJoinFound.parentState.leftRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
-       			}
-       		}
-      	}
-      		
-      	i = 0
-      	a1 = BigInt(-1)
-      	Breaks.breakable {
-      		while (a1< BigInt(2).pow(level))
-      		{
-      			a1 = a + BigInt(2).pow(i)
-      			if(a1>BigInt(2).pow(level)) Breaks.break
-      			i=i+1
-      			(a1 % 2 == 0) match {
-      			  case true => 
-      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if((a1/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable((a1/2).toInt).rightChild, None, None, -1, -1))
-   			      case false =>
-      			  	rightRoutingTable += (a1.toInt -> RoutingTableEntry(if(((a1+1)/2).toInt==parentForJoinFound.parentState.number) parentForJoinFound.parentState.rightChild else parentForJoinFound.parentState.rightRoutingTable(((a1+1)/2).toInt).leftChild, None, None, -1, -1))
-       			}
-       		}
-      	}
-      
-    }
-      		log.debug("Left routing table after joining network:")
-      		leftRoutingTable.foreach (keyVal => log.debug("Number=" + keyVal._1.toString))
-      		
-      		log.debug("Right routing table after joining network:")
-      		rightRoutingTable.foreach (keyVal => log.debug("Number=" + keyVal._1.toString))
+  val leftRoutingTable  = ArrayBuffer[RoutingTableEntry]()
+  val rightRoutingTable  = ArrayBuffer[RoutingTableEntry]()
+  //----------------------------------------------------------------------------------
     
+  bootstrap()
+  
+  
+  
+  def receive = {
+    case ChildCreatedMsg(isUdateForAdjacentNodes: Boolean, assignedChildPosition: ChildPosition, childLevel: BigInt, childNumber: BigInt, child: ActorRef) => {
+      newChildCreatedMsg(isUdateForAdjacentNodes, assignedChildPosition, childLevel, childNumber, child)
+    }	
+    case GetStateMsg() => sender ! BatonNodeStateMsg(level, number, parent, leftChild, rightChild, leftAdjacent, rightAdjacent, leftRoutingTable, rightRoutingTable)
+   	case JoinMsg() => join()
+   	case _ => assert(false)   
+  } 
+  
+  def bootstrap() {
+    bootstrapNode match {
+      case None => initFirstNodeInNetwork()
+      case Some(batonNode) => { 
+        //retrieve parent state
+        val parentForJoinFoundMsg =   Await.result((batonNode ? JoinMsg()), (35 seconds)).asInstanceOf[ParentForJoinFoundMsg]
+      
+        //set state based on parent's state ------------------------------------------------------------
+        parent = Some(parentForJoinFoundMsg.parent)
+    	  level = parentForJoinFoundMsg.parentState.level + 1
+    		  
+    	  parentForJoinFoundMsg.assignedChildPosition match {
+          case LeftChild => {
+            leftAdjacent = parentForJoinFoundMsg.parentState.leftAdjacent
+    		    rightAdjacent = Some(parentForJoinFoundMsg.parent)
+    		    number = parentForJoinFoundMsg.parentState.number*2 - 1
+          }
+          case RightChild => {
+            rightAdjacent = parentForJoinFoundMsg.parentState.rightAdjacent
+      		  leftAdjacent = Some(parentForJoinFoundMsg.parent)
+    	  	  number = parentForJoinFoundMsg.parentState.number*2
+          }
+        }
+      
+        setupRoutingTable(LeftRoutingTable, parentForJoinFoundMsg.parentState)
+        setupRoutingTable(RightRoutingTable, parentForJoinFoundMsg.parentState)
+
+        log.info("Left routing table after joining network:")
+     		leftRoutingTable.foreach (entry => log.info("Entry=" + entry.toString))
+   	  	log.info("Right routing table after joining network:")
+   		  rightRoutingTable.foreach (entry => log.info("Entry=" + entry.toString))
+        //---------------------------------------------------------------------------------------------
+      }     
+    }
   }
   
-   
-   def receive = {
-    case NewChildCreated(isUdateForAdjacentNodes: Boolean, assignedLeftChild: Boolean, childLevel: Int, childNumber: Int, child: ActorRef) => {
+  def setupRoutingTable(routingTableType: RoutingTableType, parentState: BatonNodeStateMsg) {
+
+    var routingTable = routingTableType match {
+      case LeftRoutingTable  => leftRoutingTable
+      case RightRoutingTable => rightRoutingTable
+    }
     
-      if(isUdateForAdjacentNodes)
-      {
-    	  if(assignedLeftChild)
-    		  rightAdjacent = Some(child)
-    	  else
-              leftAdjacent = Some(child)
-      }
-      else 
-      {
-        //update is for routing table children to update their routing tables to point to new kid on the block 
-        assert(level==childLevel)
-        assert(number!=childNumber)
+    var index = 0
+    var siblingNumber = number
+    var siblingParentNumber = number         //this is the number of the sibling's parent
+    var continueLoop = true
+    
+    while (continueLoop)
+    {
+      siblingNumber = calculateSiblingNumber(index, routingTableType)
+      siblingParentNumber = if (siblingNumber % 2 == 0) siblingNumber/2  else (siblingNumber/2 + 1)          
         
+      val extractedSiblingNode = extractSiblingNodeFromParentState(index, parentState.number, siblingNumber, siblingParentNumber, parentState, routingTableType)
+      routingTable += RoutingTableEntry(index, extractedSiblingNode, None, None, -1, -1)
+        
+      //updating loop parameters
+    	index = index + 1
+    	if ((routingTableType==LeftRoutingTable && siblingNumber<=0) ||
+    	    (routingTableType==RightRoutingTable && siblingNumber> BigInt(2).pow(level.intValue())))
+    	  continueLoop = false
+    	
+    }
+  }
+  
+  def calculateSiblingNumber(index: Int, routingTableType: RoutingTableType): BigInt = {
+    routingTableType match {
+      case LeftRoutingTable => number - BigInt(2).pow(index)
+      case RightRoutingTable =>   number + BigInt(2).pow(index)
+    }
+  }
+  
+  
+  def extractSiblingNodeFromParentState(index: Integer, parentNumber: BigInt, siblingNumber: BigInt, siblingParentNumber: BigInt, parentState: BatonNodeStateMsg, routingTableType: RoutingTableType): Option[ActorRef] = {
+    if(siblingParentNumber == parentState.number) {     //sibling and this node have the same parent; so no need to extract from routing table
+      if(siblingNumber%2 == 0)
+        parentState.rightChild
+      else
+        parentState.leftChild
+    }
+    else {                                              //sibling needs to be extracted from the routing table
+      val routingTable: ArrayBuffer[RoutingTableEntry] =  routingTableType match {
+        case LeftRoutingTable => parentState.leftRoutingTable
+        case RightRoutingTable =>   parentState.rightRoutingTable
+      }
+
+      val routingTableIndex = (scala.math.log10((parentNumber - siblingParentNumber).abs.doubleValue())/scala.math.log10(2)).intValue()
+
+      log.debug(" parentNumber=" + parentNumber + " siblingParentNumber=" + siblingParentNumber + " routingTableIndex = " + routingTableIndex)
+      routingTable.foreach { entry => log.debug(entry.toString) }
+      
+      val foundSiblingArray = routingTable.filter { r: RoutingTableEntry => r.index == routingTableIndex }
+      
+      assert(foundSiblingArray.size<2)
+      
+      if(foundSiblingArray.size==0)
+        None
+      else {  
+        if(siblingNumber%2 == 0)
+          foundSiblingArray(0).rightChild
+        else
+          foundSiblingArray(0).leftChild
+      }    
+    }
+  }
+  
+  
+  
+  
+  
+  
+  def newChildCreatedMsg(isUdateForAdjacentNodes: Boolean, assignedChildPosition: ChildPosition, childLevel: BigInt, childNumber: BigInt, child: ActorRef) {
+    if(isUdateForAdjacentNodes)
+    {
+     if(assignedChildPosition==LeftChild)
+       rightAdjacent = Some(child)
+     else
+       leftAdjacent = Some(child)
+    }
+    else 
+    {
+      //update is for routing table children to update their routing tables to point to new kid on the block 
+      assert(level==childLevel)
+      assert(number!=childNumber)
+      
         if(childNumber > number)
         {
-        	val j = (math.log(childNumber-number)/math.log(2) + 1).toInt
-        	rightRoutingTable += (j -> RoutingTableEntry(Some(child), None, None, -1, -1))
+        	val j = (math.log((childNumber-number).doubleValue())/math.log(2) + 1).toInt
+        	rightRoutingTable += RoutingTableEntry(j, Some(child), None, None, -1, -1)
         }
         else
         {
-            val j = (math.log(number-childNumber)/math.log(2) + 1).toInt
-        	leftRoutingTable += (j -> RoutingTableEntry(Some(child), None, None, -1, -1))
+            val j = (math.log((childNumber-number).doubleValue())/math.log(2) + 1).toInt
+        	leftRoutingTable += RoutingTableEntry(j, Some(child), None, None, -1, -1)
         }
-        
       }
-      
-    }	
-    
-    case GetState() => sender ! BatonNodeState(level, number, parent, leftChild, rightChild, leftAdjacent, rightAdjacent, leftRoutingTable.toMap, rightRoutingTable.toMap)
-
-
-   	case Join() => {
-   	  log.info("Join msg received")
+  }
+  
+ 
+  
+  def join() {
+     log.info("Join msg received")
    	  
    	  val leftRoutingTableFull = leftRoutingTable.size==0
    	  val rightRoutingTableFull = rightRoutingTable.size==0
    	  
+   	  
+   	  //Node join algorithm from BATON paper: Algorithm 1 Join(node n)
    	  if(leftRoutingTableFull && rightRoutingTableFull && (leftChild==None || rightChild==None))
+   	    acceptNewNodeAsChild()
+   	  else 
    	  {
-   	    //accept new node as child
-   	    
-   	    val isLeftChildToBeAssigned: Boolean = leftChild==None
-   	    sender ! ParentForJoinFound(context.self, isLeftChildToBeAssigned, BatonNodeState(level, number, parent, leftChild, rightChild, 
-      		leftAdjacent, rightAdjacent, leftRoutingTable.toMap, rightRoutingTable.toMap))
+   	    if(!leftRoutingTableFull || !rightRoutingTableFull)
+   	      forward_JOIN_Request(parent)
+   	    else
+   	    {
+   	      findSomeNodeNotHavingEnoughChildren() match {
+   	        case None       => forward_JOIN_RequestToEither(leftAdjacent, rightAdjacent)
+   	        case Some(node) => forward_JOIN_Request(Some(node))
+   	      }  
+   	    }
+   	  } 
+  }
+   
+  def forward_JOIN_RequestToEither(node1: Option[ActorRef], node2: Option[ActorRef]) {
+    if(node1!=None)
+   	  forward_JOIN_Request(node1)
+   	else if(node2!=None)
+   	  forward_JOIN_Request(node2)
+   	else 
+   	  throw new Exception()
+  }
+   
+  def findSomeNodeNotHavingEnoughChildren(): Option[ActorRef] = {
+    var m = leftRoutingTable.find(entry => entry.leftChild==None || entry.rightChild==None)
+   	    	if(m==None)
+   	    		m = rightRoutingTable.find(entry => entry.leftChild==None || entry.rightChild==None)
+   	    		
+   	    		m match { 
+   	    	    case None => None
+   	    	    case Some(x) => x.batonNode
+   	    	}
+   	    		
+
+   	    	
+  }
+   
+  def forward_JOIN_Request(node: Option[ActorRef]) {
+    node match {
+   	  case None => throw new Exception()  //what to do in this case?
+   	  case Some(x) => x forward JoinMsg()
+   	}
+  }
+  
+  
+  def initFirstNodeInNetwork() {
+    level = 0 
+    number = 1
+  }
+  
+  def acceptNewNodeAsChild() {
+    
+   	    sender ! ParentForJoinFoundMsg(context.self, if(leftChild==None) LeftChild else RightChild, BatonNodeStateMsg(level, number, parent, leftChild, rightChild, 
+      		leftAdjacent, rightAdjacent, leftRoutingTable, rightRoutingTable))
       		
-      	val childNumber = isLeftChildToBeAssigned match {
+      	val childNumber: BigInt = leftChild==None match {
    	      case true => number*2 - 1
    	      case false => number*2
    	    }
    	    
-      	isLeftChildToBeAssigned match {
+      	leftChild==None match {
    	      case true => {
    	        leftChild = Some(sender)
-   	    	leftAdjacent match {
-   	    		case None =>
-   	    		case Some(batonNode) => batonNode ! NewChildCreated(true, true, level+1, childNumber,  sender)
-   	    	}
-   	    	leftAdjacent = Some(sender)
+   	    	  leftAdjacent match {
+   	    		  case None =>
+   	    		  case Some(batonNode) => batonNode ! ChildCreatedMsg(true, LeftChild, level+1, childNumber,  sender)
+   	    	  }
+   	    	  leftAdjacent = Some(sender)
    	      }
    	      case false => {
    	        rightChild = Some(sender)
-   	    	rightAdjacent match {
-   	    		case None =>
-   	    		case Some(batonNode) => batonNode ! NewChildCreated(true, false, level+1, childNumber, sender)
-   	    	}
-   	    	rightAdjacent = Some(sender)
+   	    	  rightAdjacent match {
+   	    		  case None =>
+   	    		  case Some(batonNode) => batonNode ! ChildCreatedMsg(true, RightChild, level+1, childNumber, sender)
+   	    	  }
+   	    	  rightAdjacent = Some(sender)
    	      }
    	    }	
    	    
    	    leftRoutingTable.foreach( leftRoutingTableEntry => {
-   	      sendChildNotificationToRTChildren(leftRoutingTableEntry._2.leftChild, leftRoutingTableEntry._2.rightChild, isLeftChildToBeAssigned, level+1, childNumber, sender) 
+   	      sendChildNotificationToRTChildren(leftRoutingTableEntry.leftChild, leftRoutingTableEntry.rightChild, if(leftChild==None) LeftChild else RightChild, level+1, childNumber, sender) 
    	    })
       	
    	    rightRoutingTable.foreach( rightRoutingTableEntry => {
-   	    	sendChildNotificationToRTChildren(rightRoutingTableEntry._2.leftChild, rightRoutingTableEntry._2.rightChild, isLeftChildToBeAssigned, level+1, childNumber, sender) 
+   	    	sendChildNotificationToRTChildren(rightRoutingTableEntry.leftChild, rightRoutingTableEntry.rightChild, if(leftChild==None) LeftChild else RightChild, level+1, childNumber, sender) 
      	})
-
-   	    
-   	  }
-   	  else 
-   	  {
-   	    if(!leftRoutingTableFull || !rightRoutingTableFull)
-   	    {
-   	    	//forward JOIN request to parent
-   	    	parent match {
-   	        	case None => throw new Exception()  //what to do in this case?
-   	        	case Some(parent) => parent forward Join()
-   	    	}
-   	    }	
-   	    else
-   	    {
-   	    	var m = leftRoutingTable.find(x => x._2.leftChild==None || x._2.rightChild==None)
-   	    	if(m==None)
-   	    		m = rightRoutingTable.find(x => x._2.leftChild==None || x._2.rightChild==None)
-   	    	m match {
-   	    	  case Some(routingTable) => routingTable._2.batonNode.get forward Join()
-   	    	  case None => if(leftAdjacent!=None)
-   	    		  				leftAdjacent.get forward Join()
-   	    	  			   else if(rightAdjacent!=None)
-   	    		  				rightAdjacent.get forward Join()
-   	    	  			   else throw new Exception()
-   	    	}
-
-   	    }
-   	  } 
-   	  
-    }
-   	
-   	
-   	
-  } 
-   
-  def sendChildNotificationToRTChildren(leftChild: Option[ActorRef], rightChild: Option[ActorRef], isLeftChildAssigned: Boolean, childLevel: Int, childNumber: Int, sender: ActorRef) = {
+    
+  }
+  
+  
+  def sendChildNotificationToRTChildren(leftChild: Option[ActorRef], rightChild: Option[ActorRef], assignedChildPosition: ChildPosition, childLevel: BigInt, childNumber: BigInt, sender: ActorRef) = {
 	   	if(leftChild.isDefined) 
-	   		leftChild.get ! NewChildCreated(false, isLeftChildAssigned, childLevel, childNumber,  sender)
+	   		leftChild.get ! ChildCreatedMsg(false, assignedChildPosition, childLevel, childNumber, sender)
    	    if(rightChild.isDefined)
-   	        rightChild.get ! NewChildCreated(false, isLeftChildAssigned, childLevel, childNumber,  sender)
+   	        rightChild.get ! ChildCreatedMsg(false, assignedChildPosition, childLevel, childNumber, sender)
 
   } 
   

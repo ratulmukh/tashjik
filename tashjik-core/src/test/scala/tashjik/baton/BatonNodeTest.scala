@@ -10,6 +10,11 @@ import akka.actor._
 import akka.testkit._
 import scala.concurrent.duration._
  
+import ChildPosition._
+import scala.collection.mutable.ArrayBuffer
+
+
+
 /* A tiny class that can be used as a Specs2 'context'. */
 abstract class AkkaTestkitSpecs2Support extends TestKit(ActorSystem()) 
                                            with After 
@@ -30,10 +35,10 @@ class ExampleSpec extends Specification with  NoTimeConversions {
         within(1 second) {
           
           val batonNode1 = system.actorOf(Props(new BatonNode(None, None)))
-          batonNode1 ! Join()
+          batonNode1 ! JoinMsg()
 
           expectMsgPF() {
-            case ParentForJoinFound(parentForJoin: ActorRef, assignedLeftChild: Boolean, parentState: BatonNodeState) => 
+            case ParentForJoinFoundMsg(parentForJoin: ActorRef, assignedChildPosition: ChildPosition, parentState: BatonNodeStateMsg) => 
               parentState.level==0 && parentState.number==1 && parentState.parent==None && parentState.leftChild==None && parentState.rightChild==None && parentState.leftAdjacent==None && parentState.rightAdjacent==None && parentState.leftRoutingTable.size==0 && parentState.rightRoutingTable.size==0
             case _ => false  
           }
@@ -58,49 +63,49 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           val childSixProbe = TestProbe()
           val childSevenProbe = TestProbe()
           
-          val isLeftChild = true
+          val assignedChildPosition: ChildPosition = LeftChild
           val parentLevel = 3
           val parentNumber = 4
           val level = parentLevel + 1
-          val number = isLeftChild match {
-            case true => parentNumber*2-1
-            case false => parentNumber*2
+          val number = assignedChildPosition match {
+            case LeftChild => parentNumber*2-1
+            case RightChild => parentNumber*2
           }
           
-          val parentLeftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
-          val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
+          val parentLeftRoutingTable  = ArrayBuffer[RoutingTableEntry]()
+          val parentRightRoutingTable = ArrayBuffer[RoutingTableEntry]()
           
-          parentLeftRoutingTable += (parentNumber-1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childOneProbe.ref), Some(childTwoProbe.ref), -1, -1))
-          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1))
+          parentLeftRoutingTable += RoutingTableEntry(0, Some(expectNothingProbe.ref), Some(childOneProbe.ref), Some(childTwoProbe.ref), -1, -1)
+          parentLeftRoutingTable += RoutingTableEntry(1, Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1)
           
-          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childFiveProbe.ref), None, -1, -1))
-          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childSixProbe.ref), None, -1, -1))
-          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childSevenProbe.ref), None, -1, -1))
+          parentRightRoutingTable += RoutingTableEntry(0, Some(expectNothingProbe.ref), Some(childFiveProbe.ref), None, -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(1, Some(expectNothingProbe.ref), Some(childSixProbe.ref), None, -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(2, Some(expectNothingProbe.ref), Some(childSevenProbe.ref), None, -1, -1)
   
           val batonNode1 = system.actorOf(Props(new BatonNode(Some(parentProbe.ref), None)))
-          parentProbe.expectMsg(500 millis, Join()) 
+          parentProbe.expectMsg(500 millis, JoinMsg()) 
          
-          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
+          parentProbe.reply(ParentForJoinFoundMsg(parentProbe.ref, assignedChildPosition, BatonNodeStateMsg(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
 		     Some(childFourProbe.ref), Some(parentsLeftAdjacentProbe.ref), Some(expectNothingProbe.ref),
-		     parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
+		     parentLeftRoutingTable, parentRightRoutingTable)))
 		
           expectNothingProbe.expectNoMsg(500 millis)
           
-          batonNode1 ! GetState()
+          batonNode1 ! GetStateMsg()
 
           expectMsgPF() {
-            case BatonNodeState(level1: Int, number1: Int, parent1: Option[ActorRef], leftChild1: Option[ActorRef], 
+            case BatonNodeStateMsg(level1: BigInt, number1: BigInt, parent1: Option[ActorRef], leftChild1: Option[ActorRef], 
             		rightChild1: Option[ActorRef], leftAdjacent1: Option[ActorRef], rightAdjacent1: Option[ActorRef],
-            		leftRoutingTable1: Map[Int, RoutingTableEntry], rightRoutingTable1: Map[Int, RoutingTableEntry]) if 
+            		leftRoutingTable1: ArrayBuffer[RoutingTableEntry], rightRoutingTable1: ArrayBuffer[RoutingTableEntry]) if 
               level==level1 && number==number1 && parent1.get==parentProbe.ref && leftChild1==None && 
              	rightChild1==None && leftAdjacent1.get==parentsLeftAdjacentProbe.ref && rightAdjacent1.get==parentProbe.ref &&
-              leftRoutingTable1(number-1)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
-              leftRoutingTable1(number-2)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
-              leftRoutingTable1(number-4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+1)==RoutingTableEntry(Some(childFourProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+2)==RoutingTableEntry(Some(childFiveProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+4)==RoutingTableEntry(Some(childSixProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+8)==RoutingTableEntry(Some(childSevenProbe.ref), None, None, -1, -1) =>
+              leftRoutingTable1(0)==RoutingTableEntry(0, Some(childTwoProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(1)==RoutingTableEntry(1, Some(childOneProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(2)==RoutingTableEntry(2, Some(childThreeProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(0)==RoutingTableEntry(0, Some(childFourProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(1)==RoutingTableEntry(1, Some(childFiveProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(2)==RoutingTableEntry(2, Some(childSixProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(3)==RoutingTableEntry(3, Some(childSevenProbe.ref), None, None, -1, -1) =>
             
           }
           
@@ -125,49 +130,49 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           val childSixProbe = TestProbe()
           val childSevenProbe = TestProbe()
           
-          val isLeftChild = false
+          val assignedChildPosition: ChildPosition = RightChild
           val parentLevel = 3
           val parentNumber = 4
           val level = parentLevel + 1
-          val number = isLeftChild match {
-            case true => parentNumber*2-1
-            case false => parentNumber*2
+          val number = assignedChildPosition match {
+            case LeftChild => parentNumber*2-1
+            case RightChild => parentNumber*2
           }
           
-          val parentLeftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
-          val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
+          val parentLeftRoutingTable  = ArrayBuffer[RoutingTableEntry]()
+          val parentRightRoutingTable = ArrayBuffer[RoutingTableEntry]()
           
-          parentLeftRoutingTable += (parentNumber-1 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childTwoProbe.ref), -1, -1))
-          parentLeftRoutingTable += (parentNumber-2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childThreeProbe.ref), -1, -1))
+          parentLeftRoutingTable += RoutingTableEntry(0, Some(expectNothingProbe.ref), None, Some(childTwoProbe.ref), -1, -1)
+          parentLeftRoutingTable += RoutingTableEntry(1, Some(expectNothingProbe.ref), None, Some(childThreeProbe.ref), -1, -1)
           
-          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childFourProbe.ref), Some(childFiveProbe.ref), -1, -1))
-          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childSixProbe.ref), -1, -1))
-          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childSevenProbe.ref), -1, -1))
+          parentRightRoutingTable += RoutingTableEntry(0, Some(expectNothingProbe.ref), Some(childFourProbe.ref), Some(childFiveProbe.ref), -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(1, Some(expectNothingProbe.ref), None, Some(childSixProbe.ref), -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(2, Some(expectNothingProbe.ref), None, Some(childSevenProbe.ref), -1, -1)
   
           val batonNode1 = system.actorOf(Props(new BatonNode(Some(parentProbe.ref), None)))
-          parentProbe.expectMsg(500 millis, Join()) 
+          parentProbe.expectMsg(500 millis, JoinMsg()) 
          
-          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), Some(childOneProbe.ref), 
+          parentProbe.reply(ParentForJoinFoundMsg(parentProbe.ref, assignedChildPosition, BatonNodeStateMsg(parentLevel, parentNumber, Some(expectNothingProbe.ref), Some(childOneProbe.ref), 
 		     Some(expectNothingProbe.ref),  Some(expectNothingProbe.ref), Some(parentsRightAdjacentProbe.ref),
-		     parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
+		     parentLeftRoutingTable, parentRightRoutingTable)))
 		
           expectNothingProbe.expectNoMsg(500 millis)
           
-          batonNode1 ! GetState()
+          batonNode1 ! GetStateMsg()
 
           expectMsgPF() {
-            case BatonNodeState(level1: Int, number1: Int, parent: Option[ActorRef], leftChild1: Option[ActorRef], 
+            case BatonNodeStateMsg(level1: BigInt, number1: BigInt, parent: Option[ActorRef], leftChild1: Option[ActorRef], 
             		rightChild1: Option[ActorRef], leftAdjacent1: Option[ActorRef], rightAdjacent1: Option[ActorRef],
-            		leftRoutingTable1: Map[Int, RoutingTableEntry], rightRoutingTable1: Map[Int, RoutingTableEntry]) if
+            		leftRoutingTable1: ArrayBuffer[RoutingTableEntry], rightRoutingTable1: ArrayBuffer[RoutingTableEntry]) if
               level==level1 && number==number1 && parent.get==parentProbe.ref && leftChild1==None && 
              	rightChild1==None && leftAdjacent1.get==parentProbe.ref && rightAdjacent1.get==parentsRightAdjacentProbe.ref &&
-              leftRoutingTable1(number-1)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
-              leftRoutingTable1(number-2)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
-              leftRoutingTable1(number-4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+1)==RoutingTableEntry(Some(childFourProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+2)==RoutingTableEntry(Some(childFiveProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+4)==RoutingTableEntry(Some(childSixProbe.ref), None, None, -1, -1) &&
-              rightRoutingTable1(number+8)==RoutingTableEntry(Some(childSevenProbe.ref), None, None, -1, -1) =>  
+              leftRoutingTable1(0)==RoutingTableEntry(0, Some(childOneProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(1)==RoutingTableEntry(1, Some(childTwoProbe.ref), None, None, -1, -1) &&
+              leftRoutingTable1(2)==RoutingTableEntry(2, Some(childThreeProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(0)==RoutingTableEntry(0, Some(childFourProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(1)==RoutingTableEntry(1, Some(childFiveProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(2)==RoutingTableEntry(2, Some(childSixProbe.ref), None, None, -1, -1) &&
+              rightRoutingTable1(3)==RoutingTableEntry(3, Some(childSevenProbe.ref), None, None, -1, -1) =>  
             
           }
           
@@ -188,43 +193,43 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           val childThreeProbe = TestProbe()
           val childFourProbe = TestProbe()
           
-          val isLeftChild = true
+          val assignedChildPosition: ChildPosition = LeftChild
           val parentLevel = 3
           val parentNumber = 1
           val level = parentLevel + 1
-          val number = isLeftChild match {
-            case true => parentNumber*2-1
-            case false => parentNumber*2
+          val number = assignedChildPosition match {
+            case LeftChild => parentNumber*2-1
+            case RightChild => parentNumber*2
           }
           
-          val parentLeftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
-          val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
+          val parentLeftRoutingTable  = ArrayBuffer[RoutingTableEntry]()
+          val parentRightRoutingTable = ArrayBuffer[RoutingTableEntry]()
           
-          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childTwoProbe.ref), None, -1, -1))
-          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1))
-          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childFourProbe.ref), None, -1, -1))
+          parentRightRoutingTable += RoutingTableEntry(0, Some(expectNothingProbe.ref), Some(childTwoProbe.ref), None, -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(1, Some(expectNothingProbe.ref), Some(childThreeProbe.ref), None, -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(2, Some(expectNothingProbe.ref), Some(childFourProbe.ref), None, -1, -1)
   
           val batonNode1 = system.actorOf(Props(new BatonNode(Some(parentProbe.ref), None)))
-          parentProbe.expectMsg(500 millis, Join()) 
+          parentProbe.expectMsg(500 millis, JoinMsg()) 
          
-          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
+          parentProbe.reply(ParentForJoinFoundMsg(parentProbe.ref, assignedChildPosition, BatonNodeStateMsg(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
 		     Some(childOneProbe.ref), Some(parentsLeftAdjacentProbe.ref), Some(expectNothingProbe.ref),
-		     parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
+		     parentLeftRoutingTable, parentRightRoutingTable)))
 		
           expectNothingProbe.expectNoMsg(500 millis)
           
-          batonNode1 ! GetState()
+          batonNode1 ! GetStateMsg()
 
           expectMsgPF() {
-            case BatonNodeState(level1: Int, number1: Int, parent1: Option[ActorRef], parentsLeftChild1: Option[ActorRef], 
+            case BatonNodeStateMsg(level1: BigInt, number1: BigInt, parent1: Option[ActorRef], parentsLeftChild1: Option[ActorRef], 
             		parentsRightChild1: Option[ActorRef], parentsLeftAdjacent1: Option[ActorRef], parentsRightAdjacent1: Option[ActorRef],
-            		parentsLeftRoutingTable1: Map[Int, RoutingTableEntry], parentsRightRoutingTable1: Map[Int, RoutingTableEntry]) if 
+            		parentsLeftRoutingTable1: ArrayBuffer[RoutingTableEntry], parentsRightRoutingTable1: ArrayBuffer[RoutingTableEntry]) if 
             		     level==level1 && number==number1 && parent1.get==parentProbe.ref && parentsLeftChild1==None && 
              	parentsRightChild1==None && parentsLeftAdjacent1.get==parentsLeftAdjacentProbe.ref && parentsRightAdjacent1.get==parentProbe.ref &&
-              parentsRightRoutingTable1(number+1)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
-              parentsRightRoutingTable1(number+2)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
-              parentsRightRoutingTable1(number+4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) &&
-              parentsRightRoutingTable1(number+8)==RoutingTableEntry(Some(childFourProbe.ref), None, None, -1, -1) =>
+              parentsRightRoutingTable1(0)==RoutingTableEntry(0, Some(childOneProbe.ref), None, None, -1, -1) &&
+              parentsRightRoutingTable1(1)==RoutingTableEntry(1, Some(childTwoProbe.ref), None, None, -1, -1) &&
+              parentsRightRoutingTable1(2)==RoutingTableEntry(2, Some(childThreeProbe.ref), None, None, -1, -1) &&
+              parentsRightRoutingTable1(3)==RoutingTableEntry(3, Some(childFourProbe.ref), None, None, -1, -1) =>
             
           }
         
@@ -243,43 +248,43 @@ class ExampleSpec extends Specification with  NoTimeConversions {
           val childThreeProbe = TestProbe()
           val childFourProbe = TestProbe()
           
-          val isLeftChild = false
+          val assignedChildPosition: ChildPosition = RightChild
           val parentLevel = 3
           val parentNumber = 1
           val level = parentLevel + 1
-          val number = isLeftChild match {
-            case true => parentNumber*2-1
-            case false => parentNumber*2
+          val number = assignedChildPosition match {
+            case LeftChild => parentNumber*2-1
+            case RightChild => parentNumber*2
           }
           
-          val parentLeftRoutingTable  = scala.collection.mutable.Map[Int, RoutingTableEntry]()
-          val parentRightRoutingTable = scala.collection.mutable.Map[Int, RoutingTableEntry]()
+          val parentLeftRoutingTable  = ArrayBuffer[RoutingTableEntry]()
+          val parentRightRoutingTable = ArrayBuffer[RoutingTableEntry]()
           
-          parentRightRoutingTable += (parentNumber+1 -> RoutingTableEntry(Some(expectNothingProbe.ref), Some(childOneProbe.ref), Some(childTwoProbe.ref), -1, -1))
-          parentRightRoutingTable += (parentNumber+2 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childThreeProbe.ref), -1, -1))
-          parentRightRoutingTable += (parentNumber+4 -> RoutingTableEntry(Some(expectNothingProbe.ref), None, Some(childFourProbe.ref), -1, -1))
+          parentRightRoutingTable += RoutingTableEntry(0, Some(expectNothingProbe.ref), Some(childOneProbe.ref), Some(childTwoProbe.ref), -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(1, Some(expectNothingProbe.ref), None, Some(childThreeProbe.ref), -1, -1)
+          parentRightRoutingTable += RoutingTableEntry(2, Some(expectNothingProbe.ref), None, Some(childFourProbe.ref), -1, -1)
   
           val batonNode1 = system.actorOf(Props(new BatonNode(Some(parentProbe.ref), None)))
-          parentProbe.expectMsg(500 millis, Join()) 
+          parentProbe.expectMsg(500 millis, JoinMsg()) 
          
-          parentProbe.reply(ParentForJoinFound(parentProbe.ref, isLeftChild, BatonNodeState(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
+          parentProbe.reply(ParentForJoinFoundMsg(parentProbe.ref, assignedChildPosition, BatonNodeStateMsg(parentLevel, parentNumber, Some(expectNothingProbe.ref), None, 
 		     Some(expectNothingProbe.ref), Some(expectNothingProbe.ref), Some(parentsRightAdjacentProbe.ref),
-		     parentLeftRoutingTable.toMap, parentRightRoutingTable.toMap)))
+		     parentLeftRoutingTable, parentRightRoutingTable)))
 		
           expectNothingProbe.expectNoMsg(500 millis)
           
-          batonNode1 ! GetState()
+          batonNode1 ! GetStateMsg()
 
           expectMsgPF() {
-            case BatonNodeState(level1: Int, number1: Int, parent1: Option[ActorRef], parentsLeftChild1: Option[ActorRef], 
+            case BatonNodeStateMsg(level1: BigInt, number1: BigInt, parent1: Option[ActorRef], parentsLeftChild1: Option[ActorRef], 
             		parentsRightChild1: Option[ActorRef], parentsLeftAdjacent1: Option[ActorRef], parentsRightAdjacent1: Option[ActorRef],
-            		parentsLeftRoutingTable1: Map[Int, RoutingTableEntry], parentsRightRoutingTable1: Map[Int, RoutingTableEntry]) if 
+            		parentsLeftRoutingTable1: ArrayBuffer[RoutingTableEntry], parentsRightRoutingTable1: ArrayBuffer[RoutingTableEntry]) if 
             		     level==level1 && number==number1 && parent1.get==parentProbe.ref && parentsLeftChild1==None && 
              	parentsRightChild1==None && parentsLeftAdjacent1.get==parentProbe.ref && parentsRightAdjacent1.get==parentsRightAdjacentProbe.ref &&
-              parentsRightRoutingTable1(number+1)==RoutingTableEntry(Some(childOneProbe.ref), None, None, -1, -1) &&
-              parentsRightRoutingTable1(number+2)==RoutingTableEntry(Some(childTwoProbe.ref), None, None, -1, -1) &&
-              parentsRightRoutingTable1(number+4)==RoutingTableEntry(Some(childThreeProbe.ref), None, None, -1, -1) &&
-              parentsRightRoutingTable1(number+8)==RoutingTableEntry(Some(childFourProbe.ref), None, None, -1, -1) =>
+              parentsRightRoutingTable1(0)==RoutingTableEntry(0, Some(childOneProbe.ref), None, None, -1, -1) &&
+              parentsRightRoutingTable1(1)==RoutingTableEntry(1, Some(childTwoProbe.ref), None, None, -1, -1) &&
+              parentsRightRoutingTable1(2)==RoutingTableEntry(2, Some(childThreeProbe.ref), None, None, -1, -1) &&
+              parentsRightRoutingTable1(3)==RoutingTableEntry(3, Some(childFourProbe.ref), None, None, -1, -1) =>
             
           }
           
