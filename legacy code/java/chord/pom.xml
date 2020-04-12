@@ -65,7 +65,18 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryonet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.asynchttpclient</groupId>
+            <artifactId>async-http-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
     </dependencies>
 
 
@@ -136,7 +147,7 @@
                     </execution>
                     <!-- Skip default jar since no source other than test source -->
                     <execution>
-                        <id>default-jar</id>
+                        <sessionId>default-jar</sessionId>
                         <phase>none</phase>
                         <configuration>
                             <finalName>unwanted</finalName>

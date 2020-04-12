@@ -2,6 +2,7 @@ package com.ratul.tashjik.chord.server;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,7 +26,7 @@ public class LocalNode implements Node {
         return id;
     }
 
-    public CompletableFuture<Node> findSuccessorAsync(int id) {
+    public CompletableFuture<Optional<RemoteNode>> findSuccessorAsync(int id) {
         return null;
     }
 
